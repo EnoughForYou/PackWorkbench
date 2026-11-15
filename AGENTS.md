@@ -6,7 +6,7 @@ Aturan kerja untuk agen. Baca seluruhnya sebelum menyentuh apa pun.
 
 1. `docs/knowledge/00-ringkasan-perbedaan-versi.md`
 2. `docs/knowledge/99-pertanyaan-terbuka.md`
-3. PRD fase yang sedang dikerjakan (`PRD-fase-1-validator-sha1.md` untuk saat ini)
+3. PRD master proyek (`PRD.md`)
 4. File `docs/knowledge/` lain yang relevan dengan tugas
 
 Folder `docs/` di luar `knowledge/` (dokumen briefing lama dan Panduan Arsitektur Teknis) SUDAH TERBUKTI sebagian usang. Jangan dijadikan sumber fakta.

@@ -26,7 +26,7 @@ Aturan format dan metrik dihitung dari perilaku aktual codec `PackFormat`, `Bitm
 
 ## Operating Context
 
-Digunakan di desktop maupun layar sempit untuk memeriksa arsip pack dari desainer/editor eksternal sebelum diunggah ke CDN server, atau merakit font/rank JSON baru dari nol sambil memantau tabrakan codepoint PUA dan batas panjang chat 256 karakter (`MC-236960`).
+Desktop-Only Creative Suite (resolusi kerja target >= 1280px). Tidak mendukung dan tidak menyediakan layout ponsel atau tablet. Seluruh pemrosesan dilakukan 100% secara lokal di browser klien (Client-Side Execution) tanpa jaringan backend, tanpa akun, dan tanpa telemetri. Digunakan oleh kreator resource pack dan administrator server Minecraft Java Edition untuk menyusun font bitmap, rank badge berlapis, spasi negatif, serta memvalidasi arsip ZIP dan pack.mcmeta secara presisi.
 
 ## Capabilities and Constraints
 
@@ -39,22 +39,27 @@ Digunakan di desktop maupun layar sempit untuk memeriksa arsip pack dari desaine
 
 ## Brand Commitments
 
-- Bahasa antarmuka dan pesan diagnostik: Bahasa Indonesia, lugas, spesifik, dengan petunjuk perbaikan teknis.
-- Palet yang dikunci pengguna (`A3`): dasar hitam soft (`#0d0d10`–`#16161a`) dengan aksen `#ff5e2c` pada Beranda dan Studio, mengacu pada kualitas UI/UX `packsmc.com`, `xqedii` Ultimate UI, dan `NxRanks Studio`.
-- Pemuatan font eksternal melalui Google Fonts API (`index.html`).
-- Status warna semantik (`ERROR` merah, `PERINGATAN` amber, `LOLOS`/`AMAN` hijau) hanya digunakan untuk indikator hasil validasi dan metrik teknis.
+- Bahasa antarmuka: Bahasa Inggris untuk `/studio` (lingkungan kerja kreatif terstandar) dan Bahasa Indonesia untuk dokumentasi/informasi teknis.
+- Karakter Desain: Software kreatif profesional (Aseprite, PacksMC, Xqedii UltimateUI), bukan dashboard website generik.
+- Palet "Dark Obsidian Studio": Canvas background `#0b0b0e`, Panel surface `#111115`, Elevated surface `#16161c`, Border `#202028`, Primary accent `#ff5e2c` (Burnt Orange).
+- Tipografi: `Onest` untuk UI dan `JetBrains Mono` untuk metrik/kode.
+- Sistem Tombol High-Contrast:
+  - **Lime Green** (`#22c55e` pill, teks hitam bold): Aksi utama (Export Pack, Generate, Confirm).
+  - **Burnt Orange** (`#ff5e2c`): Identitas brand, indikator aktif, selected state.
+  - **Dark Obsidian** (`#16161c`): Tombol sekunder / surface.
+  - **Red** (`#ef4444`): Aksi destruktif (Delete / Reset).
 
 ## Evidence on Hand
 
 - `docs/knowledge/00-ringkasan-perbedaan-versi.md`, `docs/knowledge/font-dan-glyph.md`, `docs/knowledge/bedrock-geyser.md`, `docs/knowledge/99-pertanyaan-terbuka.md`: verifikasi primer `piston-meta.mojang.com` dan `client.jar`.
-- `src/core/` & `tests/*.test.ts`: 48 tes Vitest terkonfirmasi hijau untuk codec PNG, metrik bitmap, alokasi PUA, `fontRules` (`F01–F10`), `zipRules` (`Z01–Z09`), `mcmetaRules` (`M01–M10`), `packBuilder`, dan `sha1Stream`.
+- `src/core/` & `tests/*.test.ts`: 67 tes Vitest terkonfirmasi hijau untuk codec PNG, metrik bitmap, alokasi PUA, `fontRules` (`F01–F10`), `zipRules` (`Z01–Z09`, `Z10–Z12`), `mcmetaRules` (`M01–M10`), `packBuilder`, `sha1Stream`, dan `workbenchStore`.
 - Pratinjau visual rank badge sintetis orisinal dari `src/core/font/pixelSynth.ts`. Belum ada testimoni pengguna, angka adopsi, atau tangkapan layar klien game live.
 
 ## Product Principles
 
 1. Transparansi sumber kebenaran: setiap temuan validator dan simulasi metrik mencantumkan ID aturan, rujukan `docs/knowledge/`, dan status `[UNVERIFIED]` bila belum diuji di klien asli.
 2. Ruang kerja bebas gangguan: Beranda menjelaskan dan memamerkan alat secara terstruktur, sedangkan `/studio` langsung masuk ke lingkungan kerja tanpa chrome pemasaran.
-3. Konsistensi perangkat: alur upload ZIP, inspektor properti, komposer rank, dan pratinjau tetap dapat dioperasikan dengan keyboard dan layar kecil.
+3. Desktop Workstation Ergonomics: seluruh panel, tool dock, kanvas piksel, inspektor, dan status bar dioptimalkan untuk efisiensi keyboard dan mouse di layar desktop tanpa kompromi tata letak mobile.
 
 ## Accessibility & Inclusion
 
