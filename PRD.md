@@ -45,46 +45,54 @@ Perancangan antarmuka dan interaksi Pack Workbench berakar pada tiga referensi u
 
 ---
 
-## 3. Sistem Desain & Visual Tokens
+## 3. Sistem Desain & Visual Tokens (`ui-styling`)
 
-### 3.1 Palet Warna "Dark Obsidian Studio"
-| Token | Nilai Hex | Peruntukan |
-| :--- | :--- | :--- |
-| **Canvas Background** | `#0b0b0e` | Latar belakang area kerja kanvas piksel |
-| **Panel Surface** | `#111115` | Permukaan panel utama (Explorer, Inspector, Topbar, Statusbar) |
-| **Elevated Surface** | `#16161c` | Kartu entri, popover dropdown, modal, dialog, dan header |
-| **Border / Divider** | `#202028` | Garis pemisah panel, border input, dan pemisah kolom |
-| **Primary Accent** | `#ff5e2c` | Identitas brand (Burnt Orange), tab/tool terpilih, outline aktif, selection bounding box |
-| **Primary Text** | `#f4f4f6` | Teks utama, judul, dan label aktif |
-| **Muted Text** | `#8a8a98` | Keterangan sekunder, shortcut label, placeholder |
-| **Destructive / Error** | `#ef4444` | Pesan error validator, tombol hapus, aksi berbahaya |
-| **Warning / Caution** | `#f59e0b` | Peringatan validator, catatan `[UNVERIFIED]`, notice teknis |
-| **Success / Valid** | `#22c55e` | Status validasi lolos, indikator koneksi worker |
+Desain antarmuka menerapkan standar **`ui-styling`** (kombinasi semantic token shadcn/ui, utilitas Tailwind CSS v4, dan filosofi studio visual). Palet *AI-slop Obsidian* yang pekat mati dan melelahkan mata telah sepenuhnya digantikan oleh arsitektur **"Aseprite Retro Studio"** (Opsi A) yang mengedepankan tangga elevasi nyata (*surface elevation steps*) dan kenyamanan visual bagi kreator pixel art.
+
+### 3.1 Palet Warna "Aseprite Retro Studio" (Semantic Tokens)
+
+| Token Semantik | CSS Variable (HSL) | Nilai Hex | Peruntukan & Karakter |
+| :--- | :--- | :--- | :--- |
+| **`--background`** | `236 15% 14%` | `#1e1f29` | **Canvas Workspace**: Slate charcoal terkalibrasi, dasar kerja kanvas piksel yang ramah mata |
+| **`--card` / `--panel`** | `236 17% 18%` | `#262736` | **Panel Surface**: Permukaan panel kerja (Explorer, Inspector, Toolbar, Statusbar) |
+| **`--popover` / `--elevated`** | `236 17% 23%` | `#303244` | **Elevated Surface**: Floating card, modal dialog, popover dropdown, dan drawer aktif |
+| **`--border` / `--input`** | `233 16% 28%` | `#3c3f54` | **Divider & Border**: Garis batas struktural 1px yang bersih, membagi panel secara taktis |
+| **`--muted`** | `236 17% 20%` | `#2b2c3d` | **Muted Base**: Background input form, track slider, inactive tool container |
+| **`--foreground`** | `228 17% 95%` | `#f0f1f5` | **Primary Text**: Off-white sejuk dengan kontras tajam (WCAG AAA) terhadap panel |
+| **`--muted-foreground`** | `232 15% 67%` | `#9da0b8` | **Secondary Text**: Keterangan metrik, shortcut key hint, placeholder |
+| **`--primary` (Button/Accent)** | `272 36% 60%` | `#9b73be` | **Amethyst Lavender**: Warna tombol utama, kursor aktif, indikator seleksi, dan brand accent |
+| **`--primary-foreground`** | `230 18% 7%` | `#0e0f14` | **Primary Button Text**: Teks kontras tinggi pekat berbobot tebal di atas `#9b73be` |
+| **`--destructive`** | `0 70% 60%` | `#e05252` | **Destructive / Error**: Pesan error validator, tombol hapus layer / reset |
+| **`--warning`** | `38 92% 50%` | `#f59e0b` | **Warning / Caution**: Peringatan validator, status `[UNVERIFIED]` |
+| **`--success`** | `142 71% 45%` | `#22c55e` | **Success / Pass**: Indikator audit lolos, SHA-1 streaming selesai |
+| **`--ring`** | `272 36% 60%` | `#9b73be` | **Focus Ring**: Indikator aksesibilitas fokus keyboard (`:focus-visible`) |
 
 ### 3.2 Tipografi
 - **UI Font**: `Onest`, sans-serif modern, geometris, netral, sangat mudah dibaca pada ukuran 11–13px antarmuka desktop padat.
 - **Technical & Code Font**: `JetBrains Mono`, monospace untuk nilai metrik, koordinat `(x, y)`, codepoint Unicode `U+E200+`, JSON preview, aturan validator, dan cuplikan config `server.properties`.
 
 ### 3.3 Spesifikasi Tombol (Button System)
-Karakteristik: **Minimalis, tegas, high-contrast, compact padding, font weight 600–700, border radius pill (full rounded)**.
+Karakteristik: **Minimalis, tegas, high-contrast, compact padding, font weight 600–700, border radius pill (`rounded-full`)**.
 
 1. **Primary Action Button (Export Pack / Generate / Confirm)**:
-   - **Background**: Lime Green (`#22c55e` / `#16a34a`)
-   - **Text**: Hitam pekat (`#0b0b0e`), font weight 700
+   - **Background**: `#9b73be` (Muted Amethyst Lavender)
+   - **Hover State**: `#a882cb` (Lighter lavender tint)
+   - **Active State**: `#8c62b0` (Deep amethyst)
+   - **Text**: `#0e0f14` (Deep charcoal contrast, font-weight 700)
    - **Border Radius**: Full / Pill (`rounded-full`)
-   - **Border**: Tidak ada border
-   - **Shadow**: Minimal atau flat
+   - **Border**: Tanpa border eksternal (flat minimal)
+   - **Shadow**: Minimal flat (tanpa gradient berlebihan)
    - **Padding**: Compact (`px-3.5 py-1.5` teks 12px)
 2. **Brand & Selected State Button (Active Tools / Filter Selected)**:
-   - **Background**: Burnt Orange (`#ff5e2c`)
-   - **Text**: Putih / Off-white (`#ffffff`), font weight 600
-   - **Border Radius**: Pill / Rounded 6px–full
+   - **Background**: `#9b73be` dengan teks `#0e0f14` atau pill border `#9b73be` pada background `#303244`
+   - **Indicator**: Outline aktif / selection glow lembut (`ring-1 ring-[#9b73be]/50`)
 3. **Workspace Surface Button (Standard Actions / Secondary)**:
-   - **Background**: `#16161c`, border `#202028`
-   - **Text**: `#f4f4f6`, hover background `#202028`
+   - **Background**: `#303244`, border 1px `#3c3f54`
+   - **Text**: `#f0f1f5`, hover background `#383b50`
+   - **Border Radius**: Full / Pill (`rounded-full`) atau `rounded-md`
 4. **Destructive Button (Delete / Remove Layer / Reset)**:
-   - **Background**: `#ef4444` atau outline merah
-   - **Text**: `#ffffff`
+   - **Background**: `#e05252` atau outline merah pada surface
+   - **Text**: `#ffffff`, hover background `#c94040`
 
 ---
 
@@ -117,7 +125,7 @@ Studio mengadopsi struktur panel terintegrasi desktop-grade:
   - Target Version Dropdown (`1.21.1`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, `26.3`).
   - GUI Scale Toggle (`1×`, `2×`, `3×`, `4×`) dan Force Unicode toggle.
   - Tombol Undo (`Ctrl+Z`) dan Redo (`Ctrl+Y`).
-  - Tombol Utama: **Export Pack** (Pill Lime Green tegas berteks hitam).
+  - Tombol Utama: **Export Pack** (Pill `#9b73be` Amethyst Lavender tegas berteks kontras).
 
 ### 4.2 Left Rail: Tool Dock
 Rail vertikal ramping selebar 44px menampung alat interaksi kanvas:

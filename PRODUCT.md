@@ -41,13 +41,12 @@ Desktop-Only Creative Suite (resolusi kerja target >= 1280px). Tidak mendukung d
 
 - Bahasa antarmuka: Bahasa Inggris untuk `/studio` (lingkungan kerja kreatif terstandar) dan Bahasa Indonesia untuk dokumentasi/informasi teknis.
 - Karakter Desain: Software kreatif profesional (Aseprite, PacksMC, Xqedii UltimateUI), bukan dashboard website generik.
-- Palet "Dark Obsidian Studio": Canvas background `#0b0b0e`, Panel surface `#111115`, Elevated surface `#16161c`, Border `#202028`, Primary accent `#ff5e2c` (Burnt Orange).
+- Palet "Aseprite Retro Studio" (`ui-styling`): Canvas background `#1e1f29`, Panel surface `#262736`, Elevated surface `#303244`, Border `#3c3f54`, Primary accent & button `#9b73be` (Amethyst Lavender).
 - Tipografi: `Onest` untuk UI dan `JetBrains Mono` untuk metrik/kode.
-- Sistem Tombol High-Contrast:
-  - **Lime Green** (`#22c55e` pill, teks hitam bold): Aksi utama (Export Pack, Generate, Confirm).
-  - **Burnt Orange** (`#ff5e2c`): Identitas brand, indikator aktif, selected state.
-  - **Dark Obsidian** (`#16161c`): Tombol sekunder / surface.
-  - **Red** (`#ef4444`): Aksi destruktif (Delete / Reset).
+- Sistem Tombol High-Contrast (`ui-styling`):
+  - **Amethyst Lavender** (`#9b73be` pill, teks `#0e0f14` bold): Aksi utama (Export Pack, Generate, Confirm).
+  - **Aseprite Elevated** (`#303244`, border `#3c3f54`): Tombol sekunder / surface.
+  - **Red** (`#e05252`): Aksi destruktif (Delete / Reset).
 
 ## Evidence on Hand
 
