@@ -13,6 +13,12 @@
       "skillPath": ".agents/skills/impeccable/SKILL.md",
       "computedHash": "6af2b5da01ee2d7cf52cf54781e361e030ff332b633a1a812219e0b98721ebd8"
     },
+    "make-interfaces-feel-better": {
+      "source": "jakubkrehel/make-interfaces-feel-better",
+      "sourceType": "github",
+      "skillPath": "skills/make-interfaces-feel-better/SKILL.md",
+      "computedHash": "076aa566b86b44e1691a4167ea88a85d6853c5f2eb00c39cc719ce5fa21d0731"
+    },
     "ui-styling": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceType": "github",
