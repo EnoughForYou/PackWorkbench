@@ -94,6 +94,36 @@ Karakteristik: **Minimalis, tegas, high-contrast, compact padding, font weight 6
    - **Background**: `#e05252` atau outline merah pada surface
    - **Text**: `#ffffff`, hover background `#c94040`
 
+### 3.4 Prinsip Design Engineering & Interface Polish (`make-interfaces-feel-better`)
+
+Untuk memastikan Pack Workbench terasa seperti software kreatif kelas atas (bukan web template kasar), seluruh komponen dan interaksi wajib mematuhi standar desain rekayasa berikut:
+
+1. **Tipografi & Angka Tabular (`tabular-nums`)**:
+   - Seluruh teks angka dinamis — koordinat kursor `(X, Y)`, dimensi kanvas `36 × 10 px`, metrik `Advance`, `Ascent`, `Height`, persentase komputasi SHA-1 streaming, dan hitungan temuan validator — **wajib** menggunakan `font-variant-numeric: tabular-nums` (`tabular-nums` di Tailwind). Hal ini mengeliminasi *layout shift* / getaran teks saat kursor digerakkan melintasi kanvas.
+   - Menggunakan `text-wrap: balance` pada judul dialog, modal, dan section header.
+   - Menggunakan `text-wrap: pretty` pada teks deskripsi error/warning validator untuk mencegah kata menggantung sendirian (*orphan words*).
+   - Menambahkan `-webkit-font-smoothing: antialiased` pada root layout untuk ketajaman teks maksimal.
+
+2. **Permukaan Konsentris & Struktur Border (`Surfaces & Radii`)**:
+   - **Concentric Border Radius**: Setiap elemen bersarang wajib mematuhi rumus `outerRadius = innerRadius + padding`. Radius kartu di dalam panel atau tombol di dalam container tidak boleh berukuran sama sembarangan agar sudut tidak terlihat terjepit (*pinched*).
+   - **Borders for Structure, Layered Shadows for Elevation**: Garis batas struktural 1px (`#3c3f54`) dikhususkan untuk partisi layout, divider panel, dan pemisah toolbar. Kedalaman mengambang (popover, modal, dropdown) dibangun dengan layered transparent shadow halus (`box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35)`), bukan sekadar menebalkan border.
+   - **Image Outlines**: Seluruh preview sprite PNG, thumbnail badge, dan kanvas pratinjau diberi outline tipis 1px ber-opacity rendah (`rgba(255, 255, 255, 0.08)` atau `oklch(1 0 0 / 0.1)`). Ini mencegah piksel sprite yang gelap membaur kotor ke dalam permukaan panel `#262736`.
+   - **Optical Alignment Over Geometric Centering**: Ikon di dalam tombol, segitiga preview/play, dan chevron expander diatur perataan optisnya secara manual, bukan hanya mengandalkan `justify-center items-center` geometris kaku.
+
+3. **Mikro-Interaksi & Tactile Feedback (`Scale on Press`)**:
+   - **Scale on Press (`scale(0.96)`)**: Seluruh tombol interaktif, tool dock icons, dan tab trigger mendapatkan umpan balik fisik saat ditekan (`active:scale-[0.96] transition-transform duration-100 ease-out`). Dilarang memakai skala di bawah `0.95` agar tidak berlebihan (*cartoonish*).
+   - **Minimum Hit Area Desktop (>= 40×40px)**: Meskipun ukuran visual ikon rail alat berukuran ringkas (18–20px), area klik interaktif diperluas dengan padding atau pseudo-element minimal 40×40px untuk mencegah klik meleset saat desainer bekerja cepat. Antar-hit area tidak boleh saling tumpang tindih.
+
+4. **Ikon Terpadu & State Transition**:
+   - **Match Icon Stroke to Text Weight**: Stroke ikon diselaraskan dengan bobot teks pendampingnya: `1.5px` di samping teks reguler (400), dan `2px` di samping teks semibold/bold (600/700). Menggunakan satu ikon set terpadu (`@lucide/vue`).
+   - **One SVG recolored via `currentColor`**: Seluruh ikon menggunakan SVG tunggal dengan pewarnaan dinamis via CSS (`currentColor`), bukan memuat berkas SVG ganda untuk state hover/active. Varian outline untuk status default; varian fill hanya untuk menandai state aktif/terpilih.
+   - **Contextual Icon Animations**: Transisi toggle ikon (seperti visibilitas mata layer, kunci layer, atau copy-check) dianimasikan halus dengan `opacity` (0→1), `scale` (0.25→1), dan `blur` (4px→0px) menggunakan `cubic-bezier(0.2, 0, 0, 1)`.
+
+5. **Motion Restraint & Ketegasan Transisi**:
+   - **Motion Restraint**: Dilarang memasang animasi pada interaksi berfrekuensi tinggi (melukis kanvas piksel, hover kursor koordinat kanvas). Umpan balik kanvas harus 100% instan (0ms latency).
+   - **Never `transition: all`**: Dilarang keras menulis `transition: all`. Selalu tentukan properti transisi secara spesifik (`transition-colors`, `transition-transform`, `transition-opacity`).
+   - **Interruptible Transitions**: Semua transisi interaksi tombol dan hover dapat diinterupsi seketika saat kursor berpindah cepat. Durasi keluar (*exit transition*) dibuat lebih cepat dan lembut daripada durasi masuk (`duration-100 ease-out`).
+
 ---
 
 ## 4. Struktur Workspace Studio
@@ -303,3 +333,10 @@ Sebuah implementasi fitur dinyatakan selesai apabila:
 4. **Build Statis Bersih**: `npm run generate` sukses menghasilkan bundle `.output/public` tanpa kegagalan.
 5. **Zero Vanilla Mojang Assets**: Repositori dan berkas output bebas dari aset berhak cipta Mojang.
 6. **Persistence Terverifikasi**: Proyek tersimpan secara aman di IndexedDB dan dapat dipulihkan seketika setelah halaman di-refresh.
+7. **Interface Feel & Polish Terverifikasi (`make-interfaces-feel-better`)**:
+   - Seluruh angka metrik dan koordinat dinamis memakai `tabular-nums` tanpa getaran layout shift.
+   - Tombol dan kontrol aksi memiliki tactile feedback `active:scale-[0.96]`.
+   - Hit area kontrol desktop minimal 40×40px.
+   - Radius sudut elemen bersarang mematuhi aturan konsentris (`outerRadius = innerRadius + padding`).
+   - Nol pemakaian `transition: all` (selalu spesifik `transition-colors`, `transition-transform`).
+   - Pratinjau sprite memiliki outline 1px ber-opacity rendah agar tidak kabur ke permukaan panel.
