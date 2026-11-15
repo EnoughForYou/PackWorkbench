@@ -147,7 +147,7 @@ Studio mengadopsi struktur panel terintegrasi desktop-grade:
 
 ```
 +-----------------------------------------------------------------------------------------+
-| TOP: Menu Bar + Project Toolbar (Namespace, Versi, GUI Scale, Undo/Redo, Export Pack)  |
+| TOP: Menu Bar + Project Toolbar (Namespace, Versi, Force Unicode, Undo/Redo, Export)   |
 +---------+--------------------+------------------------------------+---------------------+
 | LEFT    | LEFT PANEL         | CENTER STAGE                       | RIGHT PANEL         |
 | RAIL    | Rank & Asset       | Pixel Canvas / Live Preview        | Inspector / Layers  |
@@ -168,7 +168,7 @@ Studio mengadopsi struktur panel terintegrasi desktop-grade:
 - **Project Toolbar**:
   - Input Namespace resource pack (validasi regex `[a-z0-9_.-]+`).
   - Target Version Dropdown (`1.21.1`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, `26.3`).
-  - GUI Scale Toggle (`1×`, `2×`, `3×`, `4×`) dan Force Unicode toggle.
+  - Force Unicode toggle.
   - Tombol Undo (`Ctrl+Z`) dan Redo (`Ctrl+Y`).
   - Tombol Utama: **Export Pack** (Pill `#9b73be` Amethyst Lavender tegas berteks kontras).
 
@@ -249,7 +249,7 @@ Rail vertikal ramping selebar 44px menampung alat interaksi kanvas:
    - Klik kanan pada kanvas: Invert Color, Clear Edits, Center Sprite.
 4. **Command Palette (`Ctrl + K` / `Cmd + K`)**:
    - Dialog pencarian cepat untuk menjalankan aksi studio tanpa menyentuh mouse:
-     - "New Rank Badge", "Export Pack ZIP", "Switch to TAB Preview", "Set GUI Scale 3x", "Run Validator Audit", "Toggle Pixel Grid".
+     - "New Rank Badge", "Export Pack ZIP", "Switch to TAB Preview", "Run Validator Audit", "Toggle Pixel Grid".
 5. **Shortcut Keyboard Terstandar**:
    - `Ctrl + Z`: Undo tindakan melukis piksel.
    - `Ctrl + Y` / `Ctrl + Shift + Z`: Redo tindakan melukis piksel.

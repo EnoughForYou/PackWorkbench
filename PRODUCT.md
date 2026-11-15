@@ -18,7 +18,7 @@ Pembuat resource pack Minecraft Java Edition serta admin/developer server Minecr
 
 Alat bantu browser-only untuk:
 1. Memvalidasi arsip `.zip` dan `pack.mcmeta` Minecraft Java Edition (`1.21.1` hingga `26.3`) terhadap aturan `Z01–Z09` dan `M01–M10`, lalu menghitung hash SHA-1 40-karakter dan cuplikan `server.properties`.
-2. Menyusun font `bitmap`, `space`, rank badge berlapis (`Frame`, `Icon`, `Text`, `Shadow`, `Paint`), dan rangkaian prefix `U+E200+` dengan pratinjau GUI Scale `1–4` (`Chat`, `TAB`, `Nametag`), aturan `F01–F10`, serta ekspor `.zip` Java Edition siap pakai.
+2. Menyusun font `bitmap`, `space`, rank badge berlapis (`Frame`, `Icon`, `Text`, `Shadow`, `Paint`), dan rangkaian prefix `U+E200+` dengan pratinjau in-game (`Chat`, `TAB`, `Nametag`), aturan `F01–F10`, serta ekspor `.zip` Java Edition siap pakai.
 
 ## Positioning
 
@@ -34,7 +34,7 @@ Desktop-Only Creative Suite (resolusi kerja target >= 1280px). Tidak mendukung d
 - `src/core/` harus tetap TypeScript murni dan lolos seluruh 48 unit test Vitest.
 - Struktur navigasi & rute (`A2`): Navbar hanya memuat 3 tautan utama (`Beranda`, `Studio`, `About`); Beranda (`/`) berisi informasi, pratinjau interaktif Studio & Validator, matriks versi, roadmap, dan footer; `/studio` terpisah dan memuat mode `Studio Rank & Glyph` serta `Validator ZIP & SHA-1`; `/about` memuat informasi cakupan, teknologi, privasi, dan rujukan teknis.
 - Cakupan ekspor saat ini khusus Minecraft Java Edition (`1.21.1`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, `26.3`). Fitur Fase 3 (DeluxeMenus/CustomModelData) dan Fase 4 (konverter Java ke Bedrock) ditampilkan sebagai roadmap terkunci dan belum diaktifkan.
-- Fakta yang masih `[UNVERIFIED]` (uji klien Minecraft nyata untuk rasterisasi GUI Scale `1–4` & Texture Filtering `1.21.11+`) wajib mempertahankan label `[UNVERIFIED]` di UI.
+- Fakta yang masih `[UNVERIFIED]` (uji klien Minecraft nyata untuk rasterisasi font & Texture Filtering `1.21.11+`) wajib mempertahankan label `[UNVERIFIED]` di UI.
 - Larangan keras: zero aset vanilla Mojang (`default.png`, `ascii.png`, tekstur/shader `client.jar`) di repo atau output ekspor; seluruh ikon & glyph pratinjau bersifat sintetis prosedural.
 
 ## Brand Commitments
