@@ -42,7 +42,8 @@ Desktop-Only Creative Suite (resolusi kerja target >= 1280px). Tidak mendukung d
 - Bahasa antarmuka: Bahasa Inggris untuk `/studio` (lingkungan kerja kreatif terstandar) dan Bahasa Indonesia untuk dokumentasi/informasi teknis.
 - Karakter Desain: Software kreatif profesional (Aseprite, PacksMC, Xqedii UltimateUI), bukan dashboard website generik.
 - Palet "Aseprite Retro Studio" (`ui-styling`): Canvas background `#1e1f29`, Panel surface `#262736`, Elevated surface `#303244`, Border `#3c3f54`, Primary accent & button `#9b73be` (Amethyst Lavender).
-- Tipografi: `Onest` untuk UI dan `JetBrains Mono` untuk metrik/kode.
+- Tipografi: Google Fonts API Variable Fonts (`Onest:wght@300..800` untuk UI dan `JetBrains+Mono:wght@400..800` untuk metrik/kode), tanpa fallback sistem default.
+- Ikonografi: Font Awesome 6 SVG (dilarang menggunakan Lucide / Lucide React).
 - Sistem Tombol High-Contrast (`ui-styling`):
   - **Amethyst Lavender** (`#9b73be` pill, teks `#0e0f14` bold): Aksi utama (Export Pack, Generate, Confirm).
   - **Aseprite Elevated** (`#303244`, border `#3c3f54`): Tombol sekunder / surface.

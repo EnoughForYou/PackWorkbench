@@ -67,9 +67,22 @@ Desain antarmuka menerapkan standar **`ui-styling`** (kombinasi semantic token s
 | **`--success`** | `142 71% 45%` | `#22c55e` | **Success / Pass**: Indikator audit lolos, SHA-1 streaming selesai |
 | **`--ring`** | `272 36% 60%` | `#9b73be` | **Focus Ring**: Indikator aksesibilitas fokus keyboard (`:focus-visible`) |
 
-### 3.2 Tipografi
-- **UI Font**: `Onest`, sans-serif modern, geometris, netral, sangat mudah dibaca pada ukuran 11–13px antarmuka desktop padat.
-- **Technical & Code Font**: `JetBrains Mono`, monospace untuk nilai metrik, koordinat `(x, y)`, codepoint Unicode `U+E200+`, JSON preview, aturan validator, dan cuplikan config `server.properties`.
+### 3.2 Tipografi & Variable Fonts (Google Fonts API)
+
+Antarmuka menerapkan aturan ketat: **Dilarang menggunakan system font default (`system-ui`, `sans-serif`, `Arial`, `Segoe UI`, `Roboto`)**. Seluruh lapisan antarmuka wajib menerapkan **Variable Fonts berspesifikasi tinggi** yang dimuat secara resmi melalui **Google Fonts API** (`https://fonts.googleapis.com` dengan optimasi `preconnect`):
+
+1. **Primary UI Variable Font (`Onest`)**:
+   - **Sumber**: Google Fonts API (`family=Onest:wght@300..800`).
+   - **Karakter**: Humanist-geometric hybrid modern dengan proporsi vertikal seimbang, ketajaman rendering ekstrem pada ukuran mikro 11–13px di panel desktop padat, dan legibilitas tinggi tanpa memakan ruang horizontal berlebihan.
+   - **Spesifikasi Bobot**: Regular (`300`/`400`) untuk teks keterangan, Medium (`500`) untuk label form dan tab, Semibold/Bold (`600`/`700`) untuk tombol aksi `#9b73be` dan judul section.
+2. **Technical, Metrics & Code Variable Font (`JetBrains Mono`)**:
+   - **Sumber**: Google Fonts API (`family=JetBrains+Mono:wght@400..800`).
+   - **Karakter**: Monospace teknis yang dirancang khusus untuk kenyamanan membaca kode, koordinat piksel, codepoint Unicode `U+E200+`, metrik advance/ascent, dan JSON.
+   - **OpenType Feature Settings**: Wajib mengaktifkan `font-feature-settings: "tnum" 1, "zero" 1` (angka tabular selebar tetap dan nol bercoret) untuk menjamin metrik dan angka koordinat tidak pernah bergetar saat diperbarui.
+3. **Global Rendering Flags**:
+   - `-webkit-font-smoothing: antialiased`
+   - `-moz-osx-font-smoothing: grayscale`
+   - `text-rendering: optimizeLegibility`
 
 ### 3.3 Spesifikasi Tombol (Button System)
 Karakteristik: **Minimalis, tegas, high-contrast, compact padding, font weight 600–700, border radius pill (`rounded-full`)**.
@@ -114,9 +127,11 @@ Untuk memastikan Pack Workbench terasa seperti software kreatif kelas atas (buka
    - **Scale on Press (`scale(0.96)`)**: Seluruh tombol interaktif, tool dock icons, dan tab trigger mendapatkan umpan balik fisik saat ditekan (`active:scale-[0.96] transition-transform duration-100 ease-out`). Dilarang memakai skala di bawah `0.95` agar tidak berlebihan (*cartoonish*).
    - **Minimum Hit Area Desktop (>= 40×40px)**: Meskipun ukuran visual ikon rail alat berukuran ringkas (18–20px), area klik interaktif diperluas dengan padding atau pseudo-element minimal 40×40px untuk mencegah klik meleset saat desainer bekerja cepat. Antar-hit area tidak boleh saling tumpang tindih.
 
-4. **Ikon Terpadu & State Transition**:
-   - **Match Icon Stroke to Text Weight**: Stroke ikon diselaraskan dengan bobot teks pendampingnya: `1.5px` di samping teks reguler (400), dan `2px` di samping teks semibold/bold (600/700). Menggunakan satu ikon set terpadu (`@lucide/vue`).
-   - **One SVG recolored via `currentColor`**: Seluruh ikon menggunakan SVG tunggal dengan pewarnaan dinamis via CSS (`currentColor`), bukan memuat berkas SVG ganda untuk state hover/active. Varian outline untuk status default; varian fill hanya untuk menandai state aktif/terpilih.
+4. **Sistem Ikon: Font Awesome (Larangan Mutlak Lucide / Lucide React)**:
+   - **Aturan Ketat**: Dilarang keras menggunakan `Lucide React` (maupun ketergantungan paket Lucide). Seluruh ikon antarmuka wajib bersumber dari **Font Awesome** (Font Awesome 6 SVG via `@fortawesome/vue-fontawesome` / SVG symbol system).
+   - **Karakter & Konsistensi**: Seluruh kontrol alat (`fa-arrow-pointer`, `fa-pencil`, `fa-eraser`, `fa-eye-dropper`, `fa-palette`, `fa-magnifying-glass-plus`), panel layer (`fa-layer-group`, `fa-eye`, `fa-eye-slash`, `fa-lock`, `fa-trash-can`), status audit (`fa-circle-check`, `fa-triangle-exclamation`, `fa-circle-xmark`), dan tombol ekspor (`fa-file-zipper`) distandarkan dengan glif Font Awesome.
+   - **One SVG recolored via `currentColor`**: Seluruh ikon menggunakan SVG tunggal dengan pewarnaan dinamis via CSS (`currentColor`), bukan memuat berkas SVG ganda untuk state hover/active. Varian regular/line untuk status default; varian solid/fill untuk menandai state aktif/terpilih.
+   - **Optical Alignment & Weight**: Bobot visual ikon diselaraskan optis dengan teks font Onest pendampingnya (1.5px optical stroke untuk teks regular, solid fill untuk semibold/bold).
    - **Contextual Icon Animations**: Transisi toggle ikon (seperti visibilitas mata layer, kunci layer, atau copy-check) dianimasikan halus dengan `opacity` (0→1), `scale` (0.25→1), dan `blur` (4px→0px) menggunakan `cubic-bezier(0.2, 0, 0, 1)`.
 
 5. **Motion Restraint & Ketegasan Transisi**:
@@ -313,6 +328,8 @@ Semua aturan di bawah ini berasal dari verifikasi bytecode `client.jar` dan spes
 | **Framework Utama** | Nuxt 4 (`ssr: false`) + Vue 3 | Terpasang | Arsitektur SPA statis berkinerja tinggi, auto-imports terstruktur. |
 | **Bahasa & Typing** | TypeScript (Strict) | Terpasang | Keamanan tipe data penuh; modul `src/core/` murni tanpa DOM. |
 | **Styling** | Tailwind CSS v4 (`@tailwindcss/vite`) | Terpasang | Utility engine modern, CSS custom properties dinamis. |
+| **Tipografi** | Google Fonts API (`Onest` & `JetBrains Mono` Variable Fonts) | Terpasang | Variable fonts spesifik tinggi (`wght@300..800`), zero system-font fallback, OpenType tabular numbers. |
+| **Ikon Sistem** | Font Awesome 6 (`@fortawesome/vue-fontawesome`) | **Ditetapkan** | Menggantikan Lucide secara mutlak; library ikon SVG terstandar industri dengan dukungan penuh Vue 3. |
 | **Komponen Headless** | `shadcn-vue` + `reka-ui` | Terpasang | Primitif UI desktop aksesibel (Resizable, Dialog, Tooltip, Dropdown). |
 | **State Management** | Pinia 4 (`@pinia/nuxt`) | Terpasang | Reaktif, modular, terintegrasi HMR, state presisten antar-rute. |
 | **Local Storage & Autosave** | `idb` (IndexedDB Wrapper) | **Ditetapkan** | Penyimpanan lokal tanpa batas kuota 5MB localStorage untuk proyek & aset. |
