@@ -1,0 +1,1284 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { Check, ChevronDown, Copy, Split, Upload } from '@lucide/vue';
+import {
+  PIXEL_ICONS,
+  parseHexRgba,
+  type RgbaRaster,
+} from '@core/font/pixelSynth.ts';
+import {
+  allocateNextSafePuaChar,
+  formatCodepointHex,
+  parseCodepointInput,
+} from '@core/font/puaAllocator.ts';
+import type {
+  BitmapFontEntry,
+  CanvasWidthMode,
+  FontProjectEntry,
+  PixelFontSize,
+  PixelIconId,
+  RankBadgeLayout,
+  RankFrameStyle,
+  SplitIconFrameMode,
+} from '@core/font/types.ts';
+import { useWorkbenchStore, type ComposerSubTab } from '@/stores/workbenchStore';
+import PixelPreviewCanvas from '@/components/shared/PixelPreviewCanvas.vue';
+import { Button } from '@/components/ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
+import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
+const store = useWorkbenchStore();
+
+const codepointDraft = ref<string | null>(null);
+const charsDraft = ref<string | null>(null);
+const replacePngRef = ref<HTMLInputElement | null>(null);
+const metricsOpen = ref<boolean>(true);
+const copiedFieldKey = ref<string | null>(null);
+let copiedFieldTimer: number | null = null;
+
+watch(
+  () => store.selectedEntry?.id,
+  () => {
+    codepointDraft.value = null;
+    charsDraft.value = null;
+  },
+);
+
+const selectedEntryErrors = computed(() => {
+  const entry = store.selectedEntry;
+  if (!entry) return [];
+  return store.validation.findings.filter(
+    (f) => f.entryId === entry.id && f.severity === 'ERROR',
+  );
+});
+
+const ascentError = computed(() =>
+  selectedEntryErrors.value.some((f) => f.id === 'F01'),
+);
+
+const currentPrimaryChar = computed(() => {
+  const entry = store.selectedEntry;
+  if (!entry) return '';
+  if (entry.kind === 'space') return entry.char;
+  return Array.from(entry.chars[0] ?? '')[0] ?? '';
+});
+
+const displayedCodepoint = computed(() => {
+  if (codepointDraft.value !== null) return codepointDraft.value;
+  const cp = currentPrimaryChar.value.codePointAt(0);
+  return cp !== undefined ? formatCodepointHex(cp) : '';
+});
+
+function copyFieldColor(fieldKey: string, hex: string): void {
+  store.copyColorHex(hex);
+  copiedFieldKey.value = fieldKey;
+  if (typeof window !== 'undefined') {
+    if (copiedFieldTimer !== null) {
+      window.clearTimeout(copiedFieldTimer);
+    }
+    copiedFieldTimer = window.setTimeout(() => {
+      copiedFieldKey.value = null;
+    }, 1500);
+  }
+}
+
+function escapeCharsForInput(chars: readonly string[]): string {
+  return chars
+    .map((row) =>
+      Array.from(row)
+        .map((ch) => {
+          const cp = ch.codePointAt(0) ?? 0;
+          if (cp >= 0x20 && cp <= 0x7e && cp !== 0x5c) return ch;
+          if (cp <= 0xffff) {
+            return `\\u${cp.toString(16).toUpperCase().padStart(4, '0')}`;
+          }
+          return `\\u{${cp.toString(16).toUpperCase()}}`;
+        })
+        .join(''),
+    )
+    .join('\n');
+}
+
+function parseCharsTextarea(raw: string): string[] {
+  return raw.split(/\r?\n/).map((line) =>
+    line.replace(
+      /\\u\{([0-9a-fA-F]{1,6})\}|\\u([0-9a-fA-F]{4})/g,
+      (full, bracedHex: string | undefined, fourHex: string | undefined) => {
+        const cp = Number.parseInt(bracedHex ?? fourHex ?? '', 16);
+        if (Number.isFinite(cp) && cp >= 0 && cp <= 0x10ffff) {
+          return String.fromCodePoint(cp);
+        }
+        return full;
+      },
+    ),
+  );
+}
+
+function hasIncompleteUnicodeEscape(raw: string): boolean {
+  return /(?:^|[^\\])\\(?:u(?:\{[0-9a-fA-F]{0,6}|[0-9a-fA-F]{0,3})?)?$/.test(raw);
+}
+
+const displayedChars = computed(() => {
+  if (charsDraft.value !== null) return charsDraft.value;
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap') return '';
+  return escapeCharsForInput(entry.chars);
+});
+
+function applyPrimaryCodepoint(raw: string): void {
+  codepointDraft.value = raw;
+  const entry = store.selectedEntry;
+  if (!entry) return;
+  const cp = parseCodepointInput(raw);
+  if (cp === null) return;
+  charsDraft.value = null;
+  const nextChar = String.fromCodePoint(cp);
+  store.updateEntry(entry.id, (prev) => {
+    if (prev.kind === 'space') {
+      return { ...prev, char: nextChar };
+    }
+    const restRows = prev.chars.slice(1);
+    const firstRowRest = Array.from(prev.chars[0] ?? '').slice(1).join('');
+    return { ...prev, chars: [`${nextChar}${firstRowRest}`, ...restRows] };
+  });
+}
+
+function handleAutoAllocatePua(): void {
+  const entry = store.selectedEntry;
+  if (!entry) return;
+  const safeChar = allocateNextSafePuaChar(store.fontProject.entries);
+  codepointDraft.value = null;
+  charsDraft.value = null;
+  store.updateEntry(entry.id, (prev) => {
+    if (prev.kind === 'space') {
+      return { ...prev, char: safeChar };
+    }
+    const restRows = prev.chars.slice(1);
+    const firstRowRest = Array.from(prev.chars[0] ?? '').slice(1).join('');
+    return { ...prev, chars: [`${safeChar}${firstRowRest}`, ...restRows] };
+  });
+}
+
+function handleCharsInput(raw: string): void {
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap') return;
+  charsDraft.value = raw;
+  if (!hasIncompleteUnicodeEscape(raw)) {
+    codepointDraft.value = null;
+    store.updateEntry(entry.id, (prev) =>
+      prev.kind === 'bitmap' ? { ...prev, chars: parseCharsTextarea(raw) } : prev,
+    );
+  }
+}
+
+function commitCharsBlur(): void {
+  const entry = store.selectedEntry;
+  if (charsDraft.value === null || !entry || entry.kind !== 'bitmap') return;
+  const committed = charsDraft.value;
+  charsDraft.value = null;
+  codepointDraft.value = null;
+  store.updateEntry(entry.id, (prev) =>
+    prev.kind === 'bitmap' ? { ...prev, chars: parseCharsTextarea(committed) } : prev,
+  );
+}
+
+function handleReplacePngChange(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file && store.selectedEntry) {
+    store.replaceEntryPng(store.selectedEntry.id, file);
+  }
+  input.value = '';
+}
+
+function buildIconPreviewRaster(
+  rows: readonly string[],
+  width: number,
+  height: number,
+  hexColor: string,
+): RgbaRaster | null {
+  if (width === 0 || height === 0 || rows.length === 0) return null;
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  const color = parseHexRgba(hexColor, [255, 94, 44, 255]);
+  for (let y = 0; y < height; y++) {
+    const row = rows[y] ?? '';
+    for (let x = 0; x < width; x++) {
+      if (row[x] === '#') {
+        const idx = (y * width + x) * 4;
+        rgba[idx] = color[0];
+        rgba[idx + 1] = color[1];
+        rgba[idx + 2] = color[2];
+        rgba[idx + 3] = color[3];
+      }
+    }
+  }
+  return { width, height, rgba };
+}
+
+function updateBitmap(updater: (prev: BitmapFontEntry) => BitmapFontEntry): void {
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap') return;
+  store.updateEntry(entry.id, (prev) =>
+    prev.kind === 'bitmap' ? updater(prev) : prev,
+  );
+}
+
+function updateSpace(
+  updater: (prev: Extract<FontProjectEntry, { kind: 'space' }>) => FontProjectEntry,
+): void {
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'space') return;
+  store.updateEntry(entry.id, (prev) =>
+    prev.kind === 'space' ? updater(prev) : prev,
+  );
+}
+
+function handleComposerSubTabChange(val: unknown): void {
+  if (val === 'text' || val === 'icon' || val === 'frame') {
+    store.composerSubTab = val as ComposerSubTab;
+  }
+}
+</script>
+
+<template>
+  <div class="space-y-3 p-3">
+    <p v-if="!store.selectedEntry" class="py-4 text-xs text-muted-foreground">
+      Select an entry on the left to edit its properties.
+    </p>
+
+    <!-- Space Entry Editor -->
+    <div v-else-if="store.selectedEntry.kind === 'space'" class="space-y-3">
+      <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Space Provider
+      </p>
+
+      <div class="grid grid-cols-[96px_1fr] items-center gap-2">
+        <Label for="space-label-input" class="text-[11px] font-normal text-muted-foreground">
+          Label
+        </Label>
+        <Input
+          id="space-label-input"
+          type="text"
+          :model-value="store.selectedEntry.label"
+          class="h-7 bg-[#14141a] px-2 text-xs"
+          @update:model-value="
+            updateSpace((prev) => ({ ...prev, label: String($event ?? '') }))
+          "
+        />
+      </div>
+
+      <div class="grid grid-cols-[96px_1fr] items-center gap-2">
+        <Label for="space-cp-input" class="text-[11px] font-normal text-muted-foreground">
+          PUA Codepoint
+        </Label>
+        <div class="flex items-center gap-1">
+          <Input
+            id="space-cp-input"
+            type="text"
+            :model-value="displayedCodepoint"
+            class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+            @update:model-value="applyPrimaryCodepoint(String($event ?? ''))"
+            @blur="codepointDraft = null"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            class="h-7 shrink-0 px-2 font-mono text-[10px] text-[#ff8f6b]"
+            @click="handleAutoAllocatePua()"
+          >
+            Auto
+          </Button>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <div class="grid grid-cols-[96px_1fr] items-center gap-2">
+          <Label for="space-adv-input" class="text-[11px] font-normal text-muted-foreground">
+            Advance (px)
+          </Label>
+          <Input
+            id="space-adv-input"
+            type="number"
+            step="0.25"
+            :model-value="Number.isFinite(store.selectedEntry.advance) ? store.selectedEntry.advance : 0"
+            class="h-7 bg-[#14141a] px-2 font-mono text-xs tabular-nums"
+            @update:model-value="
+              updateSpace((prev) => {
+                const parsed = Number.parseFloat(String($event ?? 0));
+                return { ...prev, advance: Number.isNaN(parsed) ? 0 : parsed };
+              })
+            "
+          />
+        </div>
+
+        <Slider
+          :model-value="[Math.max(-32, Math.min(32, store.selectedEntry.advance))]"
+          :min="-32"
+          :max="32"
+          :step="1"
+          aria-label="Adjust space advance"
+          @update:model-value="
+            (vals) => {
+              const v = vals?.[0];
+              if (v !== undefined) {
+                updateSpace((prev) => ({ ...prev, advance: v }));
+              }
+            }
+          "
+        />
+        <p class="text-[10px] leading-snug text-muted-foreground">
+          SpaceProvider accepts any float; values &lt; 0 or &gt; 32 are skipped in <code>&amp;k</code> mode.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bitmap / Rank Composer Editor -->
+    <div v-else class="space-y-3">
+      <!-- Composer Layer Properties -->
+      <template v-if="store.selectedEntry.sourceMode === 'composer'">
+        <div class="flex items-center justify-between gap-2">
+          <span class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Composer
+          </span>
+          <ToggleGroup
+            type="single"
+            :model-value="store.composerSubTab"
+            aria-label="Rank composer section"
+            class="gap-0.5 rounded bg-[#0a0a0d] p-0.5"
+            @update:model-value="handleComposerSubTabChange"
+          >
+            <ToggleGroupItem
+              value="text"
+              class="h-6 rounded px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+            >
+              Text
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="icon"
+              class="h-6 rounded px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+            >
+              Icon
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="frame"
+              class="h-6 rounded px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+            >
+              Frame
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        <!-- Text Section -->
+        <div v-if="store.composerSubTab === 'text'" class="space-y-2.5">
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <Label for="rank-text-input" class="text-[11px] font-normal text-muted-foreground">
+              Badge Text
+            </Label>
+            <Input
+              id="rank-text-input"
+              type="text"
+              :model-value="store.selectedEntry.composer.text"
+              class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+              @update:model-value="
+                updateBitmap((prev) => {
+                  const val = String($event ?? '');
+                  return {
+                    ...prev,
+                    label: val.trim() || prev.label,
+                    composer: { ...prev.composer, text: val },
+                  };
+                })
+              "
+            />
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <Label for="rank-fontsize-select" class="text-[11px] font-normal text-muted-foreground">
+              Pixel Font
+            </Label>
+            <Select
+              :model-value="store.selectedEntry.composer.fontSize"
+              @update:model-value="
+                (val) => {
+                  if (val === '3x5' || val === '5x5') {
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: { ...prev.composer, fontSize: val as PixelFontSize },
+                    }));
+                  }
+                }
+              "
+            >
+              <SelectTrigger id="rank-fontsize-select" class="h-7 bg-[#14141a] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3x5">3×5 Compact</SelectItem>
+                <SelectItem value="5x5">5×5 Bold</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <Label class="text-[11px] font-normal text-muted-foreground">
+              Canvas Width
+            </Label>
+            <div class="flex items-center gap-1.5">
+              <ToggleGroup
+                type="single"
+                :model-value="store.selectedEntry.composer.canvasWidthMode ?? 'auto'"
+                aria-label="Dynamic canvas width mode"
+                class="gap-0.5 rounded bg-[#0a0a0d] p-0.5"
+                @update:model-value="
+                  (val) => {
+                    if (val === 'auto' || val === 'fixed') {
+                      const currentW =
+                        store.validation.metricsByEntryId[store.selectedEntry!.id]?.imageWidth ?? 36;
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          canvasWidthMode: val as CanvasWidthMode,
+                          customWidth: prev.composer.customWidth ?? currentW,
+                        },
+                      }));
+                    }
+                  }
+                "
+              >
+                <ToggleGroupItem
+                  value="auto"
+                  class="h-6 rounded px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  Auto (Text)
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="fixed"
+                  class="h-6 rounded px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                >
+                  Fixed
+                </ToggleGroupItem>
+              </ToggleGroup>
+              <Input
+                v-if="store.selectedEntry.composer.canvasWidthMode === 'fixed'"
+                type="number"
+                :min="4"
+                :max="256"
+                aria-label="Fixed canvas width in pixels"
+                :model-value="
+                  store.selectedEntry.composer.customWidth ??
+                  store.validation.metricsByEntryId[store.selectedEntry.id]?.imageWidth ??
+                  36
+                "
+                class="h-7 w-16 bg-[#14141a] px-2 font-mono text-xs tabular-nums"
+                @update:model-value="
+                  updateBitmap((prev) => ({
+                    ...prev,
+                    composer: {
+                      ...prev.composer,
+                      customWidth: Math.max(
+                        4,
+                        Math.min(256, Number.parseInt(String($event ?? '36'), 10) || 36),
+                      ),
+                    },
+                  }))
+                "
+              />
+              <span
+                v-else
+                class="font-mono text-[10px] text-muted-foreground tabular-nums"
+              >
+                {{
+                  store.validation.metricsByEntryId[store.selectedEntry.id]?.imageWidth ?? '—'
+                }}px
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
+            <Label class="text-[11px] font-normal text-muted-foreground">
+              Padding X
+            </Label>
+            <Slider
+              :model-value="[store.selectedEntry.composer.paddingX]"
+              :min="0"
+              :max="12"
+              :step="1"
+              aria-label="Horizontal badge padding"
+              @update:model-value="
+                (vals) => {
+                  const v = vals?.[0];
+                  if (v !== undefined) {
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: { ...prev.composer, paddingX: v },
+                    }));
+                  }
+                }
+              "
+            />
+            <span class="text-right font-mono text-[11px] text-foreground tabular-nums">
+              {{ store.selectedEntry.composer.paddingX }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
+            <Label class="text-[11px] font-normal text-muted-foreground">
+              Padding Y
+            </Label>
+            <Slider
+              :model-value="[store.selectedEntry.composer.paddingY]"
+              :min="0"
+              :max="8"
+              :step="1"
+              aria-label="Vertical badge padding"
+              @update:model-value="
+                (vals) => {
+                  const v = vals?.[0];
+                  if (v !== undefined) {
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: { ...prev.composer, paddingY: v },
+                    }));
+                  }
+                }
+              "
+            />
+            <span class="text-right font-mono text-[11px] text-foreground tabular-nums">
+              {{ store.selectedEntry.composer.paddingY }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-[#14141a] px-2 py-1">
+              <Label for="rank-text-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
+                Text
+              </Label>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Click to copy HEX color"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-[#0c0c10] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                  @click="copyFieldColor('textColor', store.selectedEntry.composer.textColor)"
+                >
+                  <Check v-if="copiedFieldKey === 'textColor'" aria-hidden="true" class="h-2.5 w-2.5 text-emerald-400" />
+                  <Copy v-else aria-hidden="true" class="h-2.5 w-2.5 text-muted-foreground" />
+                  <span>{{ store.selectedEntry.composer.textColor.toUpperCase() }}</span>
+                </button>
+                <input
+                  id="rank-text-color"
+                  type="color"
+                  aria-label="Text color"
+                  :value="store.selectedEntry.composer.textColor"
+                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                  @input="
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        textColor: ($event.target as HTMLInputElement).value,
+                      },
+                    }))
+                  "
+                />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-[#14141a] px-2 py-1">
+              <Label for="rank-shadow-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
+                Shadow
+              </Label>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Click to copy HEX color"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-[#0c0c10] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                  @click="copyFieldColor('shadowColor', store.selectedEntry.composer.shadowColor)"
+                >
+                  <Check v-if="copiedFieldKey === 'shadowColor'" aria-hidden="true" class="h-2.5 w-2.5 text-emerald-400" />
+                  <Copy v-else aria-hidden="true" class="h-2.5 w-2.5 text-muted-foreground" />
+                  <span>{{ store.selectedEntry.composer.shadowColor.toUpperCase() }}</span>
+                </button>
+                <input
+                  id="rank-shadow-color"
+                  type="color"
+                  aria-label="Shadow color"
+                  :value="store.selectedEntry.composer.shadowColor"
+                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                  @input="
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        shadowColor: ($event.target as HTMLInputElement).value,
+                      },
+                    }))
+                  "
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Icon Section -->
+        <div v-else-if="store.composerSubTab === 'icon'" class="space-y-2.5">
+          <!-- Icon Left / Rank Right Separation Feature -->
+          <div class="space-y-1.5 rounded-sm border border-border/70 bg-[#121218] p-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-medium text-foreground">
+                Badge Layout
+              </span>
+              <ToggleGroup
+                type="single"
+                :model-value="store.selectedEntry.composer.badgeLayout ?? 'unified'"
+                aria-label="Badge layout mode"
+                class="gap-0.5 rounded bg-[#0a0a0d] p-0.5"
+                @update:model-value="
+                  (val) => {
+                    if (val === 'unified' || val === 'split-left') {
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          badgeLayout: val as RankBadgeLayout,
+                        },
+                      }));
+                    }
+                  }
+                "
+              >
+                <ToggleGroupItem
+                  value="unified"
+                  class="h-5 rounded px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  Unified
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="split-left"
+                  class="h-5 rounded px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  Icon Left · Rank Right
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <div
+              v-if="(store.selectedEntry.composer.badgeLayout ?? 'unified') === 'split-left'"
+              class="flex items-center justify-between gap-2 border-t border-border/50 pt-1.5"
+            >
+              <span class="text-[10px] text-muted-foreground">
+                Left Icon Slot
+              </span>
+              <ToggleGroup
+                type="single"
+                :model-value="store.selectedEntry.composer.splitIconFrame ?? 'match'"
+                aria-label="Left icon slot style"
+                class="gap-0.5"
+                @update:model-value="
+                  (val) => {
+                    if (val === 'match' || val === 'none') {
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          splitIconFrame: val as SplitIconFrameMode,
+                        },
+                      }));
+                    }
+                  }
+                "
+              >
+                <ToggleGroupItem
+                  value="match"
+                  class="h-5 rounded px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                >
+                  Boxed
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="none"
+                  class="h-5 rounded px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                >
+                  Bare Icon
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-0.5">
+              <span class="text-[10px] text-muted-foreground">
+                Or split into 2 separate font glyphs
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                :disabled="store.selectedEntry.composer.iconId === 'none'"
+                class="h-6 gap-1 px-2 font-mono text-[10px]"
+                @click="store.splitEntryToIconAndRank(store.selectedEntry.id)"
+              >
+                <Split aria-hidden="true" class="h-3 w-3" />
+                <span>Split Glyphs</span>
+              </Button>
+            </div>
+          </div>
+
+          <!-- 25 Procedural Pixel Icons Grid -->
+          <div class="grid grid-cols-5 gap-1">
+            <button
+              v-for="icon in PIXEL_ICONS"
+              :key="icon.id"
+              type="button"
+              :aria-label="icon.label"
+              :aria-pressed="store.selectedEntry.composer.iconId === icon.id"
+              :title="icon.label"
+              :class="[
+                'flex h-8 cursor-pointer items-center justify-center rounded-sm transition-colors focus-visible:outline-2 focus-visible:outline-primary',
+                store.selectedEntry.composer.iconId === icon.id
+                  ? 'bg-primary/20 ring-1 ring-primary'
+                  : 'bg-[#15151c] hover:bg-accent',
+              ]"
+              @click="
+                updateBitmap((prev) => ({
+                  ...prev,
+                  composer: { ...prev.composer, iconId: icon.id as PixelIconId },
+                }))
+              "
+            >
+              <PixelPreviewCanvas
+                v-if="
+                  buildIconPreviewRaster(
+                    icon.rows,
+                    icon.width,
+                    icon.height,
+                    store.selectedEntry.composer.iconColor,
+                  )
+                "
+                :raster="
+                  buildIconPreviewRaster(
+                    icon.rows,
+                    icon.width,
+                    icon.height,
+                    store.selectedEntry.composer.iconColor,
+                  )
+                "
+                :zoom="2"
+                :aria-label="icon.label"
+              />
+              <span v-else class="font-mono text-xs text-muted-foreground">×</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
+            <Label class="text-[11px] font-normal text-muted-foreground">
+              Icon Gap
+            </Label>
+            <Slider
+              :model-value="[store.selectedEntry.composer.iconGap]"
+              :min="0"
+              :max="8"
+              :step="1"
+              aria-label="Icon gap in pixels"
+              @update:model-value="
+                (vals) => {
+                  const v = vals?.[0];
+                  if (v !== undefined) {
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: { ...prev.composer, iconGap: v },
+                    }));
+                  }
+                }
+              "
+            />
+            <span class="text-right font-mono text-[11px] tabular-nums">
+              {{ store.selectedEntry.composer.iconGap }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 rounded-sm bg-[#14141a] px-2.5 py-1">
+            <Label for="rank-icon-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
+              Icon Color
+            </Label>
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                title="Click to copy HEX color"
+                class="inline-flex cursor-pointer items-center gap-1 rounded bg-[#0c0c10] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                @click="copyFieldColor('iconColor', store.selectedEntry.composer.iconColor)"
+              >
+                <Check v-if="copiedFieldKey === 'iconColor'" aria-hidden="true" class="h-2.5 w-2.5 text-emerald-400" />
+                <Copy v-else aria-hidden="true" class="h-2.5 w-2.5 text-muted-foreground" />
+                <span>{{ store.selectedEntry.composer.iconColor.toUpperCase() }}</span>
+              </button>
+              <input
+                id="rank-icon-color"
+                type="color"
+                aria-label="Badge icon color"
+                :value="store.selectedEntry.composer.iconColor"
+                class="h-5 w-6 cursor-pointer border-0 bg-transparent p-0"
+                @input="
+                  updateBitmap((prev) => ({
+                    ...prev,
+                    composer: {
+                      ...prev.composer,
+                      iconColor: ($event.target as HTMLInputElement).value,
+                    },
+                  }))
+                "
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Frame Section -->
+        <div v-else class="space-y-2.5">
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <Label for="rank-frame-style" class="text-[11px] font-normal text-muted-foreground">
+              Frame Style
+            </Label>
+            <Select
+              :model-value="store.selectedEntry.composer.frameStyle"
+              @update:model-value="
+                (val) => {
+                  if (
+                    val === 'bevel' ||
+                    val === 'outline' ||
+                    val === 'pill' ||
+                    val === 'solid' ||
+                    val === 'ribbon' ||
+                    val === 'none'
+                  ) {
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        frameStyle: val as RankFrameStyle,
+                      },
+                    }));
+                  }
+                }
+              "
+            >
+              <SelectTrigger id="rank-frame-style" class="h-7 bg-[#14141a] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bevel">Bevel (3D Tag)</SelectItem>
+                <SelectItem value="outline">Outline (1 px)</SelectItem>
+                <SelectItem value="pill">Pill (Rounded)</SelectItem>
+                <SelectItem value="solid">Solid (Block)</SelectItem>
+                <SelectItem value="ribbon">Ribbon (Notched)</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-[#14141a] px-2 py-1">
+              <Label for="rank-frame-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
+                Fill
+              </Label>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Click to copy HEX color"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-[#0c0c10] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                  @click="copyFieldColor('frameColor', store.selectedEntry.composer.frameColor)"
+                >
+                  <Check v-if="copiedFieldKey === 'frameColor'" aria-hidden="true" class="h-2.5 w-2.5 text-emerald-400" />
+                  <Copy v-else aria-hidden="true" class="h-2.5 w-2.5 text-muted-foreground" />
+                  <span>{{ store.selectedEntry.composer.frameColor.toUpperCase() }}</span>
+                </button>
+                <input
+                  id="rank-frame-color"
+                  type="color"
+                  aria-label="Frame fill color"
+                  :value="store.selectedEntry.composer.frameColor"
+                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                  @input="
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        frameColor: ($event.target as HTMLInputElement).value,
+                      },
+                    }))
+                  "
+                />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-[#14141a] px-2 py-1">
+              <Label for="rank-frame-border-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
+                Border
+              </Label>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Click to copy HEX color"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-[#0c0c10] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                  @click="copyFieldColor('frameBorderColor', store.selectedEntry.composer.frameBorderColor)"
+                >
+                  <Check v-if="copiedFieldKey === 'frameBorderColor'" aria-hidden="true" class="h-2.5 w-2.5 text-emerald-400" />
+                  <Copy v-else aria-hidden="true" class="h-2.5 w-2.5 text-muted-foreground" />
+                  <span>{{ store.selectedEntry.composer.frameBorderColor.toUpperCase() }}</span>
+                </button>
+                <input
+                  id="rank-frame-border-color"
+                  type="color"
+                  aria-label="Frame border color"
+                  :value="store.selectedEntry.composer.frameBorderColor"
+                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                  @input="
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        frameBorderColor: ($event.target as HTMLInputElement).value,
+                      },
+                    }))
+                  "
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            v-if="
+              (store.selectedEntry.composer.badgeLayout ?? 'unified') === 'split-left' &&
+              (store.selectedEntry.composer.splitIconFrame ?? 'match') === 'match'
+            "
+            class="grid grid-cols-2 gap-2 border-t border-border/50 pt-2"
+          >
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-[#14141a] px-2 py-1">
+              <Label for="split-icon-frame-color" class="cursor-pointer text-[10px] font-normal text-muted-foreground">
+                Icon Fill
+              </Label>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Click to copy HEX color"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-[#0c0c10] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                  @click="
+                    copyFieldColor(
+                      'splitIconFrameColor',
+                      store.selectedEntry.composer.splitIconFrameColor ??
+                        store.selectedEntry.composer.frameColor,
+                    )
+                  "
+                >
+                  <Check v-if="copiedFieldKey === 'splitIconFrameColor'" aria-hidden="true" class="h-2.5 w-2.5 text-emerald-400" />
+                  <Copy v-else aria-hidden="true" class="h-2.5 w-2.5 text-muted-foreground" />
+                  <span>
+                    {{
+                      (
+                        store.selectedEntry.composer.splitIconFrameColor ??
+                        store.selectedEntry.composer.frameColor
+                      ).toUpperCase()
+                    }}
+                  </span>
+                </button>
+                <input
+                  id="split-icon-frame-color"
+                  type="color"
+                  aria-label="Left icon box fill color"
+                  :value="store.selectedEntry.composer.splitIconFrameColor ?? store.selectedEntry.composer.frameColor"
+                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                  @input="
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        splitIconFrameColor: ($event.target as HTMLInputElement).value,
+                      },
+                    }))
+                  "
+                />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-[#14141a] px-2 py-1">
+              <Label for="split-icon-border-color" class="cursor-pointer text-[10px] font-normal text-muted-foreground">
+                Icon Edge
+              </Label>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Click to copy HEX color"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-[#0c0c10] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                  @click="
+                    copyFieldColor(
+                      'splitIconBorderColor',
+                      store.selectedEntry.composer.splitIconBorderColor ??
+                        store.selectedEntry.composer.frameBorderColor,
+                    )
+                  "
+                >
+                  <Check v-if="copiedFieldKey === 'splitIconBorderColor'" aria-hidden="true" class="h-2.5 w-2.5 text-emerald-400" />
+                  <Copy v-else aria-hidden="true" class="h-2.5 w-2.5 text-muted-foreground" />
+                  <span>
+                    {{
+                      (
+                        store.selectedEntry.composer.splitIconBorderColor ??
+                        store.selectedEntry.composer.frameBorderColor
+                      ).toUpperCase()
+                    }}
+                  </span>
+                </button>
+                <input
+                  id="split-icon-border-color"
+                  type="color"
+                  aria-label="Left icon box border color"
+                  :value="store.selectedEntry.composer.splitIconBorderColor ?? store.selectedEntry.composer.frameBorderColor"
+                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                  @input="
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        splitIconBorderColor: ($event.target as HTMLInputElement).value,
+                      },
+                    }))
+                  "
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Uploaded PNG Info & Replace -->
+      <div v-else class="flex items-center justify-between gap-2 py-1">
+        <span class="truncate font-mono text-[11px] text-foreground">
+          {{ store.selectedEntry.uploadedPngFileName ?? 'Custom PNG' }}
+        </span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          class="h-7 shrink-0 gap-1.5 px-2 text-[11px]"
+          @click="replacePngRef?.click()"
+        >
+          <Upload aria-hidden="true" class="h-3 w-3" />
+          <span>Replace PNG</span>
+        </Button>
+        <input
+          ref="replacePngRef"
+          type="file"
+          accept="image/png,.png"
+          aria-label="Replace PNG file"
+          class="sr-only"
+          @change="handleReplacePngChange"
+        />
+      </div>
+
+      <Separator />
+
+      <!-- Collapsible Mojang BitmapProvider Metrics Section -->
+      <Collapsible v-model:open="metricsOpen" class="space-y-2.5">
+        <CollapsibleTrigger as-child>
+          <button
+            type="button"
+            class="flex w-full cursor-pointer items-center justify-between gap-2 rounded-sm py-0.5 text-left hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            <span class="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <ChevronDown
+                aria-hidden="true"
+                :class="[
+                  'h-3.5 w-3.5 transition-transform duration-150',
+                  metricsOpen ? 'rotate-0 text-foreground' : '-rotate-90',
+                ]"
+              />
+              <span>BitmapProvider Metrics</span>
+            </span>
+            <span class="font-mono text-[10px] text-[#868694] tabular-nums">
+              {{ displayedCodepoint || '—' }} · {{ store.selectedEntry.height }}/{{ store.selectedEntry.ascent }}
+            </span>
+          </button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent class="space-y-2.5">
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <Label for="bitmap-cp-input" class="text-[11px] font-normal text-muted-foreground">
+              Codepoint
+            </Label>
+            <div class="flex items-center gap-1">
+              <Input
+                id="bitmap-cp-input"
+                type="text"
+                :model-value="displayedCodepoint"
+                class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+                @update:model-value="applyPrimaryCodepoint(String($event ?? ''))"
+                @blur="codepointDraft = null"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="h-7 shrink-0 px-2 font-mono text-[10px] text-[#ff8f6b]"
+                @click="handleAutoAllocatePua()"
+              >
+                Auto
+              </Button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <Label for="bitmap-label-input" class="text-[11px] font-normal text-muted-foreground">
+              Label
+            </Label>
+            <Input
+              id="bitmap-label-input"
+              type="text"
+              :model-value="store.selectedEntry.label"
+              class="h-7 bg-[#14141a] px-2 text-xs"
+              @update:model-value="
+                updateBitmap((prev) => ({
+                  ...prev,
+                  label: String($event ?? ''),
+                }))
+              "
+            />
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <span class="text-[11px] text-muted-foreground">Height / Ascent</span>
+            <div class="grid grid-cols-2 gap-1.5">
+              <div>
+                <Label for="bitmap-height-input" class="sr-only">Height (logical px)</Label>
+                <Input
+                  id="bitmap-height-input"
+                  type="number"
+                  :model-value="store.selectedEntry.height"
+                  :aria-invalid="ascentError"
+                  :class="[
+                    'h-7 bg-[#14141a] px-2 font-mono text-xs tabular-nums',
+                    ascentError ? 'border-destructive' : '',
+                  ]"
+                  @update:model-value="
+                    updateBitmap((prev) => {
+                      const v = Number.parseInt(String($event ?? '1'), 10);
+                      return { ...prev, height: Number.isNaN(v) ? 1 : v };
+                    })
+                  "
+                />
+              </div>
+              <div>
+                <Label for="bitmap-ascent-input" class="sr-only">Ascent (max height)</Label>
+                <Input
+                  id="bitmap-ascent-input"
+                  type="number"
+                  :model-value="store.selectedEntry.ascent"
+                  :aria-invalid="ascentError"
+                  :class="[
+                    'h-7 bg-[#14141a] px-2 font-mono text-xs tabular-nums',
+                    ascentError ? 'border-destructive' : '',
+                  ]"
+                  @update:model-value="
+                    updateBitmap((prev) => {
+                      const v = Number.parseInt(String($event ?? '0'), 10);
+                      return { ...prev, ascent: Number.isNaN(v) ? 0 : v };
+                    })
+                  "
+                />
+              </div>
+            </div>
+          </div>
+
+          <p v-if="ascentError" class="font-mono text-[10px] text-red-300">
+            F01: Ascent ({{ store.selectedEntry.ascent }}) exceeds height ({{ store.selectedEntry.height }}).
+          </p>
+
+          <div
+            v-if="store.selectedEntry.sourceMode === 'composer'"
+            class="grid grid-cols-[88px_1fr] items-center gap-2"
+          >
+            <span class="text-[11px] text-muted-foreground">Space L / R</span>
+            <div class="grid grid-cols-2 gap-1.5">
+              <div>
+                <Label for="bitmap-space-left" class="sr-only">Left Space (px)</Label>
+                <Input
+                  id="bitmap-space-left"
+                  type="number"
+                  step="0.5"
+                  :model-value="store.selectedEntry.spaceLeft"
+                  class="h-7 bg-[#14141a] px-2 font-mono text-xs tabular-nums"
+                  @update:model-value="
+                    updateBitmap((prev) => {
+                      const v = Number.parseFloat(String($event ?? '0'));
+                      return { ...prev, spaceLeft: Number.isNaN(v) ? 0 : v };
+                    })
+                  "
+                />
+              </div>
+              <div>
+                <Label for="bitmap-space-right" class="sr-only">Right Space (px)</Label>
+                <Input
+                  id="bitmap-space-right"
+                  type="number"
+                  step="0.5"
+                  :model-value="store.selectedEntry.spaceRight"
+                  class="h-7 bg-[#14141a] px-2 font-mono text-xs tabular-nums"
+                  @update:model-value="
+                    updateBitmap((prev) => {
+                      const v = Number.parseFloat(String($event ?? '0'));
+                      return { ...prev, spaceRight: Number.isNaN(v) ? 0 : v };
+                    })
+                  "
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[88px_1fr] items-center gap-2">
+            <Label for="bitmap-fileref-input" class="text-[11px] font-normal text-muted-foreground">
+              File Path
+            </Label>
+            <Input
+              id="bitmap-fileref-input"
+              type="text"
+              :model-value="store.selectedEntry.fileRef"
+              class="h-7 bg-[#14141a] px-2 font-mono text-[11px]"
+              @update:model-value="
+                updateBitmap((prev) => ({
+                  ...prev,
+                  fileRef: String($event ?? ''),
+                }))
+              "
+            />
+          </div>
+
+          <div class="space-y-1">
+            <Label for="bitmap-chars-textarea" class="text-[11px] font-normal text-muted-foreground">
+              &quot;chars&quot; Grid (Newline per sprite row)
+            </Label>
+            <Textarea
+              id="bitmap-chars-textarea"
+              :rows="Math.min(4, Math.max(2, store.selectedEntry.chars.length))"
+              :model-value="displayedChars"
+              class="min-h-14 bg-[#14141a] px-2 py-1.5 font-mono text-[11px]"
+              @update:model-value="handleCharsInput(String($event ?? ''))"
+              @blur="commitCharsBlur()"
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  </div>
+</template>

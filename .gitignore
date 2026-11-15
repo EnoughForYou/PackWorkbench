@@ -1,0 +1,44 @@
+# Dependencies & build output
+node_modules/
+dist/
+dist-ssr/
+.nuxt/
+.output/
+.nitro/
+.cache/
+.data/
+*.local
+*.tsbuildinfo
+coverage/
+
+# Archives & export zips
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Research, Mojang assets & third-party knowledge packs (AGENTS.md §4)
+client.jar
+*.jar
+data/
+*client_mappings*
+*mappings.txt
+javap*
+*.javap.txt
+scratch/
+.scratch/
+assets/vanilla/
+
+# Agent & CLI caches
+.agents/
+.codex/
+.impeccable/
+.taste-skill/
+
+# IDE & OS junk files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+__MACOSX/

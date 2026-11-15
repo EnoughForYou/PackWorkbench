@@ -1,0 +1,63 @@
+# Product
+
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+web
+
+## Stack
+
+Nuxt 4 (`ssr: false`, 100% browser-only static SPA via `nuxt generate`) + Vue 3 + TypeScript strict + Tailwind CSS v4 (`@tailwindcss/vite`) + Pinia (`@pinia/nuxt`) + `shadcn-vue` (`shadcn-nuxt`) + Google Fonts API (UI Layer); `src/core/` tetap TypeScript murni tanpa dependensi DOM/framework.
+
+## Users
+
+Pembuat resource pack Minecraft Java Edition serta admin/developer server Minecraft (Paper/Purpur/Spigot dengan plugin LuckPerms, PlaceholderAPI, dan TAB) yang menyiapkan pack `.zip`, hash `server.properties`, font bitmap `U+E200+`, dan rank badge sebelum diterapkan ke server.
+
+## Product Purpose
+
+Alat bantu browser-only untuk:
+1. Memvalidasi arsip `.zip` dan `pack.mcmeta` Minecraft Java Edition (`1.21.1` hingga `26.3`) terhadap aturan `Z01–Z09` dan `M01–M10`, lalu menghitung hash SHA-1 40-karakter dan cuplikan `server.properties`.
+2. Menyusun font `bitmap`, `space`, rank badge berlapis (`Frame`, `Icon`, `Text`, `Shadow`, `Paint`), dan rangkaian prefix `U+E200+` dengan pratinjau GUI Scale `1–4` (`Chat`, `TAB`, `Nametag`), aturan `F01–F10`, serta ekspor `.zip` Java Edition siap pakai.
+
+## Positioning
+
+Aturan format dan metrik dihitung dari perilaku aktual codec `PackFormat`, `BitmapProvider$Definition`, `SpaceProvider$Definition`, `Window.calculateScale`, dan `FontSet` hasil verifikasi bytecode `client.jar` dalam `docs/knowledge/`. Semua berkas diproses 100% lokal di browser tanpa unggahan jaringan, tanpa akun, dan tanpa menyertakan aset vanilla Mojang.
+
+## Operating Context
+
+Digunakan di desktop maupun layar sempit untuk memeriksa arsip pack dari desainer/editor eksternal sebelum diunggah ke CDN server, atau merakit font/rank JSON baru dari nol sambil memantau tabrakan codepoint PUA dan batas panjang chat 256 karakter (`MC-236960`).
+
+## Capabilities and Constraints
+
+- Arsitektur 100% browser-only; Worker SHA-1 streaming menjaga tab tetap responsif untuk arsip besar hingga batas server `250 MiB`.
+- `src/core/` harus tetap TypeScript murni dan lolos seluruh 48 unit test Vitest.
+- Struktur navigasi & rute (`A2`): Navbar hanya memuat 3 tautan utama (`Beranda`, `Studio`, `About`); Beranda (`/`) berisi informasi, pratinjau interaktif Studio & Validator, matriks versi, roadmap, dan footer; `/studio` terpisah dan memuat mode `Studio Rank & Glyph` serta `Validator ZIP & SHA-1`; `/about` memuat informasi cakupan, teknologi, privasi, dan rujukan teknis.
+- Cakupan ekspor saat ini khusus Minecraft Java Edition (`1.21.1`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, `26.3`). Fitur Fase 3 (DeluxeMenus/CustomModelData) dan Fase 4 (konverter Java ke Bedrock) ditampilkan sebagai roadmap terkunci dan belum diaktifkan.
+- Fakta yang masih `[UNVERIFIED]` (uji klien Minecraft nyata untuk rasterisasi GUI Scale `1–4` & Texture Filtering `1.21.11+`) wajib mempertahankan label `[UNVERIFIED]` di UI.
+- Larangan keras: zero aset vanilla Mojang (`default.png`, `ascii.png`, tekstur/shader `client.jar`) di repo atau output ekspor; seluruh ikon & glyph pratinjau bersifat sintetis prosedural.
+
+## Brand Commitments
+
+- Bahasa antarmuka dan pesan diagnostik: Bahasa Indonesia, lugas, spesifik, dengan petunjuk perbaikan teknis.
+- Palet yang dikunci pengguna (`A3`): dasar hitam soft (`#0d0d10`–`#16161a`) dengan aksen `#ff5e2c` pada Beranda dan Studio, mengacu pada kualitas UI/UX `packsmc.com`, `xqedii` Ultimate UI, dan `NxRanks Studio`.
+- Pemuatan font eksternal melalui Google Fonts API (`index.html`).
+- Status warna semantik (`ERROR` merah, `PERINGATAN` amber, `LOLOS`/`AMAN` hijau) hanya digunakan untuk indikator hasil validasi dan metrik teknis.
+
+## Evidence on Hand
+
+- `docs/knowledge/00-ringkasan-perbedaan-versi.md`, `docs/knowledge/font-dan-glyph.md`, `docs/knowledge/bedrock-geyser.md`, `docs/knowledge/99-pertanyaan-terbuka.md`: verifikasi primer `piston-meta.mojang.com` dan `client.jar`.
+- `src/core/` & `tests/*.test.ts`: 48 tes Vitest terkonfirmasi hijau untuk codec PNG, metrik bitmap, alokasi PUA, `fontRules` (`F01–F10`), `zipRules` (`Z01–Z09`), `mcmetaRules` (`M01–M10`), `packBuilder`, dan `sha1Stream`.
+- Pratinjau visual rank badge sintetis orisinal dari `src/core/font/pixelSynth.ts`. Belum ada testimoni pengguna, angka adopsi, atau tangkapan layar klien game live.
+
+## Product Principles
+
+1. Transparansi sumber kebenaran: setiap temuan validator dan simulasi metrik mencantumkan ID aturan, rujukan `docs/knowledge/`, dan status `[UNVERIFIED]` bila belum diuji di klien asli.
+2. Ruang kerja bebas gangguan: Beranda menjelaskan dan memamerkan alat secara terstruktur, sedangkan `/studio` langsung masuk ke lingkungan kerja tanpa chrome pemasaran.
+3. Konsistensi perangkat: alur upload ZIP, inspektor properti, komposer rank, dan pratinjau tetap dapat dioperasikan dengan keyboard dan layar kecil.
+
+## Accessibility & Inclusion
+
+- Skip link di urutan fokus pertama, fokus terlihat jelas (`:focus-visible`), `aria-current="page"` pada navigasi aktif, dan `roving tabindex` pada toolbar/tablist Studio.
+- Kontras teks >= 4.5:1 untuk teks isi dan >= 3:1 untuk teks besar serta indikator aktif (WCAG 1.4.1 tidak mengandalkan warna saja).
+- Menghormati `prefers-reduced-motion: reduce` dan `forced-colors: active`.
