@@ -124,25 +124,52 @@ export const useWorkbenchStore = defineStore('workbench', () => {
       fontProject.value.entries[0],
   );
 
-  // Asynchronous PNG decoding + F01-F10 validation watcher
+  // Map-based memoization cache for uploaded PNG decoding: avoids redundant decoding on stroke edits
+  interface CachedPngDecode {
+    readonly bytes: Uint8Array;
+    readonly image: DecodedRgbaImage;
+  }
+  const pngDecodeCache = new Map<string, CachedPngDecode>();
+
+  // Asynchronous PNG decoding with Map-based memoization + F01-F10 validation watcher
   watch(
     fontProject,
     (proj) => {
       const seq = ++fontEvalSequence;
       void (async () => {
         const nextMap = new Map<string, DecodedRgbaImage>();
+        const activeUploadIds = new Set<string>();
+
         for (const entry of proj.entries) {
           if (
             entry.kind === 'bitmap' &&
             entry.sourceMode === 'uploaded-png' &&
             entry.uploadedPngBytes
           ) {
-            const res = await decodePngRgba(entry.uploadedPngBytes);
-            if (res.ok) {
-              nextMap.set(entry.id, res.image);
+            activeUploadIds.add(entry.id);
+            const cached = pngDecodeCache.get(entry.id);
+            if (cached && cached.bytes === entry.uploadedPngBytes) {
+              nextMap.set(entry.id, cached.image);
+            } else {
+              const res = await decodePngRgba(entry.uploadedPngBytes);
+              if (res.ok) {
+                pngDecodeCache.set(entry.id, {
+                  bytes: entry.uploadedPngBytes,
+                  image: res.image,
+                });
+                nextMap.set(entry.id, res.image);
+              }
             }
           }
         }
+
+        // Clean up evicted entries from memo cache
+        for (const id of pngDecodeCache.keys()) {
+          if (!activeUploadIds.has(id)) {
+            pngDecodeCache.delete(id);
+          }
+        }
+
         if (seq !== fontEvalSequence) return;
         decodedUploads.value = nextMap;
 
@@ -837,27 +864,30 @@ export const useWorkbenchStore = defineStore('workbench', () => {
         const jobId = ++exportJobId;
         const zipCopy = new Uint8Array(built.zipBytes.byteLength);
         zipCopy.set(built.zipBytes);
-        const blob = new Blob([zipCopy], { type: 'application/zip' });
+        const zipBuffer = zipCopy.buffer;
 
         if (exportWorker) {
           exportSha1State.value = {
             status: 'hashing',
             ratio: 0,
             bytesRead: 0,
-            totalBytes: blob.size,
+            totalBytes: zipBuffer.byteLength,
             sha1Hex: null,
           };
-          exportWorker.postMessage({
-            type: 'hash',
-            jobId,
-            file: blob,
-          } satisfies Sha1WorkerRequest);
+          exportWorker.postMessage(
+            {
+              type: 'hash-buffer',
+              jobId,
+              buffer: zipBuffer,
+            } satisfies Sha1WorkerRequest,
+            [zipBuffer as ArrayBuffer],
+          );
         } else {
           exportSha1State.value = {
             status: 'done',
             ratio: 1,
-            bytesRead: blob.size,
-            totalBytes: blob.size,
+            bytesRead: built.zipBytes.byteLength,
+            totalBytes: built.zipBytes.byteLength,
             sha1Hex: built.sha1Hex,
           };
         }

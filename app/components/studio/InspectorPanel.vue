@@ -4,7 +4,6 @@ import { useWorkbenchStore, type InspectorTab } from '@/stores/workbenchStore';
 import InspectorPreviewViewport from './InspectorPreviewViewport.vue';
 import InspectorPropertiesTab from './InspectorPropertiesTab.vue';
 import InspectorLayersTab from './InspectorLayersTab.vue';
-import InspectorValidationTab from './InspectorValidationTab.vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -67,7 +66,7 @@ function handleInspectorTabChange(val: string | number): void {
         value="validate"
         class="mt-0 hidden min-h-0 flex-1 flex-col outline-none data-[state=active]:flex"
       >
-        <InspectorValidationTab />
+        <LazyInspectorValidationTab v-if="store.inspectorTab === 'validate'" />
       </TabsContent>
     </Tabs>
   </aside>

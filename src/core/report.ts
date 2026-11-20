@@ -1,5 +1,6 @@
 import { evaluateMcmetaText } from './rules/mcmetaRules.ts';
 import { evaluateZipRules } from './rules/zipRules.ts';
+import { measureAsync } from './telemetry.ts';
 import type {
   Finding,
   TargetVersionId,
@@ -66,25 +67,27 @@ export async function validateResourcePackZip(
   input: InspectZipInput,
   targetVersion?: TargetVersionId,
 ): Promise<ValidationReport> {
-  const inspection = await inspectZipBuffer(input);
-  const initialReport = buildValidationReportFromInspection(
-    inspection,
-    targetVersion ?? DEFAULT_TARGET_VERSION,
-  );
-
-  // When caller did not force a target version, switch automatically to detected compatible target
-  if (
-    targetVersion === undefined &&
-    initialReport.autoDetectedTarget !== null &&
-    initialReport.autoDetectedTarget !== initialReport.targetVersion
-  ) {
-    return buildValidationReportFromInspection(
+  return measureAsync('zip:validate', async () => {
+    const inspection = await inspectZipBuffer(input);
+    const initialReport = buildValidationReportFromInspection(
       inspection,
-      initialReport.autoDetectedTarget,
+      targetVersion ?? DEFAULT_TARGET_VERSION,
     );
-  }
 
-  return initialReport;
+    // When caller did not force a target version, switch automatically to detected compatible target
+    if (
+      targetVersion === undefined &&
+      initialReport.autoDetectedTarget !== null &&
+      initialReport.autoDetectedTarget !== initialReport.targetVersion
+    ) {
+      return buildValidationReportFromInspection(
+        inspection,
+        initialReport.autoDetectedTarget,
+      );
+    }
+
+    return initialReport;
+  });
 }
 
 export interface ServerPropertiesOptions {

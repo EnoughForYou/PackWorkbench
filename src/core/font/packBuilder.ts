@@ -1,6 +1,10 @@
-import JSZip from 'jszip';
+async function getJSZip(): Promise<typeof import('jszip')> {
+  const mod = await import('jszip');
+  return ((mod as { default?: typeof import('jszip') }).default || mod) as typeof import('jszip');
+}
 import { validateResourcePackZip } from '../report.ts';
 import { computeSha1ChunkedHex } from '../sha1Stream.ts';
+import { measureAsync } from '../telemetry.ts';
 import type { TargetVersionId, ValidationReport } from '../types.ts';
 import { getVersionProfile } from '../versions.ts';
 import { decodePngRgba, encodeRgbaPng } from './pngCodec.ts';
@@ -360,56 +364,59 @@ async function encodeProjectBitmapTextures(
 export async function buildFontResourcePack(
   project: FontProject,
 ): Promise<BuiltFontPackResult> {
-  const fontValidation = await evaluateFontProject(project);
-  const mcmetaObj = buildPackMcmetaObject(
-    project.targetVersion,
-    project.packDescription,
-  );
-  const mcmetaText = `${JSON.stringify(mcmetaObj, null, 2)}\n`;
-  const fontJsonObj = buildFontJsonObject(project);
-  const fontJsonText = `${stringifyAsciiSafeJson(fontJsonObj, 2)}\n`;
+  return measureAsync('font:build-pack', async () => {
+    const fontValidation = await evaluateFontProject(project);
+    const mcmetaObj = buildPackMcmetaObject(
+      project.targetVersion,
+      project.packDescription,
+    );
+    const mcmetaText = `${JSON.stringify(mcmetaObj, null, 2)}\n`;
+    const fontJsonObj = buildFontJsonObject(project);
+    const fontJsonText = `${stringifyAsciiSafeJson(fontJsonObj, 2)}\n`;
 
-  const zip = new JSZip();
-  zip.file('pack.mcmeta', mcmetaText);
+    const JSZip = await getJSZip();
+    const zip = new JSZip();
+    zip.file('pack.mcmeta', mcmetaText);
 
-  if (project.includePackPng) {
-    const icon = generateSyntheticPackIconRgba();
-    const iconPng = await encodeRgbaPng(icon.width, icon.height, icon.rgba);
-    zip.file('pack.png', iconPng);
-  }
+    if (project.includePackPng) {
+      const icon = generateSyntheticPackIconRgba();
+      const iconPng = await encodeRgbaPng(icon.width, icon.height, icon.rgba);
+      zip.file('pack.png', iconPng);
+    }
 
-  const ns = (project.namespace || 'mypack').trim().toLowerCase() || 'mypack';
-  const fontName = normalizeFontName(project.fontName);
-  zip.file(`assets/${ns}/font/${fontName}.json`, fontJsonText);
+    const ns = (project.namespace || 'mypack').trim().toLowerCase() || 'mypack';
+    const fontName = normalizeFontName(project.fontName);
+    zip.file(`assets/${ns}/font/${fontName}.json`, fontJsonText);
 
-  const encodedTextures = await encodeProjectBitmapTextures(project);
-  for (const asset of encodedTextures) {
-    zip.file(asset.zipTexturePath, asset.pngBytes);
-  }
+    const encodedTextures = await encodeProjectBitmapTextures(project);
+    for (const asset of encodedTextures) {
+      zip.file(asset.zipTexturePath, asset.pngBytes);
+    }
 
-  const zipBytes = await zip.generateAsync({ type: 'uint8array' });
-  const fileName = `${ns}-font-${project.targetVersion}.zip`;
-  const zipValidation = await validateResourcePackZip(
-    {
+    const zipBytes = await zip.generateAsync({ type: 'uint8array' });
+    const fileName = `${ns}-font-${project.targetVersion}.zip`;
+    const zipValidation = await validateResourcePackZip(
+      {
+        fileName,
+        fileSizeBytes: zipBytes.byteLength,
+        data: zipBytes,
+      },
+      project.targetVersion,
+    );
+    const sha1Hex = computeSha1ChunkedHex(zipBytes);
+    const snippets = buildProjectSnippets(project);
+
+    return {
+      zipBytes,
       fileName,
-      fileSizeBytes: zipBytes.byteLength,
-      data: zipBytes,
-    },
-    project.targetVersion,
-  );
-  const sha1Hex = computeSha1ChunkedHex(zipBytes);
-  const snippets = buildProjectSnippets(project);
-
-  return {
-    zipBytes,
-    fileName,
-    sha1Hex,
-    fontJsonText,
-    mcmetaText,
-    fontValidation,
-    zipValidation,
-    snippets,
-  };
+      sha1Hex,
+      fontJsonText,
+      mcmetaText,
+      fontValidation,
+      zipValidation,
+      snippets,
+    };
+  });
 }
 
 export interface BuiltPluginBundleResult {
@@ -431,6 +438,7 @@ export async function buildPluginDistributionZip(
   const yaml = buildPluginYamlSnippets(project);
   const textures = await encodeProjectBitmapTextures(project);
 
+  const JSZip = await getJSZip();
   const bundle = new JSZip();
   bundle.file(
     `Vanilla-dan-Nexo-ExternalPack/${vanillaBuilt.fileName}`,

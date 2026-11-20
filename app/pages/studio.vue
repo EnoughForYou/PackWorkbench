@@ -5,8 +5,6 @@ import { faFileZipper, faShieldHalved } from '@fortawesome/free-solid-svg-icons'
 import { VERSION_PROFILES } from '@core/versions.ts';
 import type { TargetVersionId } from '@core/types.ts';
 import { useWorkbenchStore, type StudioMode } from '@/stores/workbenchStore';
-import StudioWorkspace from '@/components/studio/StudioWorkspace.vue';
-import ValidatorWorkspace from '@/components/validator/ValidatorWorkspace.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -322,7 +320,7 @@ onBeforeUnmount(() => {
       </div>
     </header>
 
-    <StudioWorkspace v-if="store.studioMode === 'font'" />
-    <ValidatorWorkspace v-else />
+    <LazyStudioWorkspace v-if="store.studioMode === 'font'" />
+    <LazyValidatorWorkspace v-else />
   </div>
 </template>

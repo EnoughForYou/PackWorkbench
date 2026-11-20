@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import { encodeRgbaPng } from '../src/core/font/pngCodec.ts';
+import { createUploadedPngEntry } from '../src/core/font/presets.ts';
 import { useWorkbenchStore } from '../app/stores/workbenchStore.ts';
 
 describe('Pinia Integration - useWorkbenchStore', () => {
@@ -101,5 +103,44 @@ describe('Pinia Integration - useWorkbenchStore', () => {
     store.redoPaint();
     expect(store.undoStack.length).toBe(1);
     expect(store.redoStack.length).toBe(0);
+  });
+
+  it('memoizes decoded PNGs across unrelated project mutations via pngDecodeCache', async () => {
+    const store = useWorkbenchStore();
+    const w = 16;
+    const h = 16;
+    const rgba = new Uint8Array(w * h * 4);
+    rgba[0] = 255;
+    rgba[3] = 255;
+    const pngBytes = await encodeRgbaPng(w, h, rgba);
+
+    const uploadEntry = createUploadedPngEntry(store.fontProject.entries, {
+      id: 'png-memo-test',
+      label: 'Memo Icon',
+      namespace: store.fontProject.namespace,
+      fileName: 'icon.png',
+      bytes: pngBytes,
+    });
+
+    store.fontProject = {
+      ...store.fontProject,
+      entries: [...store.fontProject.entries, uploadEntry],
+    };
+
+    // Await watcher execution
+    await new Promise((resolve) => setTimeout(resolve, 35));
+
+    const firstDecoded = store.decodedUploads.get('png-memo-test');
+    expect(firstDecoded).toBeDefined();
+    expect(firstDecoded?.width).toBe(16);
+    expect(firstDecoded?.height).toBe(16);
+
+    // Mutate an unrelated property (e.g. sample text or guiScale)
+    store.setSampleChatText('Testing memoization without re-decoding');
+    await new Promise((resolve) => setTimeout(resolve, 35));
+
+    const secondDecoded = store.decodedUploads.get('png-memo-test');
+    // Reference equality proves pngDecodeCache returned the cached instance
+    expect(secondDecoded).toBe(firstDecoded);
   });
 });

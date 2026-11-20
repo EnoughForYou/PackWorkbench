@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
   faBorderAll,
@@ -70,6 +70,43 @@ let isDrawing = false;
 let pushedUndoThisStroke = false;
 let lastPaintedPoint: { x: number; y: number } | null = null;
 let cachedBaseCanvas: HTMLCanvasElement | null = null;
+
+// Layout thrashing prevention: cache canvas bounding rect during pointer sessions
+let cachedCanvasRect: DOMRect | null = null;
+let pendingHoverCoord: { x: number; y: number } | null = null;
+let rafHoverId: number | null = null;
+
+function getCanvasRect(): DOMRect | null {
+  if (!cachedCanvasRect && pixelCanvasRef.value) {
+    cachedCanvasRect = pixelCanvasRef.value.getBoundingClientRect();
+  }
+  return cachedCanvasRect;
+}
+
+function invalidateCanvasRect(): void {
+  cachedCanvasRect = null;
+}
+
+onMounted(() => {
+  window.addEventListener('resize', invalidateCanvasRect, { passive: true });
+  window.addEventListener('scroll', invalidateCanvasRect, { passive: true, capture: true });
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', invalidateCanvasRect);
+  window.removeEventListener('scroll', invalidateCanvasRect, true);
+  if (rafHoverId !== null && typeof window !== 'undefined') {
+    window.cancelAnimationFrame(rafHoverId);
+    rafHoverId = null;
+  }
+});
+
+watch(
+  () => [store.zoom, activeRaster.value?.width, activeRaster.value?.height],
+  () => {
+    invalidateCanvasRect();
+  },
+);
 
 function buildCheckerPattern(
   ctx: CanvasRenderingContext2D,
@@ -306,7 +343,8 @@ function readCoordFromEvent(event: PointerEvent): { x: number; y: number } | nul
   const canvas = pixelCanvasRef.value;
   const raster = activeRaster.value;
   if (!canvas || !raster) return null;
-  const rect = canvas.getBoundingClientRect();
+  const rect = getCanvasRect();
+  if (!rect || rect.width === 0 || rect.height === 0) return null;
   const x = Math.floor(((event.clientX - rect.left) / rect.width) * raster.width);
   const y = Math.floor(((event.clientY - rect.top) / rect.height) * raster.height);
   if (x < 0 || y < 0 || x >= raster.width || y >= raster.height) return null;
@@ -337,6 +375,18 @@ function inspectPixelAt(x: number, y: number): void {
     hex: px.hex,
     rgbaLabel: `rgba(${px.r},${px.g},${px.b},${px.a})`,
   };
+}
+
+function scheduleInspectPixelAt(x: number, y: number): void {
+  pendingHoverCoord = { x, y };
+  if (rafHoverId === null && typeof window !== 'undefined') {
+    rafHoverId = window.requestAnimationFrame(() => {
+      rafHoverId = null;
+      if (pendingHoverCoord) {
+        inspectPixelAt(pendingHoverCoord.x, pendingHoverCoord.y);
+      }
+    });
+  }
 }
 
 function pickColorAt(x: number, y: number): void {
@@ -388,6 +438,9 @@ function applyToolLineTo(x: number, y: number): void {
 
 function onPointerDown(e: PointerEvent): void {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (pixelCanvasRef.value) {
+    cachedCanvasRect = pixelCanvasRef.value.getBoundingClientRect();
+  }
   const coord = readCoordFromEvent(e);
   if (!coord) return;
   inspectPixelAt(coord.x, coord.y);
@@ -416,7 +469,7 @@ function onPointerDown(e: PointerEvent): void {
 function onPointerMove(e: PointerEvent): void {
   const coord = readCoordFromEvent(e);
   if (!coord) return;
-  inspectPixelAt(coord.x, coord.y);
+  scheduleInspectPixelAt(coord.x, coord.y);
   if (
     isDrawing &&
     (store.activeTool === 'pencil' || store.activeTool === 'eraser')
@@ -428,6 +481,21 @@ function onPointerMove(e: PointerEvent): void {
 function endStroke(): void {
   isDrawing = false;
   lastPaintedPoint = null;
+}
+
+function onPointerEnter(): void {
+  if (pixelCanvasRef.value) {
+    cachedCanvasRect = pixelCanvasRef.value.getBoundingClientRect();
+  }
+}
+
+function onPointerLeave(): void {
+  invalidateCanvasRect();
+  if (rafHoverId !== null && typeof window !== 'undefined') {
+    window.cancelAnimationFrame(rafHoverId);
+    rafHoverId = null;
+  }
+  hoverPixel.value = null;
 }
 
 function handleCanvasWheel(e: WheelEvent): void {
@@ -661,7 +729,8 @@ function handleStageModeChange(val: unknown): void {
                 @pointermove="onPointerMove"
                 @pointerup="endStroke"
                 @pointercancel="endStroke"
-                @pointerleave="hoverPixel = null"
+                @pointerenter="onPointerEnter"
+                @pointerleave="onPointerLeave"
               />
             </div>
           </div>

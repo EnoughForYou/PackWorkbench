@@ -11,6 +11,8 @@ export default defineNuxtConfig({
     storesDirs: ['./app/stores/**', './stores/**'],
   },
   css: [
+    '@fontsource-variable/onest/index.css',
+    '@fontsource-variable/jetbrains-mono/index.css',
     '@fortawesome/fontawesome-svg-core/styles.css',
     '~/assets/css/tailwind.css',
   ],
@@ -34,20 +36,60 @@ export default defineNuxtConfig({
             'Validasi arsip .zip dan pack.mcmeta Minecraft Java Edition 1.21.1–26.3, hitung SHA-1 server.properties, serta susun font bitmap U+E200+ dan rank badge di browser.',
         },
       ],
-      link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+      link: [],
+      style: [
         {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..800&family=Onest:wght@300..800&display=swap',
+          id: 'critical-theme-tokens',
+          innerHTML:
+            ':root{--background:#1e1f29;--foreground:#f0f1f5;--panel:#262736;--card:#262736;--elevated:#303244;--border:#3c3f54;--primary:#9b73be}html,body{background-color:#1e1f29!important;color:#f0f1f5!important;margin:0}',
         },
       ],
+    },
+  },
+  experimental: {
+    defaults: {
+      nuxtLink: {
+        prefetchOn: {
+          interaction: true,
+          visibility: false,
+        },
+      },
     },
   },
   vite: {
     plugins: [tailwindcss()],
     worker: {
       format: 'es',
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          chunkFileNames: '[name]-[hash].js',
+          entryFileNames: '[name]-[hash].js',
+          manualChunks(id: string) {
+            if (id.includes('node_modules')) {
+              if (id.includes('@fortawesome')) {
+                return 'vendor-fontawesome';
+              }
+              if (id.includes('jszip')) {
+                return 'vendor-jszip';
+              }
+              if (
+                id.includes('reka-ui') ||
+                id.includes('radix-vue') ||
+                id.includes('class-variance-authority') ||
+                id.includes('clsx') ||
+                id.includes('tailwind-merge')
+              ) {
+                return 'vendor-ui';
+              }
+              if (id.includes('vue') || id.includes('pinia') || id.includes('@vueuse')) {
+                return 'vendor-vue';
+              }
+            }
+          },
+        },
+      },
     },
   },
   typescript: {

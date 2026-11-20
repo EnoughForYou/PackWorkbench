@@ -1,4 +1,5 @@
 import type { PngDecodeResult } from './types.ts';
+import { measureAsync } from '../telemetry.ts';
 
 const PNG_SIGNATURE = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 
@@ -284,7 +285,8 @@ const ADAM7_Y_STEP = [8, 8, 8, 4, 4, 2, 2];
  * all 5 PNG scanline filters (None/Sub/Up/Average/Paeth); and Adam7 interlacing.
  */
 export async function decodePngRgba(bytes: Uint8Array): Promise<PngDecodeResult> {
-  if (bytes.byteLength < 8 + 12 + 13) {
+  return measureAsync('png:decode', async () => {
+    if (bytes.byteLength < 8 + 12 + 13) {
     return {
       ok: false,
       error: 'Ukuran berkas terlalu kecil untuk header PNG yang valid.',
@@ -544,6 +546,7 @@ export async function decodePngRgba(bytes: Uint8Array): Promise<PngDecodeResult>
       interlace,
     },
   };
+  });
 }
 
 function buildPngChunk(type: string, data: Uint8Array): Uint8Array {

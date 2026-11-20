@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted } from 'vue';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import PerformanceHud from '@/components/shared/PerformanceHud.vue';
 import { useWorkbenchStore } from '@/stores/workbenchStore';
 
 const store = useWorkbenchStore();
@@ -25,6 +26,7 @@ onBeforeUnmount(() => {
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
+      <PerformanceHud />
     </div>
   </TooltipProvider>
 </template>

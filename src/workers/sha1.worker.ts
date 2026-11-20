@@ -3,12 +3,19 @@ import {
   DEFAULT_SHA1_CHUNK_BYTES,
 } from '../core/sha1Stream.ts';
 
-export interface Sha1WorkerRequest {
-  readonly type: 'hash';
-  readonly jobId: number;
-  readonly file: Blob;
-  readonly chunkSize?: number;
-}
+export type Sha1WorkerRequest =
+  | {
+      readonly type: 'hash';
+      readonly jobId: number;
+      readonly file: Blob;
+      readonly chunkSize?: number;
+    }
+  | {
+      readonly type: 'hash-buffer';
+      readonly jobId: number;
+      readonly buffer: ArrayBufferLike;
+      readonly chunkSize?: number;
+    };
 
 export type Sha1WorkerResponse =
   | {
@@ -33,7 +40,7 @@ let activeJobId = 0;
 
 self.addEventListener('message', (event: MessageEvent<Sha1WorkerRequest>) => {
   const payload = event.data;
-  if (!payload || payload.type !== 'hash') {
+  if (!payload || (payload.type !== 'hash' && payload.type !== 'hash-buffer')) {
     return;
   }
 
@@ -42,12 +49,67 @@ self.addEventListener('message', (event: MessageEvent<Sha1WorkerRequest>) => {
 });
 
 async function processHashJob(request: Sha1WorkerRequest): Promise<void> {
-  const { jobId, file } = request;
-  const chunkSize = request.chunkSize ?? DEFAULT_SHA1_CHUNK_BYTES;
-  const totalBytes = file.size;
+  const { jobId } = request;
 
   try {
     const hasher = createIncrementalSha1();
+
+    if (request.type === 'hash-buffer') {
+      const { buffer } = request;
+      const chunkSize = request.chunkSize ?? DEFAULT_SHA1_CHUNK_BYTES;
+      const totalBytes = buffer.byteLength;
+
+      if (totalBytes === 0) {
+        self.postMessage({
+          type: 'progress',
+          jobId,
+          bytesRead: 0,
+          totalBytes: 0,
+          ratio: 1,
+        } satisfies Sha1WorkerResponse);
+        self.postMessage({
+          type: 'done',
+          jobId,
+          sha1Hex: hasher.digestHex(),
+        } satisfies Sha1WorkerResponse);
+        return;
+      }
+
+      const uint8 = new Uint8Array(buffer);
+      for (let offset = 0; offset < totalBytes; offset += chunkSize) {
+        if (jobId !== activeJobId) {
+          return; // Superseded by a newer hash job
+        }
+        const end = Math.min(offset + chunkSize, totalBytes);
+        hasher.update(uint8.subarray(offset, end));
+        self.postMessage({
+          type: 'progress',
+          jobId,
+          bytesRead: end,
+          totalBytes,
+          ratio: end / totalBytes,
+        } satisfies Sha1WorkerResponse);
+
+        if (end < totalBytes) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+      }
+
+      if (jobId !== activeJobId) {
+        return;
+      }
+
+      self.postMessage({
+        type: 'done',
+        jobId,
+        sha1Hex: hasher.digestHex(),
+      } satisfies Sha1WorkerResponse);
+      return;
+    }
+
+    const { file } = request;
+    const chunkSize = request.chunkSize ?? DEFAULT_SHA1_CHUNK_BYTES;
+    const totalBytes = file.size;
 
     if (totalBytes === 0) {
       self.postMessage({

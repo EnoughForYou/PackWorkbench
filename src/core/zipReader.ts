@@ -1,4 +1,9 @@
-import JSZip from 'jszip';
+import type JSZip from 'jszip';
+
+async function getJSZip(): Promise<typeof import('jszip')> {
+  const mod = await import('jszip');
+  return ((mod as { default?: typeof import('jszip') }).default || mod) as typeof import('jszip');
+}
 import type {
   PackFontAudit,
   PluginBundleDetection,
@@ -225,6 +230,7 @@ export async function extractNestedZipEntry(
   data: Uint8Array | ArrayBuffer,
   nestedPath: string,
 ): Promise<Uint8Array | null> {
+  const JSZip = await getJSZip();
   const zip = await JSZip.loadAsync(data);
   const target = zip.file(nestedPath);
   if (!target || target.dir) return null;
@@ -240,6 +246,7 @@ export async function inspectZipBuffer(
 ): Promise<ZipInspection> {
   let zip: JSZip;
   try {
+    const JSZip = await getJSZip();
     zip = await JSZip.loadAsync(input.data);
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
