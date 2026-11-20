@@ -266,24 +266,24 @@ function handleComposerSubTabChange(val: unknown): void {
 <template>
   <div class="space-y-3 p-3">
     <p v-if="!store.selectedEntry" class="py-4 text-xs text-muted-foreground">
-      Select an entry on the left to edit its properties.
+      Pilih entri di bilah kiri untuk mengedit propertinya.
     </p>
 
     <!-- Space Entry Editor -->
     <div v-else-if="store.selectedEntry.kind === 'space'" class="space-y-3">
       <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Space Provider
+        Penyedia Spasi Negatif
       </p>
 
       <div class="grid grid-cols-[96px_1fr] items-center gap-2">
-        <Label for="space-label-input" class="text-[11px] font-normal text-muted-foreground">
+        <Label for="space-label-input" class="text-[11px] font-medium text-foreground">
           Label
         </Label>
         <Input
           id="space-label-input"
           type="text"
           :model-value="store.selectedEntry.label"
-          class="h-7 bg-muted px-2 text-xs"
+          class="h-7 rounded-sm bg-muted/80 px-2 text-xs text-foreground"
           @update:model-value="
             updateSpace((prev) => ({ ...prev, label: String($event ?? '') }))
           "
@@ -291,15 +291,15 @@ function handleComposerSubTabChange(val: unknown): void {
       </div>
 
       <div class="grid grid-cols-[96px_1fr] items-center gap-2">
-        <Label for="space-cp-input" class="text-[11px] font-normal text-muted-foreground">
-          PUA Codepoint
+        <Label for="space-cp-input" class="text-[11px] font-medium text-foreground">
+          Codepoint PUA
         </Label>
         <div class="flex items-center gap-1">
           <Input
             id="space-cp-input"
             type="text"
             :model-value="displayedCodepoint"
-            class="h-7 bg-muted px-2 font-mono text-xs"
+            class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
             @update:model-value="applyPrimaryCodepoint(String($event ?? ''))"
             @blur="codepointDraft = null"
           />
@@ -307,7 +307,7 @@ function handleComposerSubTabChange(val: unknown): void {
             type="button"
             variant="ghost"
             size="sm"
-            class="h-7 shrink-0 px-2 font-mono text-[10px] text-primary"
+            class="h-7 shrink-0 rounded-sm px-2 font-mono text-[10px] text-primary transition-transform active:scale-[0.96]"
             @click="handleAutoAllocatePua()"
           >
             Auto
@@ -317,7 +317,7 @@ function handleComposerSubTabChange(val: unknown): void {
 
       <div class="space-y-2 pt-1">
         <div class="grid grid-cols-[96px_1fr] items-center gap-2">
-          <Label for="space-adv-input" class="text-[11px] font-normal text-muted-foreground">
+          <Label for="space-adv-input" class="text-[11px] font-medium text-foreground">
             Advance (px)
           </Label>
           <Input
@@ -325,7 +325,7 @@ function handleComposerSubTabChange(val: unknown): void {
             type="number"
             step="0.25"
             :model-value="Number.isFinite(store.selectedEntry.advance) ? store.selectedEntry.advance : 0"
-            class="h-7 bg-muted px-2 font-mono text-xs tabular-nums"
+            class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
             @update:model-value="
               updateSpace((prev) => {
                 const parsed = Number.parseFloat(String($event ?? 0));
@@ -340,7 +340,7 @@ function handleComposerSubTabChange(val: unknown): void {
           :min="-32"
           :max="32"
           :step="1"
-          aria-label="Adjust space advance"
+          aria-label="Atur nilai advance spasi"
           @update:model-value="
             (vals) => {
               const v = vals?.[0];
@@ -351,7 +351,7 @@ function handleComposerSubTabChange(val: unknown): void {
           "
         />
         <p class="text-[10px] leading-snug text-muted-foreground">
-          SpaceProvider accepts any float; values &lt; 0 or &gt; 32 are skipped in <code>&amp;k</code> mode.
+          SpaceProvider menerima nilai float apa pun; nilai &lt; 0 atau &gt; 32 dilewati dalam mode <code>&amp;k</code>.
         </p>
       </div>
     </div>
@@ -362,32 +362,32 @@ function handleComposerSubTabChange(val: unknown): void {
       <template v-if="store.selectedEntry.sourceMode === 'composer'">
         <div class="flex items-center justify-between gap-2">
           <span class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Composer
+            Penyusun Rank
           </span>
           <ToggleGroup
             type="single"
             :model-value="store.composerSubTab"
-            aria-label="Rank composer section"
-            class="gap-0.5 rounded-md border border-border bg-muted p-0.5"
+            aria-label="Sub-bagian penyusun rank"
+            class="gap-0.5 rounded-sm border border-border bg-muted/80 p-0.5"
             @update:model-value="handleComposerSubTabChange"
           >
             <ToggleGroupItem
               value="text"
-              class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+              class="h-6 rounded-sm px-2.5 text-[11px] font-medium transition-[background-color,color] duration-100 ease-out data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground"
             >
-              Text
+              Teks
             </ToggleGroupItem>
             <ToggleGroupItem
               value="icon"
-              class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+              class="h-6 rounded-sm px-2.5 text-[11px] font-medium transition-[background-color,color] duration-100 ease-out data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground"
             >
-              Icon
+              Ikon
             </ToggleGroupItem>
             <ToggleGroupItem
               value="frame"
-              class="h-6 rounded px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+              class="h-6 rounded-sm px-2.5 text-[11px] font-medium transition-[background-color,color] duration-100 ease-out data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground"
             >
-              Frame
+              Bingkai
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
@@ -395,14 +395,14 @@ function handleComposerSubTabChange(val: unknown): void {
         <!-- Text Section -->
         <div v-if="store.composerSubTab === 'text'" class="space-y-2.5">
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="rank-text-input" class="text-[11px] font-normal text-muted-foreground">
-              Badge Text
+            <Label for="rank-text-input" class="text-[11px] font-medium text-foreground">
+              Teks Badge
             </Label>
             <Input
               id="rank-text-input"
               type="text"
               :model-value="store.selectedEntry.composer.text"
-              class="h-7 bg-muted px-2 font-mono text-xs"
+              class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
               @update:model-value="
                 updateBitmap((prev) => {
                   const val = String($event ?? '');
@@ -417,8 +417,8 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="rank-fontsize-select" class="text-[11px] font-normal text-muted-foreground">
-              Pixel Font
+            <Label for="rank-fontsize-select" class="text-[11px] font-medium text-foreground">
+              Font Piksel
             </Label>
             <Select
               :model-value="store.selectedEntry.composer.fontSize"
@@ -433,26 +433,26 @@ function handleComposerSubTabChange(val: unknown): void {
                 }
               "
             >
-              <SelectTrigger id="rank-fontsize-select" class="h-7 bg-muted text-xs">
+              <SelectTrigger id="rank-fontsize-select" class="h-7 rounded-sm bg-muted/80 text-xs text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3x5">3×5 Compact</SelectItem>
-                <SelectItem value="5x5">5×5 Bold</SelectItem>
+              <SelectContent class="rounded-md border-border bg-card">
+                <SelectItem value="3x5">3×5 Ringkas</SelectItem>
+                <SelectItem value="5x5">5×5 Tebal</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label class="text-[11px] font-normal text-muted-foreground">
-              Canvas Width
+            <Label class="text-[11px] font-medium text-foreground">
+              Lebar Kanvas
             </Label>
             <div class="flex items-center gap-1.5">
               <ToggleGroup
                 type="single"
                 :model-value="store.selectedEntry.composer.canvasWidthMode ?? 'auto'"
-                aria-label="Dynamic canvas width mode"
-                class="gap-0.5 rounded-md border border-border bg-muted p-0.5"
+                aria-label="Mode penentuan lebar kanvas"
+                class="gap-0.5 rounded-sm border border-border bg-muted/80 p-0.5"
                 @update:model-value="
                   (val) => {
                     if (val === 'auto' || val === 'fixed') {
@@ -472,15 +472,15 @@ function handleComposerSubTabChange(val: unknown): void {
               >
                 <ToggleGroupItem
                   value="auto"
-                  class="h-6 rounded-sm px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  class="h-6 rounded-sm px-2 text-[10px] data-[state=on]:bg-card data-[state=on]:text-foreground"
                 >
-                  Auto (Text)
+                  Otomatis
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="fixed"
-                  class="h-6 rounded-sm px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-6 rounded-sm px-2 text-[10px] data-[state=on]:bg-card data-[state=on]:text-foreground"
                 >
-                  Fixed
+                  Kustom
                 </ToggleGroupItem>
               </ToggleGroup>
               <Input
@@ -488,13 +488,13 @@ function handleComposerSubTabChange(val: unknown): void {
                 type="number"
                 :min="4"
                 :max="256"
-                aria-label="Fixed canvas width in pixels"
+                aria-label="Lebar kanvas kustom dalam piksel"
                 :model-value="
                   store.selectedEntry.composer.customWidth ??
                   store.validation.metricsByEntryId[store.selectedEntry.id]?.imageWidth ??
                   36
                 "
-                class="h-7 w-16 bg-muted px-2 font-mono text-xs tabular-nums"
+                class="h-7 w-16 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
                 @update:model-value="
                   updateBitmap((prev) => ({
                     ...prev,
@@ -520,7 +520,7 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
-            <Label class="text-[11px] font-normal text-muted-foreground">
+            <Label class="text-[11px] font-medium text-foreground">
               Padding X
             </Label>
             <Slider
@@ -528,7 +528,7 @@ function handleComposerSubTabChange(val: unknown): void {
               :min="0"
               :max="12"
               :step="1"
-              aria-label="Horizontal badge padding"
+              aria-label="Padding horizontal badge"
               @update:model-value="
                 (vals) => {
                   const v = vals?.[0];
@@ -547,7 +547,7 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
-            <Label class="text-[11px] font-normal text-muted-foreground">
+            <Label class="text-[11px] font-medium text-foreground">
               Padding Y
             </Label>
             <Slider
@@ -555,7 +555,7 @@ function handleComposerSubTabChange(val: unknown): void {
               :min="0"
               :max="8"
               :step="1"
-              aria-label="Vertical badge padding"
+              aria-label="Padding vertikal badge"
               @update:model-value="
                 (vals) => {
                   const v = vals?.[0];
@@ -574,15 +574,15 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-2 gap-2 pt-0.5">
-            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted px-2 py-1">
-              <Label for="rank-text-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
-                Text
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
+              <Label for="rank-text-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+                Teks
               </Label>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
-                  title="Click to copy HEX color"
-                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                  title="Klik untuk menyalin kode HEX"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                   @click="copyFieldColor('textColor', store.selectedEntry.composer.textColor)"
                 >
                   <FontAwesomeIcon v-if="copiedFieldKey === 'textColor'" :icon="faCheck" class="h-2.5 w-2.5 text-emerald-400" />
@@ -592,7 +592,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 <input
                   id="rank-text-color"
                   type="color"
-                  aria-label="Text color"
+                  aria-label="Warna teks"
                   :value="store.selectedEntry.composer.textColor"
                   class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                   @input="
@@ -608,15 +608,15 @@ function handleComposerSubTabChange(val: unknown): void {
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted px-2 py-1">
-              <Label for="rank-shadow-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
-                Shadow
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
+              <Label for="rank-shadow-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+                Bayangan
               </Label>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
-                  title="Click to copy HEX color"
-                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                  title="Klik untuk menyalin kode HEX"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                   @click="copyFieldColor('shadowColor', store.selectedEntry.composer.shadowColor)"
                 >
                   <FontAwesomeIcon v-if="copiedFieldKey === 'shadowColor'" :icon="faCheck" class="h-2.5 w-2.5 text-emerald-400" />
@@ -626,7 +626,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 <input
                   id="rank-shadow-color"
                   type="color"
-                  aria-label="Shadow color"
+                  aria-label="Warna bayangan teks"
                   :value="store.selectedEntry.composer.shadowColor"
                   class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                   @input="
@@ -647,16 +647,16 @@ function handleComposerSubTabChange(val: unknown): void {
         <!-- Icon Section -->
         <div v-else-if="store.composerSubTab === 'icon'" class="space-y-2.5">
           <!-- Icon Left / Rank Right Separation Feature -->
-          <div class="space-y-1.5 rounded-sm border border-border/70 bg-muted p-2">
+          <div class="space-y-1.5 rounded-sm border border-border/70 bg-muted/80 p-2">
             <div class="flex items-center justify-between gap-2">
               <span class="text-[11px] font-medium text-foreground">
-                Badge Layout
+                Tata Letak Badge
               </span>
               <ToggleGroup
                 type="single"
                 :model-value="store.selectedEntry.composer.badgeLayout ?? 'unified'"
-                aria-label="Badge layout mode"
-                class="gap-0.5 rounded-md border border-border bg-muted p-0.5"
+                aria-label="Mode tata letak badge"
+                class="gap-0.5 rounded-sm border border-border bg-card p-0.5"
                 @update:model-value="
                   (val) => {
                     if (val === 'unified' || val === 'split-left') {
@@ -673,15 +673,15 @@ function handleComposerSubTabChange(val: unknown): void {
               >
                 <ToggleGroupItem
                   value="unified"
-                  class="h-5 rounded-sm px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  class="h-5 rounded-xs px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
-                  Unified
+                  Satu Kesatuan
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="split-left"
-                  class="h-5 rounded-sm px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  class="h-5 rounded-xs px-2 text-[10px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
-                  Icon Left · Rank Right
+                  Ikon Kiri · Rank Kanan
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -691,12 +691,12 @@ function handleComposerSubTabChange(val: unknown): void {
               class="flex items-center justify-between gap-2 border-t border-border/50 pt-1.5"
             >
               <span class="text-[10px] text-muted-foreground">
-                Left Icon Slot
+                Slot Ikon Kiri
               </span>
               <ToggleGroup
                 type="single"
                 :model-value="store.selectedEntry.composer.splitIconFrame ?? 'match'"
-                aria-label="Left icon slot style"
+                aria-label="Gaya slot ikon kiri"
                 class="gap-0.5"
                 @update:model-value="
                   (val) => {
@@ -714,33 +714,33 @@ function handleComposerSubTabChange(val: unknown): void {
               >
                 <ToggleGroupItem
                   value="match"
-                  class="h-5 rounded px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-5 rounded-xs px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
-                  Boxed
+                  Berbingkai
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="none"
-                  class="h-5 rounded px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-5 rounded-xs px-2 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
-                  Bare Icon
+                  Ikon Polos
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
 
             <div class="flex items-center justify-between gap-2 pt-0.5">
               <span class="text-[10px] text-muted-foreground">
-                Or split into 2 separate font glyphs
+                Atau pisahkan menjadi 2 glif font terpisah
               </span>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 :disabled="store.selectedEntry.composer.iconId === 'none'"
-                class="h-6 gap-1 px-2 font-mono text-[10px]"
+                class="h-6 gap-1 rounded-sm px-2 font-mono text-[10px] transition-transform active:scale-[0.96]"
                 @click="store.splitEntryToIconAndRank(store.selectedEntry.id)"
               >
                 <FontAwesomeIcon :icon="faObjectUngroup" class="h-3 w-3" />
-                <span>Split Glyphs</span>
+                <span>Pisahkan Glif</span>
               </Button>
             </div>
           </div>
@@ -792,15 +792,15 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
-            <Label class="text-[11px] font-normal text-muted-foreground">
-              Icon Gap
+            <Label class="text-[11px] font-medium text-foreground">
+              Jarak Ikon
             </Label>
             <Slider
               :model-value="[store.selectedEntry.composer.iconGap]"
               :min="0"
               :max="8"
               :step="1"
-              aria-label="Icon gap in pixels"
+              aria-label="Jarak ikon dalam piksel"
               @update:model-value="
                 (vals) => {
                   const v = vals?.[0];
@@ -813,20 +813,20 @@ function handleComposerSubTabChange(val: unknown): void {
                 }
               "
             />
-            <span class="text-right font-mono text-[11px] tabular-nums">
+            <span class="text-right font-mono text-[11px] tabular-nums text-foreground">
               {{ store.selectedEntry.composer.iconGap }}
             </span>
           </div>
 
-          <div class="flex items-center justify-between gap-2 rounded-sm bg-muted px-2.5 py-1">
-            <Label for="rank-icon-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
-              Icon Color
+          <div class="flex items-center justify-between gap-2 rounded-sm bg-muted/80 px-2.5 py-1">
+            <Label for="rank-icon-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+              Warna Ikon
             </Label>
             <div class="flex items-center gap-1.5">
               <button
                 type="button"
-                title="Click to copy HEX color"
-                class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                title="Klik untuk menyalin kode HEX"
+                class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                 @click="copyFieldColor('iconColor', store.selectedEntry.composer.iconColor)"
               >
                 <FontAwesomeIcon v-if="copiedFieldKey === 'iconColor'" :icon="faCheck" class="h-2.5 w-2.5 text-emerald-400" />
@@ -836,7 +836,7 @@ function handleComposerSubTabChange(val: unknown): void {
               <input
                 id="rank-icon-color"
                 type="color"
-                aria-label="Badge icon color"
+                aria-label="Warna ikon badge"
                 :value="store.selectedEntry.composer.iconColor"
                 class="h-5 w-6 cursor-pointer border-0 bg-transparent p-0"
                 @input="
@@ -856,8 +856,8 @@ function handleComposerSubTabChange(val: unknown): void {
         <!-- Frame Section -->
         <div v-else class="space-y-2.5">
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="rank-frame-style" class="text-[11px] font-normal text-muted-foreground">
-              Frame Style
+            <Label for="rank-frame-style" class="text-[11px] font-medium text-foreground">
+              Gaya Bingkai
             </Label>
             <Select
               :model-value="store.selectedEntry.composer.frameStyle"
@@ -882,30 +882,30 @@ function handleComposerSubTabChange(val: unknown): void {
                 }
               "
             >
-              <SelectTrigger id="rank-frame-style" class="h-7 bg-muted text-xs">
+              <SelectTrigger id="rank-frame-style" class="h-7 rounded-sm bg-muted/80 text-xs text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent class="rounded-md border-border bg-card">
                 <SelectItem value="bevel">Bevel (3D Tag)</SelectItem>
-                <SelectItem value="outline">Outline (1 px)</SelectItem>
-                <SelectItem value="pill">Pill (Rounded)</SelectItem>
-                <SelectItem value="solid">Solid (Block)</SelectItem>
-                <SelectItem value="ribbon">Ribbon (Notched)</SelectItem>
-                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="outline">Garis Tepi (1 px)</SelectItem>
+                <SelectItem value="pill">Sudut Bulat (Pill)</SelectItem>
+                <SelectItem value="solid">Blok Padat (Solid)</SelectItem>
+                <SelectItem value="ribbon">Pita Bertakik (Ribbon)</SelectItem>
+                <SelectItem value="none">Tanpa Bingkai</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
-            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted px-2 py-1">
-              <Label for="rank-frame-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
-                Fill
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
+              <Label for="rank-frame-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+                Isi
               </Label>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
-                  title="Click to copy HEX color"
-                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                  title="Klik untuk menyalin kode HEX"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                   @click="copyFieldColor('frameColor', store.selectedEntry.composer.frameColor)"
                 >
                   <FontAwesomeIcon v-if="copiedFieldKey === 'frameColor'" :icon="faCheck" class="h-2.5 w-2.5 text-emerald-400" />
@@ -915,7 +915,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 <input
                   id="rank-frame-color"
                   type="color"
-                  aria-label="Frame fill color"
+                  aria-label="Warna isi bingkai"
                   :value="store.selectedEntry.composer.frameColor"
                   class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                   @input="
@@ -931,15 +931,15 @@ function handleComposerSubTabChange(val: unknown): void {
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted px-2 py-1">
-              <Label for="rank-frame-border-color" class="cursor-pointer text-[11px] font-normal text-muted-foreground">
-                Border
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
+              <Label for="rank-frame-border-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+                Tepi
               </Label>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
-                  title="Click to copy HEX color"
-                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                  title="Klik untuk menyalin kode HEX"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                   @click="copyFieldColor('frameBorderColor', store.selectedEntry.composer.frameBorderColor)"
                 >
                   <FontAwesomeIcon v-if="copiedFieldKey === 'frameBorderColor'" :icon="faCheck" class="h-2.5 w-2.5 text-emerald-400" />
@@ -949,7 +949,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 <input
                   id="rank-frame-border-color"
                   type="color"
-                  aria-label="Frame border color"
+                  aria-label="Warna garis tepi bingkai"
                   :value="store.selectedEntry.composer.frameBorderColor"
                   class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                   @input="
@@ -973,15 +973,15 @@ function handleComposerSubTabChange(val: unknown): void {
             "
             class="grid grid-cols-2 gap-2 border-t border-border/50 pt-2"
           >
-            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted px-2 py-1">
-              <Label for="split-icon-frame-color" class="cursor-pointer text-[10px] font-normal text-muted-foreground">
-                Icon Fill
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
+              <Label for="split-icon-frame-color" class="cursor-pointer text-[10px] font-medium text-foreground">
+                Isi Ikon
               </Label>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
-                  title="Click to copy HEX color"
-                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                  title="Klik untuk menyalin kode HEX"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                   @click="
                     copyFieldColor(
                       'splitIconFrameColor',
@@ -1004,7 +1004,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 <input
                   id="split-icon-frame-color"
                   type="color"
-                  aria-label="Left icon box fill color"
+                  aria-label="Warna isi kotak ikon kiri"
                   :value="store.selectedEntry.composer.splitIconFrameColor ?? store.selectedEntry.composer.frameColor"
                   class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                   @input="
@@ -1020,15 +1020,15 @@ function handleComposerSubTabChange(val: unknown): void {
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted px-2 py-1">
-              <Label for="split-icon-border-color" class="cursor-pointer text-[10px] font-normal text-muted-foreground">
-                Icon Edge
+            <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
+              <Label for="split-icon-border-color" class="cursor-pointer text-[10px] font-medium text-foreground">
+                Tepi Ikon
               </Label>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
-                  title="Click to copy HEX color"
-                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                  title="Klik untuk menyalin kode HEX"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                   @click="
                     copyFieldColor(
                       'splitIconBorderColor',
@@ -1051,7 +1051,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 <input
                   id="split-icon-border-color"
                   type="color"
-                  aria-label="Left icon box border color"
+                  aria-label="Warna garis tepi kotak ikon kiri"
                   :value="store.selectedEntry.composer.splitIconBorderColor ?? store.selectedEntry.composer.frameBorderColor"
                   class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                   @input="
@@ -1079,23 +1079,23 @@ function handleComposerSubTabChange(val: unknown): void {
           type="button"
           variant="outline"
           size="sm"
-          class="h-7 shrink-0 gap-1.5 px-2 text-[11px]"
+          class="h-7 shrink-0 gap-1.5 rounded-sm px-2 text-[11px] transition-transform active:scale-[0.96]"
           @click="replacePngRef?.click()"
         >
           <FontAwesomeIcon :icon="faUpload" class="h-3 w-3" />
-          <span>Replace PNG</span>
+          <span>Ganti PNG</span>
         </Button>
         <input
           ref="replacePngRef"
           type="file"
           accept="image/png,.png"
-          aria-label="Replace PNG file"
+          aria-label="Ganti berkas PNG"
           class="sr-only"
           @change="handleReplacePngChange"
         />
       </div>
 
-      <Separator />
+      <Separator class="bg-border" />
 
       <!-- Collapsible Mojang BitmapProvider Metrics Section -->
       <Collapsible v-model:open="metricsOpen" class="space-y-2.5">
@@ -1112,7 +1112,7 @@ function handleComposerSubTabChange(val: unknown): void {
                   metricsOpen ? 'rotate-0 text-foreground' : '-rotate-90',
                 ]"
               />
-              <span>BitmapProvider Metrics</span>
+              <span>Metrik BitmapProvider</span>
             </span>
             <span class="font-mono text-[10px] text-muted-foreground tabular-nums">
               {{ displayedCodepoint || '—' }} · {{ store.selectedEntry.height }}/{{ store.selectedEntry.ascent }}
@@ -1122,7 +1122,7 @@ function handleComposerSubTabChange(val: unknown): void {
 
         <CollapsibleContent class="space-y-2.5">
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="bitmap-cp-input" class="text-[11px] font-normal text-muted-foreground">
+            <Label for="bitmap-cp-input" class="text-[11px] font-medium text-foreground">
               Codepoint
             </Label>
             <div class="flex items-center gap-1">
@@ -1130,7 +1130,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 id="bitmap-cp-input"
                 type="text"
                 :model-value="displayedCodepoint"
-                class="h-7 bg-muted px-2 font-mono text-xs"
+                class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
                 @update:model-value="applyPrimaryCodepoint(String($event ?? ''))"
                 @blur="codepointDraft = null"
               />
@@ -1138,7 +1138,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 type="button"
                 variant="ghost"
                 size="sm"
-                class="h-7 shrink-0 px-2 font-mono text-[10px] text-primary"
+                class="h-7 shrink-0 rounded-sm px-2 font-mono text-[10px] text-primary transition-transform active:scale-[0.96]"
                 @click="handleAutoAllocatePua()"
               >
                 Auto
@@ -1147,14 +1147,14 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="bitmap-label-input" class="text-[11px] font-normal text-muted-foreground">
+            <Label for="bitmap-label-input" class="text-[11px] font-medium text-foreground">
               Label
             </Label>
             <Input
               id="bitmap-label-input"
               type="text"
               :model-value="store.selectedEntry.label"
-              class="h-7 bg-muted px-2 text-xs"
+              class="h-7 rounded-sm bg-muted/80 px-2 text-xs text-foreground"
               @update:model-value="
                 updateBitmap((prev) => ({
                   ...prev,
@@ -1165,18 +1165,18 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <span class="text-[11px] text-muted-foreground">Height / Ascent</span>
+            <span class="text-[11px] font-medium text-foreground">Tinggi / Ascent</span>
             <div class="grid grid-cols-2 gap-1.5">
               <div>
-                <Label for="bitmap-height-input" class="sr-only">Height (logical px)</Label>
+                <Label for="bitmap-height-input" class="sr-only">Tinggi (piksel logis)</Label>
                 <Input
                   id="bitmap-height-input"
                   type="number"
                   :model-value="store.selectedEntry.height"
                   :aria-invalid="ascentError"
                   :class="[
-                    'h-7 bg-muted px-2 font-mono text-xs tabular-nums',
-                    ascentError ? 'border-destructive' : '',
+                    'h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground',
+                    ascentError ? 'border-destructive text-destructive' : '',
                   ]"
                   @update:model-value="
                     updateBitmap((prev) => {
@@ -1187,15 +1187,15 @@ function handleComposerSubTabChange(val: unknown): void {
                 />
               </div>
               <div>
-                <Label for="bitmap-ascent-input" class="sr-only">Ascent (max height)</Label>
+                <Label for="bitmap-ascent-input" class="sr-only">Ascent (tinggi maksimum)</Label>
                 <Input
                   id="bitmap-ascent-input"
                   type="number"
                   :model-value="store.selectedEntry.ascent"
                   :aria-invalid="ascentError"
                   :class="[
-                    'h-7 bg-muted px-2 font-mono text-xs tabular-nums',
-                    ascentError ? 'border-destructive' : '',
+                    'h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground',
+                    ascentError ? 'border-destructive text-destructive' : '',
                   ]"
                   @update:model-value="
                     updateBitmap((prev) => {
@@ -1209,23 +1209,23 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <p v-if="ascentError" class="font-mono text-[10px] text-red-300">
-            F01: Ascent ({{ store.selectedEntry.ascent }}) exceeds height ({{ store.selectedEntry.height }}).
+            F01: Ascent ({{ store.selectedEntry.ascent }}) melebihi tinggi ({{ store.selectedEntry.height }}).
           </p>
 
           <div
             v-if="store.selectedEntry.sourceMode === 'composer'"
             class="grid grid-cols-[88px_1fr] items-center gap-2"
           >
-            <span class="text-[11px] text-muted-foreground">Space L / R</span>
+            <span class="text-[11px] font-medium text-foreground">Spasi Kiri / Kanan</span>
             <div class="grid grid-cols-2 gap-1.5">
               <div>
-                <Label for="bitmap-space-left" class="sr-only">Left Space (px)</Label>
+                <Label for="bitmap-space-left" class="sr-only">Spasi Kiri (px)</Label>
                 <Input
                   id="bitmap-space-left"
                   type="number"
                   step="0.5"
                   :model-value="store.selectedEntry.spaceLeft"
-                  class="h-7 bg-muted px-2 font-mono text-xs tabular-nums"
+                  class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
                   @update:model-value="
                     updateBitmap((prev) => {
                       const v = Number.parseFloat(String($event ?? '0'));
@@ -1235,13 +1235,13 @@ function handleComposerSubTabChange(val: unknown): void {
                 />
               </div>
               <div>
-                <Label for="bitmap-space-right" class="sr-only">Right Space (px)</Label>
+                <Label for="bitmap-space-right" class="sr-only">Spasi Kanan (px)</Label>
                 <Input
                   id="bitmap-space-right"
                   type="number"
                   step="0.5"
                   :model-value="store.selectedEntry.spaceRight"
-                  class="h-7 bg-muted px-2 font-mono text-xs tabular-nums"
+                  class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
                   @update:model-value="
                     updateBitmap((prev) => {
                       const v = Number.parseFloat(String($event ?? '0'));
@@ -1254,14 +1254,14 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="bitmap-fileref-input" class="text-[11px] font-normal text-muted-foreground">
-              File Path
+            <Label for="bitmap-fileref-input" class="text-[11px] font-medium text-foreground">
+              Jalur Berkas
             </Label>
             <Input
               id="bitmap-fileref-input"
               type="text"
               :model-value="store.selectedEntry.fileRef"
-              class="h-7 bg-muted px-2 font-mono text-[11px]"
+              class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-[11px] text-foreground"
               @update:model-value="
                 updateBitmap((prev) => ({
                   ...prev,
@@ -1272,14 +1272,14 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="space-y-1">
-            <Label for="bitmap-chars-textarea" class="text-[11px] font-normal text-muted-foreground">
-              &quot;chars&quot; Grid (Newline per sprite row)
+            <Label for="bitmap-chars-textarea" class="text-[11px] font-medium text-foreground">
+              Grid &quot;chars&quot; (Baris baru per baris sprite)
             </Label>
             <Textarea
               id="bitmap-chars-textarea"
               :rows="Math.min(4, Math.max(2, store.selectedEntry.chars.length))"
               :model-value="displayedChars"
-              class="min-h-14 bg-muted px-2 py-1.5 font-mono text-[11px]"
+              class="min-h-14 rounded-sm bg-muted/80 px-2 py-1.5 font-mono text-[11px] text-foreground"
               @update:model-value="handleCharsInput(String($event ?? ''))"
               @blur="commitCharsBlur()"
             />

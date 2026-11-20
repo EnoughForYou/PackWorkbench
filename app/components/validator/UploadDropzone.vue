@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowUpFromBracket,
+  faBoxArchive,
+  faCheck,
+  faRotate,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { Button } from '@/components/ui/button';
 
@@ -20,7 +25,7 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 
 function formatBytesSummary(bytes: number): string {
   const mib = (bytes / (1024 * 1024)).toFixed(2);
-  return `${mib} MiB (${bytes.toLocaleString('en-US')} B)`;
+  return `${mib} MiB (${bytes.toLocaleString('id-ID')} byte)`;
 }
 
 function handleFileChange(event: Event): void {
@@ -60,51 +65,71 @@ function handleDrop(event: DragEvent): void {
 
 <template>
   <section aria-labelledby="upload-section-heading" class="space-y-2.5">
+    <!-- Header strip -->
     <div class="flex items-center justify-between gap-2">
       <h2
         id="upload-section-heading"
         class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
       >
-        1. Resource Pack Archive (.zip)
+        1. Arsip Resource Pack (.zip)
       </h2>
-      <span class="font-mono text-[10px] text-muted-foreground">Max 250 MiB (Z08)</span>
+      <span class="rounded border border-border/50 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground tabular-nums">
+        Maks 250 MiB (Z08)
+      </span>
     </div>
 
+    <!-- Solid Industrial Workstation Receiver -->
     <div
       :class="[
-        'flex flex-col gap-3 border border-dashed p-3.5 transition-colors',
+        'flex flex-col gap-3 rounded-lg border p-4 transition-all duration-150',
         isDragging
-          ? 'border-primary bg-primary/10'
-          : 'border-border bg-card',
+          ? 'border-primary bg-primary/10 shadow-[0_0_0_1px_rgba(155,115,190,0.5)]'
+          : 'border-border bg-card/80 hover:border-border hover:bg-card/95',
       ]"
       @dragover="handleDragOver"
       @dragleave="handleDragLeave"
       @drop="handleDrop"
     >
-      <div class="flex items-start gap-2.5">
-        <FontAwesomeIcon
-          :icon="faFolderOpen"
-          aria-hidden="true"
-          class="mt-0.5 h-4 w-4 shrink-0 text-primary"
-        />
+      <div class="flex items-start gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-elevated text-primary shadow-xs">
+          <FontAwesomeIcon
+            :icon="faBoxArchive"
+            aria-hidden="true"
+            class="h-4 w-4"
+          />
+        </div>
         <div class="min-w-0 flex-1 space-y-1">
-          <p class="text-xs font-medium text-foreground">
+          <p class="text-xs font-semibold tracking-tight text-foreground">
             {{
               isDragging
-                ? 'Drop .zip archive here...'
-                : 'Drag .zip here or choose from device.'
+                ? 'Lepaskan arsip .zip sekarang...'
+                : 'Tarik dan lepas arsip .zip resource pack ke sini'
             }}
           </p>
-          <p
-            v-if="activeFile"
-            class="truncate font-mono text-[11px] text-primary tabular-nums"
-          >
-            {{ activeFile.name }} · {{ formatBytesSummary(activeFile.size) }}
-          </p>
-          <p v-else class="text-[11px] text-muted-foreground">
-            All checks run locally in browser memory.
+          <p class="text-[11px] leading-relaxed text-muted-foreground">
+            Mendukung Minecraft Java 1.21.1–26.3 hingga 250 MiB
           </p>
         </div>
+      </div>
+
+      <!-- Active File Readout Card -->
+      <div
+        v-if="activeFile"
+        class="flex items-center justify-between gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 font-mono text-[11px]"
+      >
+        <div class="flex min-w-0 items-center gap-2">
+          <FontAwesomeIcon
+            :icon="faCheck"
+            aria-hidden="true"
+            class="h-3 w-3 shrink-0 text-emerald-400"
+          />
+          <span class="truncate font-semibold text-foreground">
+            {{ activeFile.name }}
+          </span>
+        </div>
+        <span class="shrink-0 text-primary tabular-nums">
+          {{ formatBytesSummary(activeFile.size) }}
+        </span>
       </div>
 
       <input
@@ -115,14 +140,27 @@ function handleDrop(event: DragEvent): void {
         class="sr-only"
         @change="handleFileChange"
       />
+
       <Button
         type="button"
-        size="sm"
-        class="h-8 w-full text-xs font-semibold"
+        size="default"
+        class="h-10 min-h-[40px] w-full text-xs font-semibold rounded-md active:scale-[0.96] transition-transform duration-100 ease-out"
         :disabled="isValidating"
         @click="fileInputRef?.click()"
       >
-        {{ isValidating ? 'Inspecting ZIP...' : 'Choose .zip File' }}
+        <FontAwesomeIcon
+          v-if="isValidating"
+          :icon="faRotate"
+          aria-hidden="true"
+          class="mr-2 h-3.5 w-3.5 animate-spin"
+        />
+        <FontAwesomeIcon
+          v-else
+          :icon="faArrowUpFromBracket"
+          aria-hidden="true"
+          class="mr-2 h-3.5 w-3.5"
+        />
+        {{ isValidating ? 'Memeriksa ZIP...' : 'Pilih Berkas' }}
       </Button>
     </div>
   </section>

@@ -77,40 +77,40 @@ function getLayerMeta(
 ): { readonly title: string; readonly subtitle: string } {
   if (id === 'paint') {
     return {
-      title: 'Paint (Pixel Brush)',
-      subtitle: `${Object.keys(entry.paintEdits).length} edited pixels`,
+      title: 'Cat (Pensil Piksel)',
+      subtitle: `${Object.keys(entry.paintEdits).length} piksel diedit`,
     };
   }
   if (id === 'text') {
     return {
-      title: 'Rank Text',
+      title: 'Teks Rank',
       subtitle:
         entry.sourceMode === 'composer'
           ? `${entry.composer.text || '—'} (${entry.composer.fontSize})`
-          : 'Composer mode only',
+          : 'Hanya mode composer',
     };
   }
   if (id === 'shadow') {
     return {
-      title: 'Drop Shadow',
-      subtitle: '1 px base offset + custom nudge',
+      title: 'Bayangan (Drop Shadow)',
+      subtitle: 'Offset dasar 1 px + pergeseran kustom',
     };
   }
   if (id === 'icon') {
     return {
-      title: 'Icon',
+      title: 'Ikon Badge',
       subtitle:
         entry.sourceMode === 'composer'
-          ? `${entry.composer.iconId} (${entry.composer.badgeLayout === 'split-left' ? 'left split' : 'inline'})`
-          : 'Composer mode only',
+          ? `${entry.composer.iconId} (${entry.composer.badgeLayout === 'split-left' ? 'split kiri' : 'inline'})`
+          : 'Hanya mode composer',
     };
   }
   return {
-    title: 'Frame / Background',
+    title: 'Bingkai & Latar',
     subtitle:
       entry.sourceMode === 'composer'
         ? entry.composer.frameStyle
-        : 'Composer mode only',
+        : 'Hanya mode composer',
   };
 }
 
@@ -269,25 +269,25 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
       v-if="!store.selectedEntry || store.selectedEntry.kind !== 'bitmap'"
       class="px-3 py-4 text-xs text-muted-foreground"
     >
-      Layer stack applies to bitmap or rank badge entries only.
+      Tumpukan lapisan hanya berlaku untuk entri glif bitmap atau badge rank.
     </p>
 
     <template v-else>
       <div class="flex items-center justify-between gap-2 px-3 pb-2">
         <p class="text-[11px] leading-snug text-muted-foreground">
-          Drag with left mouse to reorder top-to-bottom. Click a layer to customize.
+          Seret untuk mengatur urutan (atas ke bawah). Klik lapisan untuk menyesuaikan.
         </p>
         <Button
           v-if="hasCustomOrder"
           type="button"
           variant="ghost"
           size="sm"
-          title="Reset layer order to default"
-          class="h-6 shrink-0 gap-1 px-1.5 font-mono text-[10px] text-primary"
+          title="Atur ulang urutan lapisan ke default"
+          class="h-6 shrink-0 gap-1 rounded-sm px-1.5 font-mono text-[10px] text-primary transition-transform active:scale-[0.96]"
           @click="resetLayerOrder()"
         >
           <FontAwesomeIcon :icon="faRotateLeft" class="h-3 w-3" />
-          <span>Reset</span>
+          <span>Atur Ulang</span>
         </Button>
       </div>
 
@@ -306,17 +306,17 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
             @dragleave="onDragLeave(layerId, $event)"
             @drop="onDrop(layerId, $event)"
             @dragend="onDragEnd"
-            class="flex items-center justify-between gap-1.5 px-2 py-2 transition-colors hover:bg-accent/40"
+            class="flex items-center justify-between gap-1.5 px-2.5 py-2 transition-colors hover:bg-muted/60"
             :class="{
               'opacity-40': draggingLayerId === layerId,
               'border-t-2 border-primary': dragOverLayerId === layerId && dragOverPosition === 'above',
               'border-b-2 border-primary': dragOverLayerId === layerId && dragOverPosition === 'below',
             }"
           >
-            <div class="flex min-w-0 flex-1 items-center gap-1.5">
+            <div class="flex min-w-0 flex-1 items-center gap-2">
               <span
                 aria-hidden="true"
-                title="Drag to reorder layer"
+                title="Seret untuk mengubah urutan"
                 class="flex h-5 w-4 shrink-0 cursor-grab items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
               >
                 <FontAwesomeIcon :icon="faGripVertical" class="h-3.5 w-3.5" />
@@ -324,6 +324,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
               <Checkbox
                 :id="`layer-vis-${layerId}`"
                 :model-value="store.selectedEntry.layerVisibility[layerId]"
+                aria-label="Alihkan visibilitas lapisan"
                 @update:model-value="toggleLayerVisibility(layerId)"
               />
               <button
@@ -356,8 +357,8 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 variant="ghost"
                 size="icon"
                 :disabled="idx === 0"
-                :aria-label="`Move ${layerId} layer up`"
-                class="h-6 w-6 text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                :aria-label="`Pindahkan lapisan ${layerId} ke atas`"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
                 @click="moveLayer(layerId, 'up')"
               >
                 <FontAwesomeIcon :icon="faArrowUp" class="h-3 w-3" />
@@ -367,8 +368,8 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 variant="ghost"
                 size="icon"
                 :disabled="idx === displayLayers.length - 1"
-                :aria-label="`Move ${layerId} layer down`"
-                class="h-6 w-6 text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                :aria-label="`Pindahkan lapisan ${layerId} ke bawah`"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
                 @click="moveLayer(layerId, 'down')"
               >
                 <FontAwesomeIcon :icon="faArrowDown" class="h-3 w-3" />
@@ -377,8 +378,8 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 type="button"
                 variant="ghost"
                 size="icon"
-                :aria-label="`Toggle ${layerId} visibility`"
-                class="h-6 w-6 text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                :aria-label="`Alihkan visibilitas lapisan ${layerId}`"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
                 @click="toggleLayerVisibility(layerId)"
               >
                 <FontAwesomeIcon
@@ -397,8 +398,8 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 variant="ghost"
                 size="icon"
                 :aria-expanded="expandedLayer === layerId"
-                :aria-label="`Customize ${layerId} layer`"
-                class="h-6 w-6 text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                :aria-label="`Sesuaikan gaya lapisan ${layerId}`"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
                 @click="expandedLayer = expandedLayer === layerId ? null : layerId"
               >
                 <FontAwesomeIcon
@@ -415,17 +416,17 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
           <!-- Inline Layer Customization Drawer -->
           <div
             v-if="expandedLayer === layerId"
-            class="space-y-2.5 border-t border-border/40 bg-muted px-3 py-2.5"
+            class="space-y-2.5 border-t border-border/40 bg-muted/80 px-3 py-2.5"
           >
             <!-- Opacity Slider -->
             <div class="grid grid-cols-[64px_1fr_36px] items-center gap-2">
-              <Label class="text-[10px] text-muted-foreground">Opacity</Label>
+              <Label class="text-[10px] font-medium text-foreground">Opasitas</Label>
               <Slider
                 :model-value="[getStyleFor(store.selectedEntry, layerId).opacity]"
                 :min="0"
                 :max="100"
                 :step="5"
-                :aria-label="`${layerId} layer opacity`"
+                :aria-label="`Opasitas lapisan ${layerId}`"
                 @update:model-value="
                   (vals) => {
                     const v = vals?.[0];
@@ -440,7 +441,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
 
             <!-- X / Y Pixel Nudge Offset -->
             <div class="grid grid-cols-[64px_1fr] items-center gap-2">
-              <span class="text-[10px] text-muted-foreground">Offset X/Y</span>
+              <span class="text-[10px] font-medium text-foreground">Offset X/Y</span>
               <div class="grid grid-cols-2 gap-1.5">
                 <div class="flex items-center gap-1">
                   <Label :for="`layer-ox-${layerId}`" class="font-mono text-[10px] text-muted-foreground">X</Label>
@@ -450,7 +451,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     :min="-8"
                     :max="8"
                     :model-value="getStyleFor(store.selectedEntry, layerId).offsetX"
-                    class="h-6 bg-muted px-1.5 font-mono text-[11px] tabular-nums"
+                    class="h-6 rounded-sm bg-card px-1.5 font-mono text-[11px] tabular-nums text-foreground"
                     @update:model-value="
                       updateLayerStyle(layerId, {
                         offsetX: Math.max(-8, Math.min(8, Number.parseInt(String($event ?? '0'), 10) || 0)),
@@ -466,7 +467,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     :min="-8"
                     :max="8"
                     :model-value="getStyleFor(store.selectedEntry, layerId).offsetY"
-                    class="h-6 bg-muted px-1.5 font-mono text-[11px] tabular-nums"
+                    class="h-6 rounded-sm bg-card px-1.5 font-mono text-[11px] tabular-nums text-foreground"
                     @update:model-value="
                       updateLayerStyle(layerId, {
                         offsetY: Math.max(-8, Math.min(8, Number.parseInt(String($event ?? '0'), 10) || 0)),
@@ -481,13 +482,13 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
             <template v-if="store.selectedEntry.sourceMode === 'composer'">
               <div
                 v-if="layerId === 'text' || layerId === 'shadow' || layerId === 'icon'"
-                class="flex items-center justify-between gap-2 rounded-sm bg-muted px-2 py-1"
+                class="flex items-center justify-between gap-2 rounded-sm bg-card px-2 py-1"
               >
-                <span class="text-[10px] text-muted-foreground">Color</span>
+                <span class="text-[10px] font-medium text-foreground">Warna</span>
                 <div class="flex items-center gap-1.5">
                   <button
                     type="button"
-                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                     @click="
                       copyColor(
                         layerId,
@@ -514,7 +515,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                   </button>
                   <input
                     type="color"
-                    :aria-label="`Change ${layerId} color`"
+                    :aria-label="`Ubah warna lapisan ${layerId}`"
                     :value="
                       layerId === 'text'
                         ? store.selectedEntry.composer.textColor
@@ -544,13 +545,13 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 v-else-if="layerId === 'frame'"
                 class="grid grid-cols-2 gap-1.5"
               >
-                <div class="flex items-center justify-between gap-1 rounded-sm bg-muted px-2 py-1">
-                  <span class="text-[10px] text-muted-foreground">Fill</span>
+                <div class="flex items-center justify-between gap-1 rounded-sm bg-card px-2 py-1">
+                  <span class="text-[10px] font-medium text-foreground">Isi</span>
                   <div class="flex items-center gap-1">
                     <button
                       type="button"
-                      title="Click to copy HEX color"
-                      class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                      title="Klik untuk menyalin kode HEX"
+                      class="inline-flex cursor-pointer items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                       @click="copyColor('frame-fill', store.selectedEntry.composer.frameColor)"
                     >
                       <FontAwesomeIcon v-if="copiedLayerColor === 'frame-fill'" :icon="faCheck" class="h-2.5 w-2.5 text-emerald-400" />
@@ -559,7 +560,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     </button>
                     <input
                       type="color"
-                      aria-label="Frame fill color"
+                      aria-label="Warna isi bingkai"
                       :value="store.selectedEntry.composer.frameColor"
                       class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                       @input="
@@ -574,13 +575,13 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     />
                   </div>
                 </div>
-                <div class="flex items-center justify-between gap-1 rounded-sm bg-muted px-2 py-1">
-                  <span class="text-[10px] text-muted-foreground">Edge</span>
+                <div class="flex items-center justify-between gap-1 rounded-sm bg-card px-2 py-1">
+                  <span class="text-[10px] font-medium text-foreground">Tepi</span>
                   <div class="flex items-center gap-1">
                     <button
                       type="button"
-                      title="Click to copy HEX color"
-                      class="inline-flex cursor-pointer items-center gap-1 rounded bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
+                      title="Klik untuk menyalin kode HEX"
+                      class="inline-flex cursor-pointer items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-transform duration-100 ease-out active:scale-[0.96]"
                       @click="copyColor('frame-edge', store.selectedEntry.composer.frameBorderColor)"
                     >
                       <FontAwesomeIcon v-if="copiedLayerColor === 'frame-edge'" :icon="faCheck" class="h-2.5 w-2.5 text-emerald-400" />
@@ -589,7 +590,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     </button>
                     <input
                       type="color"
-                      aria-label="Frame border color"
+                      aria-label="Warna garis tepi bingkai"
                       :value="store.selectedEntry.composer.frameBorderColor"
                       class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                       @input="
@@ -607,16 +608,16 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
               </div>
             </template>
 
-            <div class="flex items-center justify-end gap-2">
+            <div class="flex items-center justify-end gap-2 pt-0.5">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                class="h-6 gap-1 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+                class="h-6 gap-1 rounded-sm px-2 text-[10px] text-muted-foreground hover:text-foreground transition-transform active:scale-[0.96]"
                 @click="resetLayerStyle(layerId)"
               >
                 <FontAwesomeIcon :icon="faRotateLeft" class="h-3 w-3" />
-                <span>Reset Layer</span>
+                <span>Atur Ulang Lapisan</span>
               </Button>
             </div>
           </div>
@@ -631,12 +632,12 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
           type="button"
           variant="ghost"
           size="sm"
-          class="h-8 w-full justify-center gap-1.5 text-xs text-destructive hover:bg-destructive/20 hover:text-destructive"
+          class="h-8 w-full justify-center gap-1.5 rounded-sm text-xs text-destructive hover:bg-destructive/20 hover:text-destructive transition-transform active:scale-[0.96]"
           @click="updateBitmap((prev) => ({ ...prev, paintEdits: {} }))"
         >
           <FontAwesomeIcon :icon="faTrashCan" class="h-3.5 w-3.5" />
           <span>
-            Clear {{ Object.keys(store.selectedEntry.paintEdits).length }} Paint Edits
+            Hapus {{ Object.keys(store.selectedEntry.paintEdits).length }} Editan Coretan
           </span>
         </Button>
       </div>

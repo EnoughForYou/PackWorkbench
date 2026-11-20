@@ -21,7 +21,7 @@ const store = useWorkbenchStore();
     class="flex min-h-0 min-w-[1280px] flex-1 flex-col overflow-hidden bg-background text-foreground"
   >
     <h1 id="validator-title" tabindex="-1" class="sr-only">
-      Resource Pack and SHA-1 Validator — Minecraft Java Edition
+      Validator Resource Pack dan Generator SHA-1 — Minecraft Java Edition
     </h1>
 
     <ResizablePanelGroup
@@ -29,7 +29,7 @@ const store = useWorkbenchStore();
       auto-save-id="pack-workbench-validator-panels"
       class="min-h-0 flex-1"
     >
-      <!-- Left Rail: Dropzone, Version, SHA-1 & server.properties -->
+      <!-- Left Rail: Dropzone, Target Version, SHA-1 & server.properties -->
       <ResizablePanel :default-size="34" :min-size="25" :max-size="48">
         <ScrollArea class="h-full border-r border-border bg-card">
           <div class="space-y-4 p-4">

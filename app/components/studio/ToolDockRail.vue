@@ -80,7 +80,7 @@ function selectAndCopySwatch(hex: string): void {
   <div
     role="toolbar"
     aria-orientation="vertical"
-    aria-label="Pixel canvas tools"
+    aria-label="Alat kanvas piksel"
     aria-controls="studio-pixel-canvas"
     class="flex w-12 shrink-0 flex-col items-center justify-between border-r border-border bg-card px-1 py-2"
   >
@@ -96,52 +96,64 @@ function selectAndCopySwatch(hex: string): void {
           <TooltipTrigger as-child>
             <ToggleGroupItem
               value="select"
-              aria-label="Select and inspect pixels"
-              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
+              aria-label="Pilih dan periksa piksel (V)"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] border border-transparent data-[state=on]:bg-primary/20 data-[state=on]:text-primary data-[state=on]:border-primary/40 data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground data-[state=off]:hover:bg-muted/60"
             >
               <FontAwesomeIcon :icon="faArrowPointer" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
-          <TooltipContent side="right">Select &amp; Inspect (V)</TooltipContent>
+          <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+            <span>Pilih &amp; Periksa</span>
+            <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">V</kbd>
+          </TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger as-child>
             <ToggleGroupItem
               value="pencil"
-              aria-label="Pixel pencil"
-              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
+              aria-label="Pensil piksel (B)"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] border border-transparent data-[state=on]:bg-primary/20 data-[state=on]:text-primary data-[state=on]:border-primary/40 data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground data-[state=off]:hover:bg-muted/60"
             >
               <FontAwesomeIcon :icon="faPencil" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
-          <TooltipContent side="right">Pixel Pencil (B)</TooltipContent>
+          <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+            <span>Pensil Piksel</span>
+            <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">B</kbd>
+          </TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger as-child>
             <ToggleGroupItem
               value="eraser"
-              aria-label="Transparent eraser"
-              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
+              aria-label="Penghapus transparan (E)"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] border border-transparent data-[state=on]:bg-primary/20 data-[state=on]:text-primary data-[state=on]:border-primary/40 data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground data-[state=off]:hover:bg-muted/60"
             >
               <FontAwesomeIcon :icon="faEraser" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
-          <TooltipContent side="right">Transparent Eraser (E)</TooltipContent>
+          <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+            <span>Penghapus Transparan</span>
+            <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">E</kbd>
+          </TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger as-child>
             <ToggleGroupItem
               value="eyedropper"
-              aria-label="Eyedropper pick and copy color"
-              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
+              aria-label="Pipet warna ambil dan salin (I)"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] border border-transparent data-[state=on]:bg-primary/20 data-[state=on]:text-primary data-[state=on]:border-primary/40 data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground data-[state=off]:hover:bg-muted/60"
             >
               <FontAwesomeIcon :icon="faEyeDropper" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
-          <TooltipContent side="right">Eyedropper · Pick &amp; Copy (I)</TooltipContent>
+          <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+            <span>Pipet Warna (Ambil &amp; Salin)</span>
+            <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">I</kbd>
+          </TooltipContent>
         </Tooltip>
       </ToggleGroup>
 
@@ -157,19 +169,22 @@ function selectAndCopySwatch(hex: string): void {
             variant="ghost"
             size="icon"
             :aria-pressed="store.showGrid"
-            aria-label="Toggle pixel grid"
+            aria-label="Alihkan kisi piksel (G)"
             :class="[
-              'h-10 w-10 min-h-10 min-w-10 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]',
+              'h-10 w-10 min-h-10 min-w-10 rounded-md transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] border border-transparent',
               store.showGrid
-                ? 'bg-accent text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
+                ? 'bg-primary/15 text-primary border-primary/30'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60',
             ]"
             @click="store.showGrid = !store.showGrid"
           >
             <FontAwesomeIcon :icon="faBorderAll" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right">Toggle Pixel Grid (G)</TooltipContent>
+        <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+          <span>Kisi Piksel</span>
+          <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">G</kbd>
+        </TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -179,14 +194,17 @@ function selectAndCopySwatch(hex: string): void {
             variant="ghost"
             size="icon"
             :disabled="store.undoStack.length === 0"
-            aria-label="Undo last paint stroke"
-            class="h-10 w-10 min-h-10 min-w-10 text-muted-foreground hover:text-foreground transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+            aria-label="Urungkan coretan terakhir (Ctrl+Z)"
+            class="h-10 w-10 min-h-10 min-w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] disabled:opacity-40 disabled:pointer-events-none"
             @click="store.undoPaint()"
           >
             <FontAwesomeIcon :icon="faRotateLeft" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right">Undo Stroke (Ctrl+Z)</TooltipContent>
+        <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+          <span>Urungkan Coretan</span>
+          <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">Ctrl+Z</kbd>
+        </TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -196,14 +214,17 @@ function selectAndCopySwatch(hex: string): void {
             variant="ghost"
             size="icon"
             :disabled="store.redoStack.length === 0"
-            aria-label="Redo paint stroke"
-            class="h-10 w-10 min-h-10 min-w-10 text-muted-foreground hover:text-foreground transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+            aria-label="Ulangi coretan (Ctrl+Y)"
+            class="h-10 w-10 min-h-10 min-w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] disabled:opacity-40 disabled:pointer-events-none"
             @click="store.redoPaint()"
           >
             <FontAwesomeIcon :icon="faRotateRight" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right">Redo Stroke (Ctrl+Y / Ctrl+Shift+Z)</TooltipContent>
+        <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+          <span>Ulangi Coretan</span>
+          <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">Ctrl+Y</kbd>
+        </TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -212,14 +233,17 @@ function selectAndCopySwatch(hex: string): void {
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Reset zoom to 12x"
-            class="h-10 w-10 min-h-10 min-w-10 text-muted-foreground hover:text-foreground transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+            aria-label="Atur ulang perbesaran ke 12x (Ctrl+0)"
+            class="h-10 w-10 min-h-10 min-w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
             @click="store.zoom = 12"
           >
             <FontAwesomeIcon :icon="faMagnifyingGlassPlus" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right">Zoom Reset / Fit (Ctrl+0 / Ctrl+1)</TooltipContent>
+        <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
+          <span>Atur Ulang Zoom 12×</span>
+          <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">Ctrl+0</kbd>
+        </TooltipContent>
       </Tooltip>
     </div>
 
@@ -230,7 +254,7 @@ function selectAndCopySwatch(hex: string): void {
           <TooltipTrigger as-child>
             <button
               type="button"
-              :aria-label="`Select and copy ${hex.toUpperCase()}`"
+              :aria-label="`Pilih dan salin ${hex.toUpperCase()}`"
               :aria-pressed="store.brushColor.toLowerCase() === hex"
               :style="{ backgroundColor: hex }"
               :class="[
@@ -242,8 +266,8 @@ function selectAndCopySwatch(hex: string): void {
               @click="selectAndCopySwatch(hex)"
             />
           </TooltipTrigger>
-          <TooltipContent side="right" class="font-mono text-[10px]">
-            {{ hex.toUpperCase() }} (click to copy)
+          <TooltipContent side="right" class="font-mono text-[10px] tabular-nums">
+            {{ hex.toUpperCase() }} (Klik untuk salin)
           </TooltipContent>
         </Tooltip>
       </div>
@@ -261,8 +285,8 @@ function selectAndCopySwatch(hex: string): void {
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Open paint palette and copy hex"
-                class="h-10 w-10 min-h-10 min-w-10 p-0"
+                aria-label="Buka palet warna dan salin hex"
+                class="h-10 w-10 min-h-10 min-w-10 rounded-md p-0 transition-transform active:scale-[0.96] hover:bg-muted/60"
               >
                 <span
                   aria-hidden="true"
@@ -272,22 +296,22 @@ function selectAndCopySwatch(hex: string): void {
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent side="right">
-            Brush Color ({{ store.brushColor.toUpperCase() }})
+          <TooltipContent side="right" class="text-xs">
+            Warna Kuas <span class="font-mono text-[10px] tabular-nums text-primary font-semibold">({{ store.brushColor.toUpperCase() }})</span>
           </TooltipContent>
         </Tooltip>
 
-        <DropdownMenuContent side="right" align="end" class="w-48 p-2.5">
-          <div class="mb-2 flex items-center justify-between gap-2">
+        <DropdownMenuContent side="right" align="end" class="w-52 rounded-md border-border bg-card p-2.5 shadow-xl">
+          <div class="mb-2 flex items-center justify-between gap-2 border-b border-border pb-1.5">
             <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Paint Swatches
+              Palet Warna
             </p>
             <span
               v-if="store.copiedColorToast"
-              class="inline-flex items-center gap-0.5 font-mono text-[10px] text-emerald-400"
+              class="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-400 tabular-nums"
             >
               <FontAwesomeIcon :icon="faCheck" class="h-3 w-3" />
-              {{ store.copiedColorToast.hex }}
+              <span>Tersalin {{ store.copiedColorToast.hex }}</span>
             </span>
           </div>
 
@@ -296,14 +320,14 @@ function selectAndCopySwatch(hex: string): void {
               v-for="hex in BRUSH_SWATCHES"
               :key="hex"
               type="button"
-              :aria-label="`Pick and copy color ${hex.toUpperCase()}`"
+              :aria-label="`Pilih dan salin warna ${hex.toUpperCase()}`"
               :aria-pressed="store.brushColor.toLowerCase() === hex"
-              :title="`Click to use & copy ${hex.toUpperCase()}`"
+              :title="`Klik untuk menggunakan & salin ${hex.toUpperCase()}`"
               :style="{ backgroundColor: hex }"
               :class="[
-                'h-6 w-full cursor-pointer rounded border transition-transform hover:scale-105 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
+                'h-6 w-full cursor-pointer rounded-[3px] border transition-transform hover:scale-105 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
                 store.brushColor.toLowerCase() === hex
-                  ? 'border-2 border-primary'
+                  ? 'border-2 border-primary ring-1 ring-primary/40'
                   : 'border-white/15',
               ]"
               @click="selectAndCopySwatch(hex)"
@@ -311,18 +335,18 @@ function selectAndCopySwatch(hex: string): void {
           </div>
 
           <p class="mt-2 text-[10px] text-muted-foreground">
-            Click any swatch to select &amp; copy HEX.
+            Klik swatch untuk memilih &amp; menyalin HEX.
           </p>
 
           <div class="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
-            <label for="dock-custom-brush" class="text-[11px] text-muted-foreground">
-              Custom
+            <label for="dock-custom-brush" class="text-[11px] font-medium text-foreground">
+              Kustom
             </label>
             <div class="flex items-center gap-1.5">
               <button
                 type="button"
-                class="cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
-                title="Copy current HEX"
+                class="cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-colors"
+                title="Salin HEX saat ini"
                 @click="store.copyColorHex(store.brushColor)"
               >
                 {{ store.brushColor.toUpperCase() }}
@@ -331,7 +355,7 @@ function selectAndCopySwatch(hex: string): void {
                 id="dock-custom-brush"
                 v-model="store.brushColor"
                 type="color"
-                aria-label="Pick custom brush color"
+                aria-label="Pilih warna kuas kustom"
                 class="h-6 w-8 cursor-pointer rounded border border-border bg-transparent p-0"
                 @input="store.activeTool = 'pencil'"
               />

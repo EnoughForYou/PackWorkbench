@@ -22,7 +22,7 @@ function handleInspectorTabChange(val: string | number): void {
 
 <template>
   <aside
-    aria-label="In-game preview and property inspector"
+    aria-label="Pratinjau in-game dan inspektur properti"
     class="flex h-full min-h-0 flex-col bg-card"
   >
     <InspectorPreviewViewport />
@@ -35,21 +35,30 @@ function handleInspectorTabChange(val: string | number): void {
       <TabsList class="h-9 w-full shrink-0 justify-start gap-1 rounded-none border-b border-border bg-card px-2 py-0">
         <TabsTrigger
           value="properties"
-          class="tab-underline relative h-9 flex-none rounded-none border-0 bg-transparent px-2.5 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+          class="relative h-9 flex-none rounded-none border-0 bg-transparent px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
         >
-          Properties
+          Properti
         </TabsTrigger>
         <TabsTrigger
           value="layers"
-          class="tab-underline relative h-9 flex-none rounded-none border-0 bg-transparent px-2.5 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+          class="relative h-9 flex-none rounded-none border-0 bg-transparent px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
         >
-          Layers
+          Lapisan
         </TabsTrigger>
         <TabsTrigger
           value="validate"
-          class="tab-underline relative h-9 flex-none rounded-none border-0 bg-transparent px-2.5 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+          class="relative h-9 flex-none rounded-none border-0 bg-transparent px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
         >
-          {{ totalProblemFindings > 0 ? `Validate (${totalProblemFindings})` : 'Validate' }}
+          <span class="inline-flex items-center gap-1.5">
+            <span>Validasi</span>
+            <span
+              v-if="totalProblemFindings > 0"
+              class="rounded-full px-1.5 py-0.2 font-mono text-[10px] tabular-nums font-semibold"
+              :class="store.validation.errors > 0 ? 'bg-destructive/20 text-destructive' : 'bg-amber-400/20 text-amber-300'"
+            >
+              {{ totalProblemFindings }}
+            </span>
+          </span>
         </TabsTrigger>
       </TabsList>
 

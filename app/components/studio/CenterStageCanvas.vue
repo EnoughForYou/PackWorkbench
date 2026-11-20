@@ -510,104 +510,145 @@ function handleStageModeChange(val: unknown): void {
     store.stageMode = val as CenterStageMode;
   }
 }
+
+const activeToolLabel = computed(() => {
+  switch (store.activeTool) {
+    case 'select':
+      return 'Pilih (V)';
+    case 'pencil':
+      return 'Pensil (B)';
+    case 'eraser':
+      return 'Penghapus (E)';
+    case 'eyedropper':
+      return 'Pipet (I)';
+    default:
+      return store.activeTool;
+  }
+});
 </script>
 
 <template>
   <section
-    aria-label="Workspace canvas and preview"
+    aria-label="Panggung kanvas dan pratinjau studio"
     class="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background"
   >
-    <!-- Floating Capsule Toolbar -->
-    <div class="flex items-center justify-center border-b border-border bg-card px-3 py-1.5">
-      <div class="flex items-center justify-center gap-1.5 rounded-full border border-border bg-muted px-2 py-0.5">
+    <!-- Crisp Workstation Top Header -->
+    <div class="flex items-center justify-between border-b border-border bg-card px-3 py-1.5">
+      <div class="flex items-center gap-1">
         <ToggleGroup
           type="single"
           :model-value="store.stageMode"
-          aria-label="Center stage view mode"
-          class="gap-0.5"
+          aria-label="Mode tampilan panggung kerja"
+          class="gap-0.5 rounded-sm border border-border bg-muted/80 p-0.5"
           @update:model-value="handleStageModeChange"
         >
           <ToggleGroupItem
             value="canvas"
-            class="h-6 rounded-full px-2.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            class="h-7 rounded-sm px-2.5 text-xs font-medium transition-[background-color,color] duration-100 ease-out data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground"
           >
-            Canvas
+            Kanvas Piksel
           </ToggleGroupItem>
           <ToggleGroupItem
             value="split"
-            class="h-6 rounded-full px-2.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            class="h-7 rounded-sm px-2.5 text-xs font-medium transition-[background-color,color] duration-100 ease-out data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground"
           >
             Split JSON
           </ToggleGroupItem>
           <ToggleGroupItem
             value="preview"
-            class="h-6 rounded-full px-2.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            class="h-7 rounded-sm px-2.5 text-xs font-medium transition-[background-color,color] duration-100 ease-out data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground"
           >
-            In-Game Stage
+            Simulasi In-Game
           </ToggleGroupItem>
         </ToggleGroup>
+      </div>
 
-        <Separator orientation="vertical" class="h-4" />
-
-        <div class="flex items-center gap-0.5" role="group" aria-label="Canvas zoom">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Zoom out"
-            class="touch-target-expand h-6 w-6 rounded-full text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
-            @click="store.zoom = Math.max(2, store.zoom - 2)"
-          >
-            <FontAwesomeIcon :icon="faMinus" class="h-3 w-3" />
-          </Button>
-          <span class="min-w-8 text-center font-mono text-[11px] text-foreground tabular-nums">
-            {{ store.zoom }}×
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Zoom in"
-            class="touch-target-expand h-6 w-6 rounded-full text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
-            @click="store.zoom = Math.min(24, store.zoom + 2)"
-          >
-            <FontAwesomeIcon :icon="faPlus" class="h-3 w-3" />
-          </Button>
+      <div class="flex items-center gap-1.5" role="group" aria-label="Kontrol perbesaran kanvas">
+        <div class="flex items-center rounded-sm border border-border bg-muted/80 p-0.5">
           <Tooltip>
             <TooltipTrigger as-child>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Reset zoom to 12x"
-                class="touch-target-expand h-6 w-6 rounded-full text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                aria-label="Perkecil perbesaran kanvas"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                @click="store.zoom = Math.max(2, store.zoom - 2)"
+              >
+                <FontAwesomeIcon :icon="faMinus" class="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" class="text-xs">
+              Perkecil Kanvas
+            </TooltipContent>
+          </Tooltip>
+
+          <span class="min-w-9 text-center font-mono text-[11px] font-medium text-foreground tabular-nums">
+            {{ store.zoom }}×
+          </span>
+
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Perbesar kanvas"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                @click="store.zoom = Math.min(24, store.zoom + 2)"
+              >
+                <FontAwesomeIcon :icon="faPlus" class="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" class="text-xs">
+              Perbesar Kanvas
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Atur ulang zoom ke 12x (Ctrl+0)"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
                 @click="store.zoom = 12"
               >
                 <FontAwesomeIcon :icon="faExpand" class="h-3 w-3" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Reset Zoom 12×</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                :aria-pressed="store.showGrid"
-                aria-label="Toggle pixel grid"
-                :class="[
-                  'touch-target-expand h-6 w-6 rounded-full transition-[color,transform] duration-100 ease-out active:scale-[0.96]',
-                  store.showGrid ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-                ]"
-                @click="store.showGrid = !store.showGrid"
-              >
-                <FontAwesomeIcon :icon="faBorderAll" class="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Toggle Pixel Grid (G)</TooltipContent>
+            <TooltipContent side="bottom" class="flex items-center gap-1.5 text-xs">
+              <span>Atur Ulang Zoom 12×</span>
+              <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">Ctrl+0</kbd>
+            </TooltipContent>
           </Tooltip>
         </div>
+
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              :aria-pressed="store.showGrid"
+              aria-label="Alihkan kisi piksel (G)"
+              :class="[
+                'h-7 w-7 rounded-sm border transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96]',
+                store.showGrid
+                  ? 'border-primary/40 bg-primary/15 text-primary'
+                  : 'border-border bg-muted/80 text-muted-foreground hover:text-foreground',
+              ]"
+              @click="store.showGrid = !store.showGrid"
+            >
+              <FontAwesomeIcon :icon="faBorderAll" class="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" class="flex items-center gap-1.5 text-xs">
+            <span>Kisi Piksel</span>
+            <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">G</kbd>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
 
@@ -618,19 +659,19 @@ function handleStageModeChange(val: unknown): void {
         v-if="store.copiedColorToast"
         role="status"
         aria-live="polite"
-        class="pointer-events-none absolute right-3 bottom-3 z-20 flex items-center gap-1.5 rounded-md border border-border bg-card/95 px-2.5 py-1.5 font-mono text-[11px] text-foreground shadow-lg"
+        class="pointer-events-none absolute right-3 bottom-3 z-20 flex items-center gap-1.5 rounded-md border border-border bg-card/95 px-2.5 py-1.5 font-mono text-[11px] text-foreground shadow-lg backdrop-blur-xs"
       >
         <span
           aria-hidden="true"
-          class="h-3 w-3 rounded-[2px] border border-white/25"
+          class="h-3 w-3 rounded-[2px] border border-white/25 shadow-xs"
           :style="{ backgroundColor: store.copiedColorToast.hex }"
         />
         <FontAwesomeIcon :icon="faCheck" class="h-3 w-3 text-emerald-400" />
-        <span>
+        <span class="tabular-nums">
           {{
             store.copiedColorToast.ok
-              ? `Copied ${store.copiedColorToast.hex}`
-              : `Selected ${store.copiedColorToast.hex}`
+              ? `Tersalin ${store.copiedColorToast.hex}`
+              : `Dipilih ${store.copiedColorToast.hex}`
           }}
         </span>
       </div>
@@ -647,13 +688,13 @@ function handleStageModeChange(val: unknown): void {
             @wheel="handleCanvasWheel"
           >
             <p v-if="!store.selectedEntry" class="m-auto text-xs text-muted-foreground">
-              Select or add an entry in the left explorer to edit pixels.
+              Pilih atau tambahkan entri pada bilah kiri untuk mengedit piksel.
             </p>
 
             <!-- Space Entry Visual Offset Gauge -->
             <div
               v-else-if="store.selectedEntry.kind === 'space'"
-              class="m-auto w-full max-w-md space-y-3 border border-border bg-card/95 p-5 text-center"
+              class="m-auto w-full max-w-md space-y-3 rounded-md border border-border bg-card/95 p-5 text-center shadow-lg"
             >
               <p class="font-mono text-xs font-medium text-primary">
                 SpaceProvider · {{ store.selectedEntry.label }}
@@ -661,7 +702,7 @@ function handleStageModeChange(val: unknown): void {
               <p class="font-mono text-3xl font-semibold text-foreground tabular-nums">
                 {{ store.selectedEntry.advance > 0 ? `+${store.selectedEntry.advance}` : store.selectedEntry.advance }} px
               </p>
-              <div class="relative h-7 border border-border bg-background px-3">
+              <div class="relative h-7 rounded border border-border bg-background px-3">
                 <div class="absolute inset-y-0 left-1/2 w-px bg-border" />
                 <div
                   :style="{
@@ -680,8 +721,8 @@ function handleStageModeChange(val: unknown): void {
               <p class="text-[11px] leading-relaxed text-muted-foreground">
                 {{
                   store.selectedEntry.advance < 0 || store.selectedEntry.advance > 32
-                    ? 'Valid in SpaceProvider (anyGlyphs); skipped in nonFishyGlyphs (&k) mode.'
-                    : 'Safe advance range for both anyGlyphs and nonFishyGlyphs (0..32).'
+                    ? 'Valid dalam SpaceProvider (anyGlyphs); diabaikan dalam mode nonFishyGlyphs (&k).'
+                    : 'Rentang nilai aman untuk anyGlyphs dan nonFishyGlyphs (0..32 px).'
                 }}
               </p>
             </div>
@@ -690,21 +731,21 @@ function handleStageModeChange(val: unknown): void {
             <Alert
               v-else-if="selectedDecodeError || !activeRaster"
               variant="destructive"
-              class="m-auto max-w-md bg-destructive/10 border-destructive/40"
+              class="m-auto max-w-md rounded-md bg-destructive/10 border-destructive/40"
             >
               <FontAwesomeIcon :icon="faTriangleExclamation" class="h-4 w-4 text-destructive" />
               <AlertTitle class="text-xs font-semibold">
-                Failed to decode PNG file (F03)
+                Gagal memproses berkas PNG (F03)
               </AlertTitle>
               <AlertDescription class="text-xs text-destructive">
-                {{ selectedDecodeError ?? 'Upload a valid PNG file via explorer or inspector.' }}
+                {{ selectedDecodeError ?? 'Unggah berkas PNG yang valid melalui penjelajah atau inspektur.' }}
               </AlertDescription>
             </Alert>
 
             <!-- Crisp Pixel Canvas Wrapper -->
             <div
               v-else
-              class="sprite-preview-outline m-auto inline-block shrink-0 ring-1 ring-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.65)]"
+              class="sprite-preview-outline m-auto inline-block shrink-0 rounded-xs ring-1 ring-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.65)]"
               :style="{
                 width: `${activeRaster.width * store.zoom}px`,
                 height: `${activeRaster.height * store.zoom}px`,
@@ -714,7 +755,7 @@ function handleStageModeChange(val: unknown): void {
                 id="studio-pixel-canvas"
                 ref="pixelCanvasRef"
                 role="img"
-                :aria-label="`Pixel canvas for ${store.selectedEntry.label} (${activeRaster.width} by ${activeRaster.height} pixels)`"
+                :aria-label="`Kanvas piksel untuk ${store.selectedEntry.label} (${activeRaster.width} × ${activeRaster.height} piksel)`"
                 :style="{
                   touchAction: store.activeTool === 'select' ? 'auto' : 'none',
                   cursor:
@@ -748,8 +789,8 @@ function handleStageModeChange(val: unknown): void {
                   compact
                   target-id="split-font-json-code"
                   :text-to-copy="jsonOutputText"
-                  label="Copy JSON"
-                  aria-label="Copy font JSON and pack.mcmeta"
+                  label="Salin JSON"
+                  aria-label="Salin font JSON dan pack.mcmeta"
                 />
               </div>
               <ScrollArea class="min-h-0 flex-1">
@@ -770,15 +811,15 @@ function handleStageModeChange(val: unknown): void {
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
             <div>
               <h2 class="text-sm font-semibold text-foreground">
-                In-Game Render Simulation ({{ store.fontProject.previewContext === 'Nametag' ? 'Third Person · Nametag' : store.fontProject.previewContext }})
+                Simulasi Render In-Game ({{ store.fontProject.previewContext === 'Nametag' ? 'Third Person · Nametag' : store.fontProject.previewContext }})
               </h2>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <ToggleGroup
                 type="single"
                 :model-value="store.fontProject.previewContext"
-                aria-label="Preview scene context"
-                class="gap-0.5 border border-border bg-card p-0.5"
+                aria-label="Konteks suasana pratinjau"
+                class="gap-0.5 rounded-sm border border-border bg-card p-0.5"
                 @update:model-value="
                   (val) => {
                     if (val === 'Chat' || val === 'TAB' || val === 'Nametag') {
@@ -789,19 +830,19 @@ function handleStageModeChange(val: unknown): void {
               >
                 <ToggleGroupItem
                   value="Chat"
-                  class="h-6 px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
-                  Chat
+                  Obrolan
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="TAB"
-                  class="h-6 px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
                   TAB
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="Nametag"
-                  class="h-6 px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
                   Third Person
                 </ToggleGroupItem>
@@ -810,8 +851,8 @@ function handleStageModeChange(val: unknown): void {
               <ToggleGroup
                 type="single"
                 :model-value="store.previewBackdropMode"
-                aria-label="Large preview backdrop mode"
-                class="gap-0.5 border border-border bg-card p-0.5"
+                aria-label="Mode latar belakang pratinjau"
+                class="gap-0.5 rounded-sm border border-border bg-card p-0.5"
                 @update:model-value="
                   (val) => {
                     if (val === 'world' || val === 'solid' || val === 'custom') {
@@ -822,32 +863,32 @@ function handleStageModeChange(val: unknown): void {
               >
                 <ToggleGroupItem
                   value="world"
-                  class="h-6 px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
-                  World Scene
+                  Suasana Dunia
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="solid"
-                  class="h-6 px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
-                  Dark Solid
+                  Gelap Pekat
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   v-if="store.customBackdropUrl"
                   value="custom"
-                  class="h-6 px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                  class="h-6 rounded-sm px-2 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
                 >
-                  Local Photo
+                  Foto Lokal
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
           </div>
 
-          <div class="sprite-preview-outline flex min-h-44 items-center justify-center overflow-x-auto border border-border bg-background p-3">
+          <div class="sprite-preview-outline flex min-h-44 items-center justify-center overflow-x-auto rounded-md border border-border bg-background p-3">
             <canvas
               ref="inGameCanvasRef"
               role="img"
-              :aria-label="`${store.fontProject.previewContext} simulation`"
+              :aria-label="`Simulasi ${store.fontProject.previewContext}`"
               class="pixelated-canvas block max-w-full shrink-0 ring-1 ring-white/15"
             />
           </div>
@@ -855,23 +896,23 @@ function handleStageModeChange(val: unknown): void {
           <div class="grid grid-cols-2 gap-4 border-t border-border pt-4">
             <div class="space-y-2">
               <Label for="stage-sample-chat-input" class="text-xs font-medium text-foreground">
-                Sample text after prefix
+                Teks sampel setelah prefiks
               </Label>
               <Input
                 id="stage-sample-chat-input"
                 type="text"
                 :model-value="store.fontProject.sampleChatText"
-                class="h-8 bg-muted font-mono text-xs"
+                class="h-8 rounded-sm bg-muted font-mono text-xs"
                 @update:model-value="store.setSampleChatText(String($event ?? ''))"
               />
               <p class="text-[11px] text-muted-foreground">
-                ASCII text uses the project's procedural 3×5 pixel font (zero Mojang assets).
+                Teks ASCII menggunakan font piksel 3×5 sintetis (tanpa aset vanilla Mojang).
               </p>
             </div>
 
             <div class="space-y-2">
               <p class="text-xs font-medium text-foreground">
-                Active prefix token sequence ({{ store.fontProject.prefixSequenceIds.length }})
+                Urutan token prefiks aktif ({{ store.fontProject.prefixSequenceIds.length }})
               </p>
               <div class="flex flex-wrap gap-1.5">
                 <Button
@@ -880,7 +921,7 @@ function handleStageModeChange(val: unknown): void {
                   type="button"
                   size="sm"
                   :variant="store.fontProject.prefixSequenceIds.includes(entry.id) ? 'default' : 'outline'"
-                  class="h-7 px-2 font-mono text-[11px] transition-[background-color,color,transform] duration-100 ease-out active:scale-[0.96]"
+                  class="h-7 rounded-sm px-2 font-mono text-[11px] transition-[background-color,color,transform] duration-100 ease-out active:scale-[0.96]"
                   @click="store.togglePrefixEntry(entry.id)"
                 >
                   {{ store.fontProject.prefixSequenceIds.includes(entry.id) ? '✓ ' : '+ ' }}{{ entry.label }}
@@ -891,16 +932,16 @@ function handleStageModeChange(val: unknown): void {
 
           <div class="space-y-2 border-t border-border pt-4">
             <h3 class="text-xs font-semibold text-foreground">
-              Raw float cursor accumulation (<code class="text-muted-foreground">PreparedTextBuilder</code>)
+              Akumulasi kursor float (<code class="text-muted-foreground font-mono">PreparedTextBuilder</code>)
             </h3>
-            <div class="overflow-x-auto border border-border bg-card">
+            <div class="overflow-x-auto rounded-md border border-border bg-card">
               <Table>
                 <TableHeader class="border-b border-border bg-muted">
                   <TableRow class="border-border hover:bg-transparent">
                     <TableHead class="h-8 font-mono text-[11px]">Token</TableHead>
-                    <TableHead class="h-8 font-mono text-[11px]">xStart</TableHead>
+                    <TableHead class="h-8 font-mono text-[11px]">Awal X</TableHead>
                     <TableHead class="h-8 font-mono text-[11px]">Advance</TableHead>
-                    <TableHead class="h-8 font-mono text-[11px]">xEnd</TableHead>
+                    <TableHead class="h-8 font-mono text-[11px]">Akhir X</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody class="divide-y divide-border/50 font-mono text-[11px] tabular-nums">
@@ -923,21 +964,46 @@ function handleStageModeChange(val: unknown): void {
     </div>
 
     <!-- Bottom 28px IDE Status Bar -->
-    <div class="flex items-center justify-between gap-3 border-t border-border bg-card px-3 py-1 font-mono text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
+    <div
+      role="status"
+      aria-label="Status kanvas dan kursor"
+      class="flex h-7 shrink-0 items-center justify-between gap-3 border-t border-border bg-card px-3 font-mono text-[11px] text-muted-foreground tabular-nums whitespace-nowrap select-none"
+    >
       <div class="flex min-w-0 items-center gap-2.5 overflow-hidden whitespace-nowrap">
+        <!-- Active Tool Indicator -->
+        <span class="inline-flex items-center gap-1 font-medium text-foreground">
+          <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Alat:</span>
+          <span class="text-primary">{{ activeToolLabel }}</span>
+        </span>
+
+        <span class="text-border">|</span>
+
+        <!-- Zoom Indicator -->
+        <span class="inline-flex items-center gap-1">
+          <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Zoom:</span>
+          <span class="text-foreground">{{ store.zoom }}×</span>
+        </span>
+
+        <span class="text-border">|</span>
+
+        <!-- Cursor Coordinates & Color -->
         <template v-if="hoverPixel">
-          <span class="text-foreground">
-            ({{ hoverPixel.x }}, {{ hoverPixel.y }})
+          <span class="inline-flex items-center gap-1 text-foreground">
+            <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Pos:</span>
+            <span>({{ hoverPixel.x }}, {{ hoverPixel.y }})</span>
           </span>
+
           <span v-if="hoverPixel.hex" class="inline-flex items-center gap-1.5 text-foreground">
             <span
               aria-hidden="true"
-              class="inline-block h-2.5 w-2.5 rounded-[2px] border border-white/25"
+              class="inline-block h-2.5 w-2.5 rounded-[2px] border border-white/25 shadow-xs"
               :style="{ backgroundColor: hoverPixel.hex }"
             />
-            <span>{{ hoverPixel.hex }}</span>
+            <span class="text-foreground">{{ hoverPixel.hex }}</span>
           </span>
-          <span class="truncate">{{ hoverPixel.rgbaLabel }}</span>
+          <span v-else class="text-muted-foreground">(Transparan)</span>
+
+          <span class="truncate text-[10px] text-muted-foreground">{{ hoverPixel.rgbaLabel }}</span>
         </template>
         <template v-else-if="store.selectedEntry?.kind === 'bitmap' && selectedMetrics">
           <span class="text-foreground">
@@ -948,14 +1014,14 @@ function handleStageModeChange(val: unknown): void {
             w {{ selectedMetrics.primaryActualGlyphWidth }}
           </span>
           <span class="text-primary">
-            adv {{ selectedMetrics.primaryAdvance }}
+            adv {{ selectedMetrics.primaryAdvance }}px
           </span>
           <span>top {{ selectedMetrics.top }}</span>
         </template>
-        <span v-else-if="store.selectedEntry?.kind === 'space'">
-          space · adv {{ store.selectedEntry.advance }}px
+        <span v-else-if="store.selectedEntry?.kind === 'space'" class="text-foreground">
+          Spasi Negatif · adv {{ store.selectedEntry.advance }}px
         </span>
-        <span v-else>Ready</span>
+        <span v-else class="text-muted-foreground">Siap</span>
       </div>
 
       <div class="flex shrink-0 items-center gap-2.5 whitespace-nowrap">
@@ -963,19 +1029,19 @@ function handleStageModeChange(val: unknown): void {
           <TooltipTrigger as-child>
             <span class="inline-flex cursor-help items-center gap-1 text-amber-300">
               <FontAwesomeIcon :icon="faTriangleExclamation" class="h-3 w-3" />
-              <span>[UNVERIFIED] Float Simulation</span>
+              <span>[UNVERIFIED] Simulasi Float</span>
             </span>
           </TooltipTrigger>
-          <TooltipContent side="top" class="max-w-xs text-[11px]">
-            Float coordinate simulation is derived from Mojang bytecode; actual client rasterization and 1.21.11+ Texture Filtering still require live Minecraft client verification.
+          <TooltipContent side="top" class="max-w-xs text-xs">
+            Simulasi koordinat float diturunkan dari bytecode Mojang; rasterisasi klien dan pemfilteran tekstur 1.21.11+ tetap memerlukan verifikasi klien langsung.
           </TooltipContent>
         </Tooltip>
 
         <button
           type="button"
           :class="[
-            'inline-flex cursor-pointer items-center gap-1 font-medium focus-visible:outline-2 focus-visible:outline-primary transition-[color,transform] duration-100 ease-out active:scale-[0.96]',
-            store.validation.errors > 0 ? 'text-destructive' : 'text-emerald-300',
+            'inline-flex cursor-pointer items-center gap-1.5 font-medium rounded px-1.5 py-0.5 focus-visible:outline-2 focus-visible:outline-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]',
+            store.validation.errors > 0 ? 'text-destructive bg-destructive/10' : 'text-emerald-300 hover:bg-muted/70',
           ]"
           @click="store.inspectorTab = 'validate'"
         >
@@ -984,10 +1050,10 @@ function handleStageModeChange(val: unknown): void {
           <span>
             {{
               store.validation.errors > 0
-                ? `${store.validation.errors} Errors`
+                ? `${store.validation.errors} Kesalahan`
                 : store.validation.warns > 0
-                  ? `0 Errors · ${store.validation.warns} Warn`
-                  : '0 Errors · Ready'
+                  ? `0 Kesalahan · ${store.validation.warns} Peringatan`
+                  : '0 Kesalahan · Siap'
             }}
           </span>
         </button>

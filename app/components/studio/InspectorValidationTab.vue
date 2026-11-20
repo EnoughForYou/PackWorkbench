@@ -136,20 +136,20 @@ function jumpToEntry(entryId: string): void {
             <p class="truncate text-xs font-semibold text-foreground">
               {{
                 store.validation.errors > 0
-                  ? `${store.validation.errors} Errors to Fix`
+                  ? `${store.validation.errors} Kesalahan Perlu Diperbaiki`
                   : store.validation.warns > 0
-                    ? `Ready to Export (${store.validation.warns} Warnings)`
-                    : 'Pack Valid · Ready to Export'
+                    ? `Siap Diekspor (${store.validation.warns} Peringatan)`
+                    : 'Paket Valid · Siap Diekspor'
               }}
             </p>
           </div>
         </div>
 
         <div class="flex shrink-0 items-center gap-1.5 font-mono text-[10px] tabular-nums">
-          <span :class="store.validation.errors > 0 ? 'text-red-300' : 'text-muted-foreground'">
+          <span :class="store.validation.errors > 0 ? 'text-red-300 font-semibold' : 'text-muted-foreground'">
             E:{{ store.validation.errors }}
           </span>
-          <span :class="store.validation.warns > 0 ? 'text-amber-300' : 'text-muted-foreground'">
+          <span :class="store.validation.warns > 0 ? 'text-amber-300 font-semibold' : 'text-muted-foreground'">
             W:{{ store.validation.warns }}
           </span>
           <span class="text-sky-300/90">I:{{ store.validation.infos }}</span>
@@ -164,21 +164,21 @@ function jumpToEntry(entryId: string): void {
         <TabsList class="grid h-8 w-full grid-cols-3 rounded-none border-t border-border/60 bg-card p-0">
           <TabsTrigger
             value="audit"
-            class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-2 text-[11px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            class="relative h-8 rounded-none border-0 bg-transparent px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
           >
             Audit{{ problemFindings.length > 0 ? ` (${problemFindings.length})` : '' }}
           </TabsTrigger>
           <TabsTrigger
             value="deploy"
-            class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-2 text-[11px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            class="relative h-8 rounded-none border-0 bg-transparent px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
           >
             Deploy &amp; YAML
           </TabsTrigger>
           <TabsTrigger
             value="config"
-            class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-2 text-[11px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            class="relative h-8 rounded-none border-0 bg-transparent px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
           >
-            Pack Settings
+            Pengaturan Pack
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -191,31 +191,31 @@ function jumpToEntry(entryId: string): void {
         <ToggleGroup
           type="single"
           :model-value="findingFilter"
-          aria-label="Filter font findings by severity"
-          class="grid w-full grid-cols-4 gap-1"
+          aria-label="Saring temuan validasi font"
+          class="grid w-full grid-cols-4 gap-1 rounded-sm border border-border bg-muted/80 p-0.5"
           @update:model-value="handleFilterChange"
         >
           <ToggleGroupItem
             value="ALL"
-            class="h-6 whitespace-nowrap px-1 text-[10px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+            class="h-6 whitespace-nowrap rounded-xs px-1 text-[10px] data-[state=on]:bg-card data-[state=on]:text-foreground"
           >
-            All
+            Semua
           </ToggleGroupItem>
           <ToggleGroupItem
             value="ERROR"
-            class="h-6 whitespace-nowrap px-1 text-[10px] data-[state=on]:bg-red-950/70 data-[state=on]:text-red-200"
+            class="h-6 whitespace-nowrap rounded-xs px-1 text-[10px] data-[state=on]:bg-red-950/70 data-[state=on]:text-red-200"
           >
             Error ({{ store.validation.errors }})
           </ToggleGroupItem>
           <ToggleGroupItem
             value="WARN"
-            class="h-6 whitespace-nowrap px-1 text-[10px] data-[state=on]:bg-amber-950/70 data-[state=on]:text-amber-200"
+            class="h-6 whitespace-nowrap rounded-xs px-1 text-[10px] data-[state=on]:bg-amber-950/70 data-[state=on]:text-amber-200"
           >
             Warn ({{ store.validation.warns }})
           </ToggleGroupItem>
           <ToggleGroupItem
             value="INFO"
-            class="h-6 whitespace-nowrap px-1 text-[10px] data-[state=on]:bg-sky-950/70 data-[state=on]:text-sky-200"
+            class="h-6 whitespace-nowrap rounded-xs px-1 text-[10px] data-[state=on]:bg-sky-950/70 data-[state=on]:text-sky-200"
           >
             Info ({{ store.validation.infos }})
           </ToggleGroupItem>
@@ -224,38 +224,38 @@ function jumpToEntry(entryId: string): void {
         <!-- Clean Pass State -->
         <div
           v-if="visibleProblemFindings.length === 0 && findingFilter !== 'INFO'"
-          class="space-y-2.5 border border-emerald-800/60 bg-emerald-950/20 p-3"
+          class="space-y-2.5 rounded-md border border-emerald-800/60 bg-emerald-950/20 p-3"
         >
           <p class="text-xs font-medium text-emerald-200">
             {{
               findingFilter === 'ALL'
-                ? 'No errors or warnings detected across F01–F10.'
-                : `No findings with severity ${findingFilter}.`
+                ? 'Tidak ditemukan kesalahan atau peringatan pada aturan F01–F10.'
+                : `Tidak ada temuan dengan tingkat keparahan ${findingFilter}.`
             }}
           </p>
           <p class="text-[11px] leading-relaxed text-muted-foreground">
-            Namespace <code class="text-foreground">{{ cleanNamespace }}</code> · font
-            <code class="text-foreground">{{ cleanFontName }}.json</code> is ready to download or copy into server plugins.
+            Namespace <code class="text-foreground font-mono">{{ cleanNamespace }}</code> · font
+            <code class="text-foreground font-mono">{{ cleanFontName }}.json</code> siap diunduh atau disalin ke plugin server.
           </p>
           <div class="flex flex-wrap gap-1.5 pt-0.5">
             <Button
               type="button"
               size="sm"
               variant="secondary"
-              class="h-7 gap-1 px-2.5 text-[11px]"
+              class="h-7 gap-1 rounded-sm px-2.5 text-[11px] transition-transform active:scale-[0.96]"
               @click="activeSubTab = 'deploy'"
             >
-              <span>Copy Commands &amp; YAML</span>
+              <span>Salin Perintah &amp; YAML</span>
               <FontAwesomeIcon :icon="faArrowRight" class="h-3 w-3" />
             </Button>
             <Button
               type="button"
               size="sm"
               variant="outline"
-              class="h-7 px-2.5 text-[11px]"
+              class="h-7 rounded-sm px-2.5 text-[11px] transition-transform active:scale-[0.96]"
               @click="activeSubTab = 'config'"
             >
-              Edit Pack Settings
+              Edit Pengaturan Pack
             </Button>
           </div>
         </div>
@@ -263,7 +263,7 @@ function jumpToEntry(entryId: string): void {
         <!-- Actionable Errors & Warnings -->
         <ul
           v-if="visibleProblemFindings.length > 0"
-          class="divide-y divide-border/60 border border-border/70 bg-card"
+          class="divide-y divide-border/60 rounded-md border border-border/70 bg-card overflow-hidden"
         >
           <li
             v-for="(f, idx) in visibleProblemFindings"
@@ -273,7 +273,7 @@ function jumpToEntry(entryId: string): void {
             <div class="flex items-center justify-between gap-2">
               <Badge
                 variant="outline"
-                :class="['h-4 px-1.5 font-mono text-[9px]', SEVERITY_BADGE[f.severity]]"
+                :class="['h-4 px-1.5 font-mono text-[9px] tabular-nums', SEVERITY_BADGE[f.severity]]"
               >
                 {{ f.severity }} {{ f.id }}
               </Badge>
@@ -285,14 +285,14 @@ function jumpToEntry(entryId: string): void {
             <p class="leading-relaxed text-muted-foreground">{{ f.message }}</p>
             <div class="flex items-center justify-between gap-2 pt-0.5">
               <p class="font-mono text-[10px] text-primary">
-                Fix: {{ f.fixHint }}
+                Petunjuk: {{ f.fixHint }}
               </p>
               <Button
                 v-if="f.entryId"
                 type="button"
                 size="sm"
                 variant="outline"
-                class="h-6 shrink-0 px-2 text-[10px]"
+                class="h-6 shrink-0 rounded-sm px-2 text-[10px] transition-transform active:scale-[0.96]"
                 @click="jumpToEntry(f.entryId)"
               >
                 Edit {{ resolveEntryLabel(f.entryId) }}
@@ -305,7 +305,7 @@ function jumpToEntry(entryId: string): void {
         <details
           v-if="visibleInfoFindings.length > 0"
           :open="infoDetailsOpen"
-          class="border border-border/60 bg-card"
+          class="rounded-md border border-border/60 bg-card overflow-hidden"
           @toggle="infoDetailsOpen = ($event.target as HTMLDetailsElement).open"
         >
           <summary class="flex cursor-pointer list-none items-center gap-1.5 px-2.5 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground">
@@ -313,7 +313,7 @@ function jumpToEntry(entryId: string): void {
               :icon="faChevronRight"
               :class="['h-3.5 w-3.5 shrink-0 transition-transform', infoDetailsOpen ? 'rotate-90 text-foreground' : '']"
             />
-            <span>Technical Notes &amp; Info ({{ visibleInfoFindings.length }})</span>
+            <span>Catatan Teknis &amp; Info ({{ visibleInfoFindings.length }})</span>
           </summary>
           <ul class="divide-y divide-border/50 border-t border-border/60">
             <li
@@ -324,7 +324,7 @@ function jumpToEntry(entryId: string): void {
               <div class="flex items-center justify-between gap-1.5">
                 <Badge
                   variant="outline"
-                  :class="['h-4 px-1 font-mono text-[9px]', SEVERITY_BADGE[f.severity]]"
+                  :class="['h-4 px-1 font-mono text-[9px] tabular-nums', SEVERITY_BADGE[f.severity]]"
                 >
                   {{ f.severity }} {{ f.id }}
                 </Badge>
@@ -335,7 +335,7 @@ function jumpToEntry(entryId: string): void {
               <p class="font-medium text-foreground">{{ f.title }}</p>
               <p class="leading-relaxed text-muted-foreground">{{ f.message }}</p>
               <p class="font-mono text-[10px] text-primary">
-                Note: {{ f.fixHint }}
+                Catatan: {{ f.fixHint }}
               </p>
             </li>
           </ul>
@@ -352,25 +352,25 @@ function jumpToEntry(entryId: string): void {
           <TabsList class="grid h-8 w-full grid-cols-4 gap-0 rounded-none border-b border-border bg-transparent p-0">
             <TabsTrigger
               value="luckperms"
-              class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              class="relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
             >
               LuckPerms
             </TabsTrigger>
             <TabsTrigger
               value="itemsadder"
-              class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              class="relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
             >
               ItemsAdder
             </TabsTrigger>
             <TabsTrigger
               value="oraxen"
-              class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              class="relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
             >
               Oraxen
             </TabsTrigger>
             <TabsTrigger
               value="nexo"
-              class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              class="relative h-8 rounded-none border-0 bg-transparent px-1 text-[10px] font-medium text-muted-foreground transition-colors hover:text-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-primary"
             >
               Nexo
             </TabsTrigger>
@@ -378,26 +378,26 @@ function jumpToEntry(entryId: string): void {
 
           <!-- LuckPerms & Vanilla Tab -->
           <TabsContent value="luckperms" class="mt-1 space-y-3 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+            <div class="flex items-start gap-2 rounded-sm border border-border/70 bg-muted/80 p-2 text-[11px] text-muted-foreground">
               <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
-                Use <strong class="text-foreground">Download Java Pack</strong> for
-                Minecraft Vanilla, <code class="text-foreground">server.properties</code>, or
-                <code class="text-foreground">plugins/Nexo/pack/external_packs/</code>.
+                Gunakan <strong class="text-foreground">Unduh Java Pack</strong> untuk
+                Minecraft Vanilla, <code class="text-foreground font-mono">server.properties</code>, atau
+                <code class="text-foreground font-mono">plugins/Nexo/pack/external_packs/</code>.
               </p>
             </div>
 
             <div class="grid grid-cols-[1fr_76px] gap-1.5">
               <div>
-                <Label for="lp-group-input" class="mb-1 block text-[10px] text-muted-foreground">
-                  LuckPerms Group
+                <Label for="lp-group-input" class="mb-1 block text-[10px] font-medium text-foreground">
+                  Grup LuckPerms
                 </Label>
                 <Input
                   id="lp-group-input"
                   type="text"
                   placeholder="admin"
                   :model-value="store.fontProject.luckPermsGroup"
-                  class="h-7 bg-muted px-2 font-mono text-xs"
+                  class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -407,14 +407,14 @@ function jumpToEntry(entryId: string): void {
                 />
               </div>
               <div>
-                <Label for="lp-weight-input" class="mb-1 block text-[10px] text-muted-foreground">
-                  Weight
+                <Label for="lp-weight-input" class="mb-1 block text-[10px] font-medium text-foreground">
+                  Bobot
                 </Label>
                 <Input
                   id="lp-weight-input"
                   type="number"
                   :model-value="store.fontProject.luckPermsWeight"
-                  class="h-7 bg-muted px-2 font-mono text-xs tabular-nums"
+                  class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -427,26 +427,26 @@ function jumpToEntry(entryId: string): void {
 
             <div class="space-y-1.5">
               <div class="flex items-center justify-between gap-2">
-                <span class="text-[11px] font-medium text-foreground">Set Prefix Command</span>
+                <span class="text-[11px] font-medium text-foreground">Perintah Set Prefix</span>
                 <div class="flex items-center gap-1">
                   <CopyButton
                     compact
                     target-id="lp-prefix-raw-ref"
                     :text-to-copy="snippets.prefixLiteral"
-                    label="Prefix Only"
+                    label="Hanya Prefiks"
                   />
                   <CopyButton
                     compact
                     target-id="lp-snippet-code"
                     :text-to-copy="snippets.luckPermsCommand"
-                    label="Copy /lp"
+                    label="Salin /lp"
                   />
                 </div>
               </div>
-              <pre class="overflow-x-auto bg-background p-2 font-mono text-[10px] text-foreground"><code id="lp-snippet-code">{{ snippets.luckPermsCommand }}</code></pre>
+              <pre class="overflow-x-auto rounded-sm bg-background p-2 font-mono text-[10px] text-foreground"><code id="lp-snippet-code">{{ snippets.luckPermsCommand }}</code></pre>
               <span id="lp-prefix-raw-ref" class="sr-only">{{ snippets.prefixLiteral }}</span>
               <p class="text-[10px] leading-snug text-muted-foreground">
-                PUA characters (<code class="text-primary">{{ snippets.prefixEscaped || '—' }}</code>) look like blank boxes in browsers because they map to private resource-pack slots.
+                Karakter PUA (<code class="text-primary font-mono">{{ snippets.prefixEscaped || '—' }}</code>) tampak kosong di peramban karena memetakan slot resource-pack pribadi.
               </p>
             </div>
 
@@ -457,20 +457,20 @@ function jumpToEntry(entryId: string): void {
                   compact
                   target-id="tellraw-snippet-code"
                   :text-to-copy="snippets.objectTellrawCommand ?? snippets.tellrawCommand"
-                  label="Copy /tellraw"
+                  label="Salin /tellraw"
                 />
               </div>
               <p class="font-mono text-[10px] text-primary">{{ snippets.placeholderApi }}</p>
-              <pre class="overflow-x-auto bg-background p-2 font-mono text-[10px] text-foreground"><code id="tellraw-snippet-code">{{ snippets.objectTellrawCommand ?? snippets.tellrawCommand }}</code></pre>
+              <pre class="overflow-x-auto rounded-sm bg-background p-2 font-mono text-[10px] text-foreground"><code id="tellraw-snippet-code">{{ snippets.objectTellrawCommand ?? snippets.tellrawCommand }}</code></pre>
             </div>
           </TabsContent>
 
           <!-- ItemsAdder / Oraxen / Nexo Unified YAML Panels -->
           <TabsContent value="itemsadder" class="mt-1 space-y-2.5 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+            <div class="flex items-start gap-2 rounded-sm border border-border/70 bg-muted/80 p-2 text-[11px] text-muted-foreground">
               <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
-                Save to <code class="text-foreground">plugins/ItemsAdder/data/items_packs/{{ cleanNamespace }}/font_images.yml</code> + PNGs to <code class="text-foreground">resource_pack/</code>, then run <code class="text-primary">/iareload</code> &amp; <code class="text-primary">/iazip</code>.
+                Simpan ke <code class="text-foreground font-mono">plugins/ItemsAdder/data/items_packs/{{ cleanNamespace }}/font_images.yml</code> + PNG ke <code class="text-foreground font-mono">resource_pack/</code>, lalu jalankan <code class="text-primary font-mono">/iareload</code> &amp; <code class="text-primary font-mono">/iazip</code>.
               </p>
             </div>
             <div class="flex items-center justify-between gap-2">
@@ -479,17 +479,17 @@ function jumpToEntry(entryId: string): void {
                 compact
                 target-id="plugin-yaml-itemsadder"
                 :text-to-copy="activeYamlText"
-                label="Copy YAML"
+                label="Salin YAML"
               />
             </div>
-            <pre class="max-h-56 overflow-auto bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-itemsadder">{{ snippets.pluginYaml.itemsAdderYaml }}</code></pre>
+            <pre class="max-h-56 overflow-auto rounded-sm bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-itemsadder">{{ snippets.pluginYaml.itemsAdderYaml }}</code></pre>
           </TabsContent>
 
           <TabsContent value="oraxen" class="mt-1 space-y-2.5 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+            <div class="flex items-start gap-2 rounded-sm border border-border/70 bg-muted/80 p-2 text-[11px] text-muted-foreground">
               <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
-                Save to <code class="text-foreground">plugins/Oraxen/glyphs/{{ cleanNamespace }}.yml</code> + PNGs to <code class="text-foreground">plugins/Oraxen/pack/textures/</code>, then run <code class="text-primary">/o reload all</code>.
+                Simpan ke <code class="text-foreground font-mono">plugins/Oraxen/glyphs/{{ cleanNamespace }}.yml</code> + PNG ke <code class="text-foreground font-mono">plugins/Oraxen/pack/textures/</code>, lalu jalankan <code class="text-primary font-mono">/o reload all</code>.
               </p>
             </div>
             <div class="flex items-center justify-between gap-2">
@@ -498,17 +498,17 @@ function jumpToEntry(entryId: string): void {
                 compact
                 target-id="plugin-yaml-oraxen"
                 :text-to-copy="activeYamlText"
-                label="Copy YAML"
+                label="Salin YAML"
               />
             </div>
-            <pre class="max-h-56 overflow-auto bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-oraxen">{{ snippets.pluginYaml.oraxenYaml }}</code></pre>
+            <pre class="max-h-56 overflow-auto rounded-sm bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-oraxen">{{ snippets.pluginYaml.oraxenYaml }}</code></pre>
           </TabsContent>
 
           <TabsContent value="nexo" class="mt-1 space-y-2.5 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+            <div class="flex items-start gap-2 rounded-sm border border-border/70 bg-muted/80 p-2 text-[11px] text-muted-foreground">
               <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
-                Drop <code class="text-foreground">.zip</code> into <code class="text-foreground">plugins/Nexo/pack/external_packs/</code> OR use YAML <code class="text-foreground">plugins/Nexo/glyphs/{{ cleanNamespace }}.yml</code>, then run <code class="text-primary">/nexo reload</code> &amp; <code class="text-primary">/nexo pack</code>.
+                Letakkan <code class="text-foreground font-mono">.zip</code> ke <code class="text-foreground font-mono">plugins/Nexo/pack/external_packs/</code> ATAU gunakan YAML <code class="text-foreground font-mono">plugins/Nexo/glyphs/{{ cleanNamespace }}.yml</code>, lalu jalankan <code class="text-primary font-mono">/nexo reload</code> &amp; <code class="text-primary font-mono">/nexo pack</code>.
               </p>
             </div>
             <div class="flex items-center justify-between gap-2">
@@ -517,10 +517,10 @@ function jumpToEntry(entryId: string): void {
                 compact
                 target-id="plugin-yaml-nexo"
                 :text-to-copy="activeYamlText"
-                label="Copy YAML"
+                label="Salin YAML"
               />
             </div>
-            <pre class="max-h-56 overflow-auto bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-nexo">{{ snippets.pluginYaml.nexoYaml }}</code></pre>
+            <pre class="max-h-56 overflow-auto rounded-sm bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-nexo">{{ snippets.pluginYaml.nexoYaml }}</code></pre>
           </TabsContent>
         </Tabs>
       </div>
@@ -529,18 +529,18 @@ function jumpToEntry(entryId: string): void {
       <div v-else class="space-y-3.5">
         <div class="space-y-2.5">
           <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Font Pack Identity
+            Identitas Resource Pack
           </p>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="font-ns-input" class="text-[11px] font-normal text-muted-foreground">
+            <Label for="font-ns-input" class="text-[11px] font-medium text-foreground">
               Namespace
             </Label>
             <Input
               id="font-ns-input"
               type="text"
               :model-value="store.fontProject.namespace"
-              class="h-7 bg-muted px-2 font-mono text-xs"
+              class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -551,14 +551,14 @@ function jumpToEntry(entryId: string): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="font-name-input" class="text-[11px] font-normal text-muted-foreground">
-              Font File
+            <Label for="font-name-input" class="text-[11px] font-medium text-foreground">
+              Berkas Font
             </Label>
             <Input
               id="font-name-input"
               type="text"
               :model-value="store.fontProject.fontName"
-              class="h-7 bg-muted px-2 font-mono text-xs"
+              class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -569,14 +569,14 @@ function jumpToEntry(entryId: string): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <Label for="pack-desc-input" class="text-[11px] font-normal text-muted-foreground">
-              Description
+            <Label for="pack-desc-input" class="text-[11px] font-medium text-foreground">
+              Deskripsi
             </Label>
             <Input
               id="pack-desc-input"
               type="text"
               :model-value="store.fontProject.packDescription"
-              class="h-7 bg-muted px-2 text-xs"
+              class="h-7 rounded-sm bg-muted/80 px-2 text-xs text-foreground"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -587,8 +587,8 @@ function jumpToEntry(entryId: string): void {
           </div>
 
           <div class="flex items-center justify-between gap-2 pt-0.5">
-            <Label for="pack-include-png-switch" class="cursor-pointer text-[11px] font-normal text-secondary-foreground">
-              Include synthetic 16×16 pack.png
+            <Label for="pack-include-png-switch" class="cursor-pointer text-[11px] font-normal text-foreground">
+              Sertakan pack.png 16×16 sintetis
             </Label>
             <Switch
               id="pack-include-png-switch"
@@ -604,7 +604,7 @@ function jumpToEntry(entryId: string): void {
           </div>
         </div>
 
-        <Separator />
+        <Separator class="bg-border" />
 
         <Collapsible v-model:open="objectSectionOpen" class="space-y-2">
           <div class="flex items-center justify-between gap-2">
@@ -617,11 +617,11 @@ function jumpToEntry(entryId: string): void {
                   :icon="faChevronDown"
                   :class="['h-3.5 w-3.5 transition-transform', objectSectionOpen ? 'rotate-180' : '']"
                 />
-                <span>Object Component (1.21.9+)</span>
+                <span>Komponen Objek (1.21.9+)</span>
               </button>
             </CollapsibleTrigger>
             <Switch
-              aria-label="Enable 1.21.9+ object component"
+              aria-label="Aktifkan komponen objek 1.21.9+"
               :model-value="store.fontProject.objectComponent.enabled"
               @update:model-value="
                 (val) => {
@@ -643,7 +643,7 @@ function jumpToEntry(entryId: string): void {
             <ToggleGroup
               type="single"
               :model-value="store.fontProject.objectComponent.mode"
-              class="grid w-full grid-cols-2 gap-1"
+              class="grid w-full grid-cols-2 gap-1 rounded-sm border border-border bg-muted/80 p-0.5"
               @update:model-value="
                 (val) => {
                   if (val === 'atlas' || val === 'player') {
@@ -657,13 +657,13 @@ function jumpToEntry(entryId: string): void {
             >
               <ToggleGroupItem
                 value="atlas"
-                class="h-6 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                class="h-6 rounded-xs text-[11px] data-[state=on]:bg-card data-[state=on]:text-foreground"
               >
                 atlas
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="player"
-                class="h-6 text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+                class="h-6 rounded-xs text-[11px] data-[state=on]:bg-card data-[state=on]:text-foreground"
               >
                 player
               </ToggleGroupItem>
@@ -671,14 +671,14 @@ function jumpToEntry(entryId: string): void {
 
             <template v-if="store.fontProject.objectComponent.mode === 'atlas'">
               <div class="space-y-1">
-                <Label for="obj-atlas-input" class="text-[10px] text-muted-foreground">
+                <Label for="obj-atlas-input" class="text-[10px] font-medium text-foreground">
                   Atlas (1.21.11+: items / blocks)
                 </Label>
                 <Input
                   id="obj-atlas-input"
                   type="text"
                   :model-value="store.fontProject.objectComponent.atlas"
-                  class="h-7 bg-muted px-2 font-mono text-xs"
+                  class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -691,14 +691,14 @@ function jumpToEntry(entryId: string): void {
                 />
               </div>
               <div class="space-y-1">
-                <Label for="obj-sprite-input" class="text-[10px] text-muted-foreground">
+                <Label for="obj-sprite-input" class="text-[10px] font-medium text-foreground">
                   Sprite
                 </Label>
                 <Input
                   id="obj-sprite-input"
                   type="text"
                   :model-value="store.fontProject.objectComponent.sprite"
-                  class="h-7 bg-muted px-2 font-mono text-xs"
+                  class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -714,14 +714,14 @@ function jumpToEntry(entryId: string): void {
 
             <template v-else>
               <div class="space-y-1">
-                <Label for="obj-player-input" class="text-[10px] text-muted-foreground">
-                  Player Name (8×8 Head)
+                <Label for="obj-player-input" class="text-[10px] font-medium text-foreground">
+                  Nama Pemain (Head 8×8)
                 </Label>
                 <Input
                   id="obj-player-input"
                   type="text"
                   :model-value="store.fontProject.objectComponent.playerName"
-                  class="h-7 bg-muted px-2 font-mono text-xs"
+                  class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -737,6 +737,7 @@ function jumpToEntry(entryId: string): void {
                 <Checkbox
                   id="obj-hat-checkbox"
                   :model-value="store.fontProject.objectComponent.hat"
+                  aria-label="Render lapisan overlay topi (hat)"
                   @update:model-value="
                     (val) =>
                       store.updateProject((prev) => ({
@@ -748,8 +749,8 @@ function jumpToEntry(entryId: string): void {
                       }))
                   "
                 />
-                <Label for="obj-hat-checkbox" class="cursor-pointer text-[11px] text-secondary-foreground">
-                  Render hat overlay layer
+                <Label for="obj-hat-checkbox" class="cursor-pointer text-[11px] text-foreground">
+                  Render lapisan overlay topi (hat)
                 </Label>
               </div>
             </template>
@@ -763,20 +764,18 @@ function jumpToEntry(entryId: string): void {
       <div class="grid grid-cols-1 gap-1.5">
         <Button
           type="button"
-          variant="pill"
-          size="pill"
           :disabled="store.validation.errors > 0 || store.isExporting"
-          class="h-8 w-full gap-1.5 text-xs font-bold"
+          class="h-8.5 w-full gap-1.5 rounded-md text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-transform active:scale-[0.96]"
           @click="store.exportAndDownload()"
         >
           <FontAwesomeIcon :icon="faFileZipper" class="h-3.5 w-3.5" />
           <span>
             {{
               store.isExporting
-                ? 'Building & Validating ZIP...'
+                ? 'Menyusun & Validasi ZIP...'
                 : store.validation.errors > 0
-                  ? `Fix ${store.validation.errors} Errors to Export`
-                  : 'Download Java / Nexo External (.zip)'
+                  ? `Perbaiki ${store.validation.errors} Kesalahan untuk Ekspor`
+                  : 'Unduh Paket Java / Nexo External (.zip)'
             }}
           </span>
         </Button>
@@ -786,15 +785,15 @@ function jumpToEntry(entryId: string): void {
           variant="secondary"
           size="sm"
           :disabled="store.validation.errors > 0 || store.isExportingPluginBundle"
-          class="h-8 w-full gap-1.5 text-xs font-medium"
+          class="h-8 w-full gap-1.5 rounded-md text-xs font-medium transition-transform active:scale-[0.96]"
           @click="store.exportPluginBundleAndDownload()"
         >
           <FontAwesomeIcon :icon="faBoxArchive" class="h-3.5 w-3.5" />
           <span>
             {{
               store.isExportingPluginBundle
-                ? 'Packaging Plugin Bundle...'
-                : 'Download IA / Oraxen / Nexo Bundle (.zip)'
+                ? 'Mengemas Bundel Plugin...'
+                : 'Unduh Bundel IA / Oraxen / Nexo (.zip)'
             }}
           </span>
         </Button>
@@ -811,10 +810,10 @@ function jumpToEntry(entryId: string): void {
 
         <div
           v-if="store.lastBuiltPack"
-          class="space-y-1 border border-emerald-700/70 bg-emerald-950/25 px-2.5 py-2 text-[11px]"
+          class="space-y-1 rounded-md border border-emerald-700/70 bg-emerald-950/25 px-2.5 py-2 text-[11px]"
         >
           <p class="font-mono text-[10px] font-semibold text-emerald-200 tabular-nums">
-            Phase 1 Self-Check ({{ store.lastBuiltPack.zipValidation.targetVersion }}):
+            Pemeriksaan Otomatis ({{ store.lastBuiltPack.zipValidation.targetVersion }}):
             {{ store.lastBuiltPack.zipValidation.summary.errors }} ERR ·
             {{ store.lastBuiltPack.zipValidation.summary.warns }} WARN
           </p>
@@ -836,7 +835,7 @@ function jumpToEntry(entryId: string): void {
       </div>
 
       <p class="text-[10px] leading-snug text-muted-foreground">
-        Java Edition export only · Bedrock PUA range <code>U+E000–U+E1FF</code> monitored automatically.
+        Ekspor Java Edition saja · Rentang Bedrock PUA <code class="font-mono text-primary">U+E000–U+E1FF</code> dipantau secara otomatis.
       </p>
     </div>
   </div>

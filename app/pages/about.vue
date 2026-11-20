@@ -16,7 +16,7 @@ definePageMeta({
 });
 
 useHead({
-  title: 'About — Pack Workbench',
+  title: 'Tentang — Pack Workbench',
 });
 
 const STACK_ROWS = [
@@ -31,57 +31,70 @@ const STACK_ROWS = [
 </script>
 
 <template>
-  <main id="main-content" class="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-16">
-    <div class="space-y-4">
-      <h1 class="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+  <main id="main-content" class="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+    <div class="space-y-3">
+      <div class="inline-flex items-center gap-2 border border-border bg-card px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <span class="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+        <span class="tabular-nums">Dokumentasi &amp; Arsitektur</span>
+      </div>
+      <h1 class="text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
         Tentang Pack Workbench
       </h1>
-      <p class="text-base leading-relaxed text-muted-foreground">
-        Alat browser untuk memeriksa arsip resource pack <code>.zip</code>, memvalidasi <code>pack.mcmeta</code>, dan menyusun rank badge serta font bitmap Minecraft Java Edition.
+      <p class="text-base leading-relaxed text-pretty text-foreground/90">
+        Alat browser untuk memeriksa arsip resource pack <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">.zip</code>, memvalidasi <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">pack.mcmeta</code>, dan menyusun rank badge serta font bitmap Minecraft Java Edition.
       </p>
     </div>
 
     <section aria-labelledby="sumber-heading" class="mt-12 space-y-3 border-t border-border pt-8">
-      <h2 id="sumber-heading" class="text-lg font-semibold text-foreground">
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Verifikasi Primer
+      </p>
+      <h2 id="sumber-heading" class="text-lg font-semibold tracking-tight text-balance text-foreground">
         Sumber acuan teknis dan batasan
       </h2>
-      <p class="text-sm leading-relaxed text-muted-foreground">
-        Aturan validator (<code>Z01–Z09</code>, <code>M01–M10</code>, <code>F01–F10</code>) serta perhitungan posisi piksel merujuk langsung pada catatan pengujian <code>piston-meta.mojang.com</code> dan bytecode <code>client.jar</code> di folder <code>docs/knowledge/</code>.
+      <p class="text-sm leading-relaxed text-pretty text-foreground/90">
+        Aturan validator (<code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground tabular-nums">Z01–Z09</code>, <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground tabular-nums">M01–M10</code>, <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground tabular-nums">F01–F10</code>) serta perhitungan posisi piksel merujuk langsung pada catatan pengujian <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">piston-meta.mojang.com</code> dan bytecode <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">client.jar</code> di folder <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">docs/knowledge/</code>.
       </p>
-      <p class="text-sm leading-relaxed text-muted-foreground">
-        Bagian yang belum diuji di klien game asli—seperti hasil rasterisasi antar-skala GUI <code>1–4</code> dan efek Texture Filtering modern—selalu membawa penanda <code class="text-amber-300">[UNVERIFIED]</code> agar Anda tahu kapan perlu uji langsung di game.
+      <p class="text-sm leading-relaxed text-pretty text-muted-foreground">
+        Bagian yang belum diuji di klien game asli—seperti hasil rasterisasi antar-skala GUI <code class="font-mono text-xs text-foreground tabular-nums">1–4</code> dan efek Texture Filtering modern—selalu membawa penanda <code class="rounded border border-amber-800/60 bg-amber-950/40 px-1.5 py-0.5 font-mono text-xs font-semibold text-amber-300">[UNVERIFIED]</code> agar Anda tahu kapan perlu uji langsung di game.
       </p>
     </section>
 
     <section aria-labelledby="privasi-heading" class="mt-10 space-y-3 border-t border-border pt-8">
-      <h2 id="privasi-heading" class="text-lg font-semibold text-foreground">
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Keamanan &amp; Integritas
+      </p>
+      <h2 id="privasi-heading" class="text-lg font-semibold tracking-tight text-balance text-foreground">
         Pemrosesan lokal dan larangan aset Mojang
       </h2>
-      <p class="text-sm leading-relaxed text-muted-foreground">
-        Seluruh berkas <code>.zip</code> dan tekstur <code>.png</code> diolah di memori peramban. Aplikasi berjalan statis (<code>ssr: false</code>) tanpa backend, tanpa akun, dan tanpa analitik. Ikon serta font piksel bawaan digambar secara matematis tanpa menyertakan aset vanilla Mojang.
+      <p class="text-sm leading-relaxed text-pretty text-foreground/90">
+        Seluruh berkas <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">.zip</code> dan tekstur <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">.png</code> diolah di memori peramban. Aplikasi berjalan statis (<code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">ssr: false</code>) tanpa backend, tanpa akun, dan tanpa analitik. Ikon serta font piksel bawaan digambar secara matematis tanpa menyertakan aset vanilla Mojang.
       </p>
     </section>
 
     <section aria-labelledby="stack-heading" class="mt-10 space-y-4 border-t border-border pt-8">
-      <h2 id="stack-heading" class="text-lg font-semibold text-foreground">
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Spesifikasi Stack
+      </p>
+      <h2 id="stack-heading" class="text-lg font-semibold tracking-tight text-balance text-foreground">
         Teknologi yang dipakai
       </h2>
 
-      <div class="overflow-x-auto border border-border bg-card">
+      <div class="overflow-x-auto rounded-lg border border-border bg-card">
         <Table>
           <caption class="sr-only">Daftar teknologi Pack Workbench</caption>
           <TableHeader class="border-b border-border bg-muted">
             <TableRow class="border-border hover:bg-transparent">
-              <TableHead class="font-mono text-xs uppercase text-muted-foreground">Komponen</TableHead>
-              <TableHead class="font-mono text-xs uppercase text-muted-foreground">Peran</TableHead>
+              <TableHead class="font-mono text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Komponen</TableHead>
+              <TableHead class="font-mono text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Peran</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody class="divide-y divide-border">
-            <TableRow v-for="item in STACK_ROWS" :key="item.tech" class="border-border hover:bg-accent/50">
-              <TableCell class="font-mono text-xs font-semibold text-foreground">
+            <TableRow v-for="item in STACK_ROWS" :key="item.tech" class="border-border hover:bg-accent/40">
+              <TableCell class="font-mono text-xs font-semibold text-foreground tabular-nums">
                 {{ item.tech }}
               </TableCell>
-              <TableCell class="text-xs text-muted-foreground">
+              <TableCell class="text-xs leading-relaxed text-foreground/90">
                 {{ item.role }}
               </TableCell>
             </TableRow>
@@ -91,9 +104,9 @@ const STACK_ROWS = [
     </section>
 
     <div class="mt-10 border-t border-border pt-6">
-      <Button as-child variant="ghost" size="sm" class="gap-2 pl-0 text-primary hover:bg-transparent hover:text-primary/80">
+      <Button as-child variant="ghost" class="h-10 min-h-10 gap-2 px-3 text-xs font-semibold text-primary transition-[color,background-color,border-color,transform] duration-75 ease-out hover:bg-muted hover:text-primary active:scale-[0.96]">
         <NuxtLink to="/">
-          <FontAwesomeIcon :icon="faArrowLeft" class="h-4 w-4" />
+          <FontAwesomeIcon :icon="faArrowLeft" class="h-3.5 w-3.5" />
           <span>Kembali ke Beranda</span>
         </NuxtLink>
       </Button>

@@ -96,11 +96,11 @@ function handlePngChange(event: Event): void {
     class="flex h-full min-h-0 flex-col bg-card"
   >
     <!-- Flat Rail Header -->
-    <div class="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-      <h2 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Glyphs &amp; Space
+    <div class="flex items-center justify-between gap-2 border-b border-border bg-card px-3 py-2">
+      <h2 class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Glyph &amp; Space
       </h2>
-      <Badge variant="secondary" class="h-5 px-1.5 font-mono text-[10px] tabular-nums">
+      <Badge variant="secondary" class="h-5 px-1.5 font-mono text-[10px] tabular-nums text-foreground bg-muted border-border">
         {{ store.fontProject.entries.length }}
       </Badge>
     </div>
@@ -112,7 +112,7 @@ function handlePngChange(event: Event): void {
           type="button"
           variant="ghost"
           size="sm"
-          class="h-8 flex-1 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+          class="h-8 flex-1 rounded-none px-1.5 text-[11px] font-medium text-foreground hover:bg-muted/70 hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
           @click="store.addRank()"
         >
           <FontAwesomeIcon :icon="faPlus" class="h-3 w-3" />
@@ -125,21 +125,21 @@ function handlePngChange(event: Event): void {
               type="button"
               variant="ghost"
               size="icon"
-              aria-label="Add rank from preset templates"
-              class="h-8 w-6 rounded-none border-l border-border/50 px-0 text-muted-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+              aria-label="Pilih templat rank bawaan"
+              class="h-8 w-6 rounded-none border-l border-border/50 px-0 text-muted-foreground hover:bg-muted/70 hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
             >
               <FontAwesomeIcon :icon="faChevronDown" class="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" class="w-44">
-            <DropdownMenuLabel class="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-              Rank Presets
+          <DropdownMenuContent align="start" class="w-48 rounded-md border-border bg-card p-1 shadow-xl">
+            <DropdownMenuLabel class="px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Templat Rank
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator class="bg-border" />
             <DropdownMenuItem
               v-for="tpl in RANK_PRESET_TEMPLATES"
               :key="tpl.id"
-              class="flex items-center justify-between text-xs"
+              class="flex items-center justify-between rounded-sm px-2 py-1.5 text-xs text-foreground hover:bg-muted hover:text-foreground cursor-pointer"
               @select="store.addRankFromTemplate(tpl.id)"
             >
               <span class="font-mono font-medium">{{ tpl.label }}</span>
@@ -149,65 +149,86 @@ function handlePngChange(event: Event): void {
                 :style="{ backgroundColor: tpl.composer.iconColor ?? '#9b73be' }"
               />
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem class="text-xs" @select="store.addRank()">
-              Blank Rank
+            <DropdownMenuSeparator class="bg-border" />
+            <DropdownMenuItem
+              class="rounded-sm px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+              @select="store.addRank()"
+            >
+              Rank Kosong
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        class="h-8 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
-        @click="pngInputRef?.click()"
-      >
-        <FontAwesomeIcon :icon="faImage" class="h-3 w-3" />
-        <span>PNG</span>
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        class="h-8 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
-        @click="store.addSpace()"
-      >
-        <FontAwesomeIcon :icon="faGripLinesVertical" class="h-3 w-3" />
-        <span>Space</span>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            aria-label="Unggah berkas PNG sprite atau glif"
+            class="h-8 rounded-none px-1.5 text-[11px] font-medium text-foreground hover:bg-muted/70 hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+            @click="pngInputRef?.click()"
+          >
+            <FontAwesomeIcon :icon="faImage" class="h-3 w-3" />
+            <span>PNG</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" class="text-xs">
+          Unggah Berkas PNG
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            aria-label="Tambah penyedia spasi negatif"
+            class="h-8 rounded-none px-1.5 text-[11px] font-medium text-foreground hover:bg-muted/70 hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+            @click="store.addSpace()"
+          >
+            <FontAwesomeIcon :icon="faGripLinesVertical" class="h-3 w-3" />
+            <span>Spasi</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" class="text-xs">
+          Tambah Spasi Negatif
+        </TooltipContent>
+      </Tooltip>
+
       <input
         ref="pngInputRef"
         type="file"
         accept="image/png,.png"
-        aria-label="Upload glyph or sprite sheet PNG file"
+        aria-label="Unggah glif atau sprite sheet berkas PNG"
         class="sr-only"
         @change="handlePngChange"
       />
     </div>
 
     <!-- Compact Search Filter -->
-    <div class="border-b border-border px-2.5 py-2">
+    <div class="border-b border-border bg-card px-2.5 py-1.5">
       <Input
         v-model="filterQuery"
         type="search"
-        placeholder="Search label or U+E2..."
-        aria-label="Filter glyph or codepoint entries"
-        class="h-7 border-border bg-muted px-2 font-mono text-[11px] placeholder:text-muted-foreground focus-visible:border-primary"
+        placeholder="Cari label atau U+E2..."
+        aria-label="Saring entri glif atau codepoint"
+        class="h-7 rounded-sm border-border bg-muted/80 px-2 font-mono text-[11px] placeholder:text-muted-foreground focus-visible:border-primary"
       />
     </div>
 
     <!-- Flat Scrollable List -->
-    <ScrollArea class="min-h-0 flex-1">
+    <ScrollArea class="min-h-0 flex-1 bg-card">
       <ul class="divide-y divide-border/40 py-0.5">
         <li v-for="entry in filteredEntries" :key="entry.id">
           <div
             :class="[
               'group relative flex items-center gap-2 border-l-2 px-2.5 py-2 transition-colors',
               entry.id === store.selectedEntry?.id
-                ? 'border-l-primary bg-muted'
-                : 'border-l-transparent hover:bg-muted/50',
+                ? 'border-l-primary bg-muted/90'
+                : 'border-l-transparent hover:bg-muted/40',
             ]"
           >
             <button
@@ -240,12 +261,12 @@ function handlePngChange(event: Event): void {
                   </span>
                   <span
                     v-if="entryHasError(entry.id)"
-                    title="Has validation ERROR"
+                    title="Memiliki kesalahan validasi (ERROR)"
                     class="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
                   />
                   <span
                     v-else-if="entryHasWarn(entry.id)"
-                    title="Has validation warning"
+                    title="Memiliki peringatan validasi (WARN)"
                     class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
                   />
                 </div>
@@ -255,7 +276,7 @@ function handlePngChange(event: Event): void {
                   </span>
                   <span
                     v-if="entry.kind === 'bitmap' && entry.composer.badgeLayout === 'split-left'"
-                    class="rounded bg-muted px-1 font-mono text-[9px] text-primary"
+                    class="rounded bg-primary/10 border border-primary/20 px-1 font-mono text-[9px] text-primary"
                   >
                     Split
                   </span>
@@ -269,14 +290,16 @@ function handlePngChange(event: Event): void {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  :aria-label="`Delete entry ${entry.label}`"
-                  class="h-6 w-6 shrink-0 text-muted-foreground opacity-70 hover:bg-destructive/20 hover:text-destructive group-hover:opacity-100 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+                  :aria-label="`Hapus entri ${entry.label}`"
+                  class="h-6 w-6 shrink-0 rounded-sm text-muted-foreground opacity-60 hover:bg-destructive/20 hover:text-destructive group-hover:opacity-100 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
                   @click="store.removeEntry(entry.id)"
                 >
                   <FontAwesomeIcon :icon="faTrashCan" class="h-3 w-3" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right">Delete {{ entry.label }}</TooltipContent>
+              <TooltipContent side="right" class="text-xs">
+                Hapus {{ entry.label }}
+              </TooltipContent>
             </Tooltip>
           </div>
         </li>
