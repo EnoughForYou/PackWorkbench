@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { DropdownMenuRadioItemEmits, DropdownMenuRadioItemProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
-import { Circle } from "@lucide/vue"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faCircle } from "@fortawesome/free-solid-svg-icons"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import {
@@ -31,7 +32,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     <span class="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
       <DropdownMenuItemIndicator>
         <slot name="indicator-icon">
-          <Circle class="size-2 fill-current" />
+          <FontAwesomeIcon :icon="faCircle" class="size-2" />
         </slot>
       </DropdownMenuItemIndicator>
     </span>

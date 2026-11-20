@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  ChevronDown,
-  ChevronRight,
-  Download,
-  FolderOpen,
-  Package,
-} from '@lucide/vue';
+  faArrowRight,
+  faBoxArchive,
+  faChevronDown,
+  faChevronRight,
+  faCircleCheck,
+  faFileZipper,
+  faFolderOpen,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
 import { buildProjectSnippets } from '@core/font/packBuilder.ts';
 import { normalizeFontName } from '@core/font/puaAllocator.ts';
 import type { Severity } from '@core/types.ts';
@@ -113,22 +114,22 @@ function jumpToEntry(entryId: string): void {
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
     <!-- Top Compact Health Summary + 3 Focus Sub-Tabs -->
-    <div class="shrink-0 border-b border-border bg-[#0b0b0e]">
+    <div class="shrink-0 border-b border-border bg-card">
       <div class="flex items-center justify-between gap-2 px-3 py-2">
         <div class="flex min-w-0 items-center gap-2">
-          <AlertTriangle
+          <FontAwesomeIcon
             v-if="store.validation.errors > 0"
-            aria-hidden="true"
-            class="h-4 w-4 shrink-0 text-red-400"
+            :icon="faTriangleExclamation"
+            class="h-4 w-4 shrink-0 text-destructive"
           />
-          <AlertTriangle
+          <FontAwesomeIcon
             v-else-if="store.validation.warns > 0"
-            aria-hidden="true"
+            :icon="faTriangleExclamation"
             class="h-4 w-4 shrink-0 text-amber-400"
           />
-          <CheckCircle2
+          <FontAwesomeIcon
             v-else
-            aria-hidden="true"
+            :icon="faCircleCheck"
             class="h-4 w-4 shrink-0 text-emerald-400"
           />
           <div class="min-w-0">
@@ -160,7 +161,7 @@ function jumpToEntry(entryId: string): void {
         class="gap-0"
         @update:model-value="handleSubTabChange"
       >
-        <TabsList class="grid h-8 w-full grid-cols-3 rounded-none border-t border-border/60 bg-[#0e0e12] p-0">
+        <TabsList class="grid h-8 w-full grid-cols-3 rounded-none border-t border-border/60 bg-card p-0">
           <TabsTrigger
             value="audit"
             class="tab-underline relative h-8 rounded-none border-0 bg-transparent px-2 text-[11px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
@@ -245,7 +246,7 @@ function jumpToEntry(entryId: string): void {
               @click="activeSubTab = 'deploy'"
             >
               <span>Copy Commands &amp; YAML</span>
-              <ArrowRight aria-hidden="true" class="h-3 w-3" />
+              <FontAwesomeIcon :icon="faArrowRight" class="h-3 w-3" />
             </Button>
             <Button
               type="button"
@@ -262,7 +263,7 @@ function jumpToEntry(entryId: string): void {
         <!-- Actionable Errors & Warnings -->
         <ul
           v-if="visibleProblemFindings.length > 0"
-          class="divide-y divide-border/60 border border-border/70 bg-[#111116]"
+          class="divide-y divide-border/60 border border-border/70 bg-card"
         >
           <li
             v-for="(f, idx) in visibleProblemFindings"
@@ -283,7 +284,7 @@ function jumpToEntry(entryId: string): void {
             <p class="font-medium text-foreground">{{ f.title }}</p>
             <p class="leading-relaxed text-muted-foreground">{{ f.message }}</p>
             <div class="flex items-center justify-between gap-2 pt-0.5">
-              <p class="font-mono text-[10px] text-[#ff8f6b]">
+              <p class="font-mono text-[10px] text-primary">
                 Fix: {{ f.fixHint }}
               </p>
               <Button
@@ -304,12 +305,12 @@ function jumpToEntry(entryId: string): void {
         <details
           v-if="visibleInfoFindings.length > 0"
           :open="infoDetailsOpen"
-          class="border border-border/60 bg-[#0b0b0e]"
+          class="border border-border/60 bg-card"
           @toggle="infoDetailsOpen = ($event.target as HTMLDetailsElement).open"
         >
           <summary class="flex cursor-pointer list-none items-center gap-1.5 px-2.5 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground">
-            <ChevronRight
-              aria-hidden="true"
+            <FontAwesomeIcon
+              :icon="faChevronRight"
               :class="['h-3.5 w-3.5 shrink-0 transition-transform', infoDetailsOpen ? 'rotate-90 text-foreground' : '']"
             />
             <span>Technical Notes &amp; Info ({{ visibleInfoFindings.length }})</span>
@@ -333,7 +334,7 @@ function jumpToEntry(entryId: string): void {
               </div>
               <p class="font-medium text-foreground">{{ f.title }}</p>
               <p class="leading-relaxed text-muted-foreground">{{ f.message }}</p>
-              <p class="font-mono text-[10px] text-[#ff8f6b]">
+              <p class="font-mono text-[10px] text-primary">
                 Note: {{ f.fixHint }}
               </p>
             </li>
@@ -377,8 +378,8 @@ function jumpToEntry(entryId: string): void {
 
           <!-- LuckPerms & Vanilla Tab -->
           <TabsContent value="luckperms" class="mt-1 space-y-3 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-[#121218] p-2 text-[11px] text-muted-foreground">
-              <FolderOpen aria-hidden="true" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ff8f6b]" />
+            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+              <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
                 Use <strong class="text-foreground">Download Java Pack</strong> for
                 Minecraft Vanilla, <code class="text-foreground">server.properties</code>, or
@@ -396,7 +397,7 @@ function jumpToEntry(entryId: string): void {
                   type="text"
                   placeholder="admin"
                   :model-value="store.fontProject.luckPermsGroup"
-                  class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+                  class="h-7 bg-muted px-2 font-mono text-xs"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -413,7 +414,7 @@ function jumpToEntry(entryId: string): void {
                   id="lp-weight-input"
                   type="number"
                   :model-value="store.fontProject.luckPermsWeight"
-                  class="h-7 bg-[#14141a] px-2 font-mono text-xs tabular-nums"
+                  class="h-7 bg-muted px-2 font-mono text-xs tabular-nums"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -442,10 +443,10 @@ function jumpToEntry(entryId: string): void {
                   />
                 </div>
               </div>
-              <pre class="overflow-x-auto bg-[#070709] p-2 font-mono text-[10px] text-foreground"><code id="lp-snippet-code">{{ snippets.luckPermsCommand }}</code></pre>
+              <pre class="overflow-x-auto bg-background p-2 font-mono text-[10px] text-foreground"><code id="lp-snippet-code">{{ snippets.luckPermsCommand }}</code></pre>
               <span id="lp-prefix-raw-ref" class="sr-only">{{ snippets.prefixLiteral }}</span>
               <p class="text-[10px] leading-snug text-muted-foreground">
-                PUA characters (<code class="text-[#ff8f6b]">{{ snippets.prefixEscaped || '—' }}</code>) look like blank boxes in browsers because they map to private resource-pack slots.
+                PUA characters (<code class="text-primary">{{ snippets.prefixEscaped || '—' }}</code>) look like blank boxes in browsers because they map to private resource-pack slots.
               </p>
             </div>
 
@@ -459,17 +460,17 @@ function jumpToEntry(entryId: string): void {
                   label="Copy /tellraw"
                 />
               </div>
-              <p class="font-mono text-[10px] text-[#ff8f6b]">{{ snippets.placeholderApi }}</p>
-              <pre class="overflow-x-auto bg-[#070709] p-2 font-mono text-[10px] text-foreground"><code id="tellraw-snippet-code">{{ snippets.objectTellrawCommand ?? snippets.tellrawCommand }}</code></pre>
+              <p class="font-mono text-[10px] text-primary">{{ snippets.placeholderApi }}</p>
+              <pre class="overflow-x-auto bg-background p-2 font-mono text-[10px] text-foreground"><code id="tellraw-snippet-code">{{ snippets.objectTellrawCommand ?? snippets.tellrawCommand }}</code></pre>
             </div>
           </TabsContent>
 
           <!-- ItemsAdder / Oraxen / Nexo Unified YAML Panels -->
           <TabsContent value="itemsadder" class="mt-1 space-y-2.5 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-[#121218] p-2 text-[11px] text-muted-foreground">
-              <FolderOpen aria-hidden="true" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ff8f6b]" />
+            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+              <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
-                Save to <code class="text-foreground">plugins/ItemsAdder/data/items_packs/{{ cleanNamespace }}/font_images.yml</code> + PNGs to <code class="text-foreground">resource_pack/</code>, then run <code class="text-[#ff8f6b]">/iareload</code> &amp; <code class="text-[#ff8f6b]">/iazip</code>.
+                Save to <code class="text-foreground">plugins/ItemsAdder/data/items_packs/{{ cleanNamespace }}/font_images.yml</code> + PNGs to <code class="text-foreground">resource_pack/</code>, then run <code class="text-primary">/iareload</code> &amp; <code class="text-primary">/iazip</code>.
               </p>
             </div>
             <div class="flex items-center justify-between gap-2">
@@ -481,14 +482,14 @@ function jumpToEntry(entryId: string): void {
                 label="Copy YAML"
               />
             </div>
-            <pre class="max-h-56 overflow-auto bg-[#070709] p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-itemsadder">{{ snippets.pluginYaml.itemsAdderYaml }}</code></pre>
+            <pre class="max-h-56 overflow-auto bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-itemsadder">{{ snippets.pluginYaml.itemsAdderYaml }}</code></pre>
           </TabsContent>
 
           <TabsContent value="oraxen" class="mt-1 space-y-2.5 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-[#121218] p-2 text-[11px] text-muted-foreground">
-              <FolderOpen aria-hidden="true" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ff8f6b]" />
+            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+              <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
-                Save to <code class="text-foreground">plugins/Oraxen/glyphs/{{ cleanNamespace }}.yml</code> + PNGs to <code class="text-foreground">plugins/Oraxen/pack/textures/</code>, then run <code class="text-[#ff8f6b]">/o reload all</code>.
+                Save to <code class="text-foreground">plugins/Oraxen/glyphs/{{ cleanNamespace }}.yml</code> + PNGs to <code class="text-foreground">plugins/Oraxen/pack/textures/</code>, then run <code class="text-primary">/o reload all</code>.
               </p>
             </div>
             <div class="flex items-center justify-between gap-2">
@@ -500,14 +501,14 @@ function jumpToEntry(entryId: string): void {
                 label="Copy YAML"
               />
             </div>
-            <pre class="max-h-56 overflow-auto bg-[#070709] p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-oraxen">{{ snippets.pluginYaml.oraxenYaml }}</code></pre>
+            <pre class="max-h-56 overflow-auto bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-oraxen">{{ snippets.pluginYaml.oraxenYaml }}</code></pre>
           </TabsContent>
 
           <TabsContent value="nexo" class="mt-1 space-y-2.5 outline-none">
-            <div class="flex items-start gap-2 border border-border/70 bg-[#121218] p-2 text-[11px] text-muted-foreground">
-              <FolderOpen aria-hidden="true" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ff8f6b]" />
+            <div class="flex items-start gap-2 border border-border/70 bg-muted p-2 text-[11px] text-muted-foreground">
+              <FontAwesomeIcon :icon="faFolderOpen" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p class="leading-snug">
-                Drop <code class="text-foreground">.zip</code> into <code class="text-foreground">plugins/Nexo/pack/external_packs/</code> OR use YAML <code class="text-foreground">plugins/Nexo/glyphs/{{ cleanNamespace }}.yml</code>, then run <code class="text-[#ff8f6b]">/nexo reload</code> &amp; <code class="text-[#ff8f6b]">/nexo pack</code>.
+                Drop <code class="text-foreground">.zip</code> into <code class="text-foreground">plugins/Nexo/pack/external_packs/</code> OR use YAML <code class="text-foreground">plugins/Nexo/glyphs/{{ cleanNamespace }}.yml</code>, then run <code class="text-primary">/nexo reload</code> &amp; <code class="text-primary">/nexo pack</code>.
               </p>
             </div>
             <div class="flex items-center justify-between gap-2">
@@ -519,7 +520,7 @@ function jumpToEntry(entryId: string): void {
                 label="Copy YAML"
               />
             </div>
-            <pre class="max-h-56 overflow-auto bg-[#070709] p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-nexo">{{ snippets.pluginYaml.nexoYaml }}</code></pre>
+            <pre class="max-h-56 overflow-auto bg-background p-2 font-mono text-[10px] leading-relaxed text-foreground"><code id="plugin-yaml-nexo">{{ snippets.pluginYaml.nexoYaml }}</code></pre>
           </TabsContent>
         </Tabs>
       </div>
@@ -539,7 +540,7 @@ function jumpToEntry(entryId: string): void {
               id="font-ns-input"
               type="text"
               :model-value="store.fontProject.namespace"
-              class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+              class="h-7 bg-muted px-2 font-mono text-xs"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -557,7 +558,7 @@ function jumpToEntry(entryId: string): void {
               id="font-name-input"
               type="text"
               :model-value="store.fontProject.fontName"
-              class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+              class="h-7 bg-muted px-2 font-mono text-xs"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -575,7 +576,7 @@ function jumpToEntry(entryId: string): void {
               id="pack-desc-input"
               type="text"
               :model-value="store.fontProject.packDescription"
-              class="h-7 bg-[#14141a] px-2 text-xs"
+              class="h-7 bg-muted px-2 text-xs"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -612,8 +613,8 @@ function jumpToEntry(entryId: string): void {
                 type="button"
                 class="flex flex-1 cursor-pointer items-center gap-1.5 text-left font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
               >
-                <ChevronDown
-                  aria-hidden="true"
+                <FontAwesomeIcon
+                  :icon="faChevronDown"
                   :class="['h-3.5 w-3.5 transition-transform', objectSectionOpen ? 'rotate-180' : '']"
                 />
                 <span>Object Component (1.21.9+)</span>
@@ -677,7 +678,7 @@ function jumpToEntry(entryId: string): void {
                   id="obj-atlas-input"
                   type="text"
                   :model-value="store.fontProject.objectComponent.atlas"
-                  class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+                  class="h-7 bg-muted px-2 font-mono text-xs"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -697,7 +698,7 @@ function jumpToEntry(entryId: string): void {
                   id="obj-sprite-input"
                   type="text"
                   :model-value="store.fontProject.objectComponent.sprite"
-                  class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+                  class="h-7 bg-muted px-2 font-mono text-xs"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -720,7 +721,7 @@ function jumpToEntry(entryId: string): void {
                   id="obj-player-input"
                   type="text"
                   :model-value="store.fontProject.objectComponent.playerName"
-                  class="h-7 bg-[#14141a] px-2 font-mono text-xs"
+                  class="h-7 bg-muted px-2 font-mono text-xs"
                   @update:model-value="
                     store.updateProject((prev) => ({
                       ...prev,
@@ -758,15 +759,17 @@ function jumpToEntry(entryId: string): void {
     </div>
 
     <!-- Pinned Export Footer -->
-    <div class="shrink-0 space-y-2 border-t border-border bg-[#0b0b0e] p-3">
+    <div class="shrink-0 space-y-2 border-t border-border bg-card p-3">
       <div class="grid grid-cols-1 gap-1.5">
         <Button
           type="button"
+          variant="pill"
+          size="pill"
           :disabled="store.validation.errors > 0 || store.isExporting"
-          class="h-8 w-full gap-1.5 text-xs font-semibold"
+          class="h-8 w-full gap-1.5 text-xs font-bold"
           @click="store.exportAndDownload()"
         >
-          <Download aria-hidden="true" class="h-3.5 w-3.5" />
+          <FontAwesomeIcon :icon="faFileZipper" class="h-3.5 w-3.5" />
           <span>
             {{
               store.isExporting
@@ -780,12 +783,13 @@ function jumpToEntry(entryId: string): void {
 
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
+          size="sm"
           :disabled="store.validation.errors > 0 || store.isExportingPluginBundle"
           class="h-8 w-full gap-1.5 text-xs font-medium"
           @click="store.exportPluginBundleAndDownload()"
         >
-          <Package aria-hidden="true" class="h-3.5 w-3.5" />
+          <FontAwesomeIcon :icon="faBoxArchive" class="h-3.5 w-3.5" />
           <span>
             {{
               store.isExportingPluginBundle

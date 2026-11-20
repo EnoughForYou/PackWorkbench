@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { ChevronDown, ImagePlus, Plus, Space, Trash2 } from '@lucide/vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import {
+  faChevronDown,
+  faGripLinesVertical,
+  faImage,
+  faPlus,
+  faTrashCan,
+} from '@fortawesome/free-solid-svg-icons';
 import {
   resolveBitmapEntryRaster,
   type RgbaRaster,
@@ -86,7 +93,7 @@ function handlePngChange(event: Event): void {
 <template>
   <aside
     aria-label="Glyph and space explorer"
-    class="flex h-full min-h-0 flex-col bg-[#0e0e12]"
+    class="flex h-full min-h-0 flex-col bg-card"
   >
     <!-- Flat Rail Header -->
     <div class="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
@@ -99,16 +106,16 @@ function handlePngChange(event: Event): void {
     </div>
 
     <!-- Borderless Quick Action Command Bar -->
-    <div class="grid grid-cols-[1.25fr_1fr_1fr] divide-x divide-border border-b border-border bg-[#0b0b0e]">
+    <div class="grid grid-cols-[1.25fr_1fr_1fr] divide-x divide-border border-b border-border bg-card">
       <div class="flex items-stretch">
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          class="h-8 flex-1 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary"
+          class="h-8 flex-1 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
           @click="store.addRank()"
         >
-          <Plus aria-hidden="true" class="h-3 w-3" />
+          <FontAwesomeIcon :icon="faPlus" class="h-3 w-3" />
           <span>Rank</span>
         </Button>
 
@@ -119,9 +126,9 @@ function handlePngChange(event: Event): void {
               variant="ghost"
               size="icon"
               aria-label="Add rank from preset templates"
-              class="h-8 w-5 rounded-none border-l border-border/50 px-0 text-muted-foreground hover:bg-accent hover:text-primary"
+              class="h-8 w-6 rounded-none border-l border-border/50 px-0 text-muted-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
             >
-              <ChevronDown aria-hidden="true" class="h-3 w-3" />
+              <FontAwesomeIcon :icon="faChevronDown" class="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" class="w-44">
@@ -139,7 +146,7 @@ function handlePngChange(event: Event): void {
               <span
                 aria-hidden="true"
                 class="h-2.5 w-2.5 rounded-full border border-white/20"
-                :style="{ backgroundColor: tpl.composer.iconColor ?? '#ff5e2c' }"
+                :style="{ backgroundColor: tpl.composer.iconColor ?? '#9b73be' }"
               />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -154,20 +161,20 @@ function handlePngChange(event: Event): void {
         type="button"
         variant="ghost"
         size="sm"
-        class="h-8 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary"
+        class="h-8 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
         @click="pngInputRef?.click()"
       >
-        <ImagePlus aria-hidden="true" class="h-3 w-3" />
+        <FontAwesomeIcon :icon="faImage" class="h-3 w-3" />
         <span>PNG</span>
       </Button>
       <Button
         type="button"
         variant="ghost"
         size="sm"
-        class="h-8 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary"
+        class="h-8 rounded-none px-1.5 text-[11px] font-medium text-secondary-foreground hover:bg-accent hover:text-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
         @click="store.addSpace()"
       >
-        <Space aria-hidden="true" class="h-3 w-3" />
+        <FontAwesomeIcon :icon="faGripLinesVertical" class="h-3 w-3" />
         <span>Space</span>
       </Button>
       <input
@@ -187,7 +194,7 @@ function handlePngChange(event: Event): void {
         type="search"
         placeholder="Search label or U+E2..."
         aria-label="Filter glyph or codepoint entries"
-        class="h-7 border-transparent bg-[#15151b] px-2 font-mono text-[11px] placeholder:text-[#868694] focus-visible:border-primary"
+        class="h-7 border-border bg-muted px-2 font-mono text-[11px] placeholder:text-muted-foreground focus-visible:border-primary"
       />
     </div>
 
@@ -199,17 +206,17 @@ function handlePngChange(event: Event): void {
             :class="[
               'group relative flex items-center gap-2 border-l-2 px-2.5 py-2 transition-colors',
               entry.id === store.selectedEntry?.id
-                ? 'border-l-primary bg-[#181820]'
-                : 'border-l-transparent hover:bg-[#14141a]',
+                ? 'border-l-primary bg-muted'
+                : 'border-l-transparent hover:bg-muted/50',
             ]"
           >
             <button
               type="button"
               :aria-current="entry.id === store.selectedEntry?.id ? 'true' : undefined"
-              class="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              class="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.98] transition-transform duration-100 ease-out"
               @click="store.selectedStudioEntryId = entry.id"
             >
-              <div class="pixel-checkerboard flex h-7 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-white/10 p-0.5">
+              <div class="pixel-checkerboard sprite-preview-outline flex h-7 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-white/10 p-0.5">
                 <span
                   v-if="entry.kind === 'space'"
                   class="font-mono text-[10px] font-semibold text-foreground tabular-nums"
@@ -223,7 +230,7 @@ function handlePngChange(event: Event): void {
                   :aria-label="`Thumbnail ${entry.label}`"
                   class-name="max-h-full max-w-full object-contain"
                 />
-                <span v-else class="font-mono text-[10px] text-red-300">PNG!</span>
+                <span v-else class="font-mono text-[10px] text-destructive">PNG!</span>
               </div>
 
               <div class="min-w-0 flex-1">
@@ -234,7 +241,7 @@ function handlePngChange(event: Event): void {
                   <span
                     v-if="entryHasError(entry.id)"
                     title="Has validation ERROR"
-                    class="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400"
+                    class="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
                   />
                   <span
                     v-else-if="entryHasWarn(entry.id)"
@@ -248,7 +255,7 @@ function handlePngChange(event: Event): void {
                   </span>
                   <span
                     v-if="entry.kind === 'bitmap' && entry.composer.badgeLayout === 'split-left'"
-                    class="rounded bg-[#1e1e28] px-1 font-mono text-[9px] text-[#ff8f6b]"
+                    class="rounded bg-muted px-1 font-mono text-[9px] text-primary"
                   >
                     Split
                   </span>
@@ -263,10 +270,10 @@ function handlePngChange(event: Event): void {
                   variant="ghost"
                   size="icon"
                   :aria-label="`Delete entry ${entry.label}`"
-                  class="h-6 w-6 shrink-0 text-[#868694] opacity-70 hover:bg-red-950/40 hover:text-red-300 group-hover:opacity-100"
+                  class="h-6 w-6 shrink-0 text-muted-foreground opacity-70 hover:bg-destructive/20 hover:text-destructive group-hover:opacity-100 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
                   @click="store.removeEntry(entry.id)"
                 >
-                  <Trash2 aria-hidden="true" class="h-3.5 w-3.5" />
+                  <FontAwesomeIcon :icon="faTrashCan" class="h-3 w-3" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">Delete {{ entry.label }}</TooltipContent>

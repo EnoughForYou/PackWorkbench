@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { FolderUp } from '@lucide/vue';
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -66,7 +67,7 @@ function handleDrop(event: DragEvent): void {
       >
         1. Resource Pack Archive (.zip)
       </h2>
-      <span class="font-mono text-[10px] text-[#868694]">Max 250 MiB (Z08)</span>
+      <span class="font-mono text-[10px] text-muted-foreground">Max 250 MiB (Z08)</span>
     </div>
 
     <div
@@ -74,14 +75,15 @@ function handleDrop(event: DragEvent): void {
         'flex flex-col gap-3 border border-dashed p-3.5 transition-colors',
         isDragging
           ? 'border-primary bg-primary/10'
-          : 'border-border bg-[#09090c]',
+          : 'border-border bg-card',
       ]"
       @dragover="handleDragOver"
       @dragleave="handleDragLeave"
       @drop="handleDrop"
     >
       <div class="flex items-start gap-2.5">
-        <FolderUp
+        <FontAwesomeIcon
+          :icon="faFolderOpen"
           aria-hidden="true"
           class="mt-0.5 h-4 w-4 shrink-0 text-primary"
         />
@@ -95,7 +97,7 @@ function handleDrop(event: DragEvent): void {
           </p>
           <p
             v-if="activeFile"
-            class="truncate font-mono text-[11px] text-[#ff8f6b] tabular-nums"
+            class="truncate font-mono text-[11px] text-primary tabular-nums"
           >
             {{ activeFile.name }} · {{ formatBytesSummary(activeFile.size) }}
           </p>

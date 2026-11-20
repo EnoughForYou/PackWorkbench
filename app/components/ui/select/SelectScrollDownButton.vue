@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { SelectScrollDownButtonProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
-import { ChevronDown } from "@lucide/vue"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faChevronDown } from "@fortawesome/free-solid-svg-icons"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import { SelectScrollDownButton, useForwardProps } from "reka-ui"
@@ -20,7 +21,7 @@ const forwardedProps = useForwardProps(delegatedProps)
     :class="cn('flex cursor-default items-center justify-center py-1', props.class)"
   >
     <slot>
-      <ChevronDown class="size-4" />
+      <FontAwesomeIcon :icon="faChevronDown" class="size-3" />
     </slot>
   </SelectScrollDownButton>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { Check, Copy } from '@lucide/vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faCheck, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -130,8 +131,8 @@ function handleFallbackClick(): void {
       :class="compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs'"
       @click="handleFallbackClick"
     >
-      <Check v-if="copiedVisible" aria-hidden="true" class="h-3.5 w-3.5 text-emerald-400" />
-      <Copy v-else aria-hidden="true" class="h-3.5 w-3.5 text-muted-foreground" />
+      <FontAwesomeIcon v-if="copiedVisible" :icon="faCheck" class="h-3.5 w-3.5 text-emerald-400" />
+      <FontAwesomeIcon v-else :icon="faCopy" class="h-3.5 w-3.5 text-muted-foreground" />
       <span>{{ copiedVisible ? 'Copied' : props.label }}</span>
     </Button>
 

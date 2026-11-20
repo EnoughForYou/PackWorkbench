@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ArrowLeft } from '@lucide/vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import {
   Table,
   TableBody,
@@ -21,10 +22,11 @@ useHead({
 const STACK_ROWS = [
   { tech: 'Nuxt 4 (ssr: false)', role: 'Routing halaman, mode SPA statis 100% browser-only tanpa API backend' },
   { tech: 'Vue 3 & Pinia (@pinia/nuxt)', role: 'Antarmuka reaktif dan state editor font serta worker validator' },
+  { tech: 'Font Awesome 6 SVG', role: 'Sistem ikon antarmuka terstandar industri (@fortawesome/vue-fontawesome)' },
   { tech: 'shadcn-vue & Tailwind v4', role: 'Panel resizable, select, tabs, slider, checkbox, dan tabel antarmuka' },
   { tech: 'TypeScript strict', role: 'Mesin validasi murni di src/core/ yang berjalan independen di Node' },
   { tech: '@noble/hashes & JSZip', role: 'Hash SHA-1 streaming di Web Worker serta pembacaan/rakitan ZIP lokal' },
-  { tech: 'Google Fonts API', role: 'Huruf antarmuka Onest dan data tabular JetBrains Mono' },
+  { tech: 'Google Fonts API', role: 'Huruf antarmuka Onest dan data tabular JetBrains Mono Variable Fonts' },
 ] as const;
 </script>
 
@@ -68,7 +70,7 @@ const STACK_ROWS = [
       <div class="overflow-x-auto border border-border bg-card">
         <Table>
           <caption class="sr-only">Daftar teknologi Pack Workbench</caption>
-          <TableHeader class="border-b border-border bg-[#14141a]">
+          <TableHeader class="border-b border-border bg-muted">
             <TableRow class="border-border hover:bg-transparent">
               <TableHead class="font-mono text-xs uppercase text-muted-foreground">Komponen</TableHead>
               <TableHead class="font-mono text-xs uppercase text-muted-foreground">Peran</TableHead>
@@ -89,9 +91,9 @@ const STACK_ROWS = [
     </section>
 
     <div class="mt-10 border-t border-border pt-6">
-      <Button as-child variant="ghost" size="sm" class="gap-2 pl-0 text-[#ff8f6b] hover:bg-transparent hover:text-primary">
+      <Button as-child variant="ghost" size="sm" class="gap-2 pl-0 text-primary hover:bg-transparent hover:text-primary/80">
         <NuxtLink to="/">
-          <ArrowLeft aria-hidden="true" class="h-4 w-4" />
+          <FontAwesomeIcon :icon="faArrowLeft" class="h-4 w-4" />
           <span>Kembali ke Beranda</span>
         </NuxtLink>
       </Button>

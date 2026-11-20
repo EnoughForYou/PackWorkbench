@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
-  ArrowRight,
-  Check,
-  FileArchive,
-  Layers,
-  Lock,
-} from '@lucide/vue';
+  faArrowRight,
+  faCheck,
+  faFileZipper,
+  faLayerGroup,
+  faLock,
+} from '@fortawesome/free-solid-svg-icons';
 import { synthesizeRankRgba } from '@core/font/pixelSynth.ts';
 import { createDefaultRankComposer } from '@core/font/presets.ts';
 import type { TargetVersionId } from '@core/types.ts';
@@ -46,10 +47,10 @@ const DEMO_BADGES = [
       text: 'ADMIN',
       fontSize: '5x5',
       iconId: 'shield',
-      iconColor: '#ff5e2c',
+      iconColor: '#9b73be',
       frameStyle: 'pill',
-      frameColor: '#1b110d',
-      frameBorderColor: '#ff5e2c',
+      frameColor: '#1e1f29',
+      frameBorderColor: '#9b73be',
       paddingX: 3,
       paddingY: 2,
       iconGap: 3,
@@ -198,39 +199,38 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
           <div class="flex flex-wrap items-center gap-3">
             <Button
               type="button"
-              size="lg"
-              class="h-11 gap-2 px-5 text-sm font-semibold"
+              variant="pill"
+              class="h-10 gap-2 px-6 text-sm font-bold"
               @click="openStudio('font')"
             >
               <span>Buka Studio Rank</span>
-              <ArrowRight aria-hidden="true" class="h-4 w-4" />
+              <FontAwesomeIcon :icon="faArrowRight" class="h-4 w-4" />
             </Button>
 
             <Button
               type="button"
-              variant="outline"
-              size="lg"
-              class="h-11 px-5 text-sm font-medium"
+              variant="secondary"
+              class="h-10 px-5 text-sm font-medium"
               @click="openStudio('validator')"
             >
               Validator ZIP &amp; SHA-1
             </Button>
           </div>
 
-          <p class="font-mono text-xs text-[#7c7c88] tabular-nums">
+          <p class="font-mono text-xs text-muted-foreground tabular-nums">
             29 aturan Z01–F10 berbasis bytecode client.jar · Tanpa aset vanilla Mojang
           </p>
         </div>
 
         <!-- Right 7 Columns: Live Embedded Studio Preview Frame (NxRanks Studio showcase quality) -->
         <div class="lg:col-span-7">
-          <div class="overflow-hidden border border-border bg-[#0e0e12]">
+          <div class="overflow-hidden border border-border bg-card">
             <!-- Studio Frame Header -->
-            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-[#0b0b0e] px-3.5 py-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3.5 py-2">
               <div class="flex items-center gap-2.5">
                 <div class="flex items-center gap-1.5" aria-hidden="true">
-                  <span class="h-2.5 w-2.5 rounded-full bg-[#2e2e38]" />
-                  <span class="h-2.5 w-2.5 rounded-full bg-[#2e2e38]" />
+                  <span class="h-2.5 w-2.5 rounded-full bg-border" />
+                  <span class="h-2.5 w-2.5 rounded-full bg-border" />
                   <span class="h-2.5 w-2.5 rounded-full bg-primary" />
                 </div>
                 <span class="font-mono text-xs text-muted-foreground">
@@ -263,7 +263,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
             <!-- Interactive Workbench Grid inside Frame -->
             <div class="grid grid-cols-1 divide-y divide-border sm:grid-cols-12 sm:divide-x sm:divide-y-0">
               <!-- Flat Rank Explorer Sidebar -->
-              <div class="bg-[#0e0e12] sm:col-span-4">
+              <div class="bg-card sm:col-span-4">
                 <div class="border-b border-border px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Entri Contoh
                 </div>
@@ -275,13 +275,13 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
                       :class="[
                         'flex w-full cursor-pointer items-center justify-between border-l-2 px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-primary',
                         activeDemoId === badge.id
-                          ? 'border-l-primary bg-[#181820] text-foreground'
-                          : 'border-l-transparent text-muted-foreground hover:bg-[#14141a] hover:text-foreground',
+                          ? 'border-l-primary bg-muted text-foreground'
+                          : 'border-l-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                       ]"
                       @click="activeDemoId = badge.id"
                     >
                       <span class="font-mono text-xs font-semibold">{{ badge.name }}</span>
-                      <span class="font-mono text-[11px] text-[#7c7c88] tabular-nums">
+                      <span class="font-mono text-[11px] text-muted-foreground tabular-nums">
                         {{ badge.codepoint }}
                       </span>
                     </button>
@@ -302,7 +302,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
               </div>
 
               <!-- Live Checkerboard / JSON Center Stage -->
-              <div class="flex flex-col justify-between bg-[#08080a] sm:col-span-8">
+              <div class="flex flex-col justify-between bg-background sm:col-span-8">
                 <div
                   v-if="previewSubView === 'canvas'"
                   class="pixel-checkerboard flex min-h-48 flex-1 items-center justify-center p-6"
@@ -314,16 +314,16 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
                     class-name="border border-white/10"
                   />
                 </div>
-                <div v-else class="min-h-48 flex-1 bg-[#09090c] p-4">
-                  <pre class="overflow-x-auto font-mono text-xs leading-relaxed text-[#e4e4e9]"><code>{{ activeDemoJsonSnippet }}</code></pre>
+                <div v-else class="min-h-48 flex-1 bg-background p-4">
+                  <pre class="overflow-x-auto font-mono text-xs leading-relaxed text-foreground"><code>{{ activeDemoJsonSnippet }}</code></pre>
                 </div>
 
                 <!-- Bottom Live Telemetry Strip inside Preview -->
-                <div class="flex flex-wrap items-center justify-between gap-2 border-t border-border bg-[#0b0b0e] px-3.5 py-2 font-mono text-[11px] text-muted-foreground tabular-nums">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-3.5 py-2 font-mono text-[11px] text-muted-foreground tabular-nums">
                   <span>
                     <strong class="text-foreground">{{ activeDemo.name }}</strong> ·
                     width <span class="text-sky-300">{{ activeDemo.glyphW }}</span> ·
-                    advance <span class="text-[#ff8f6b]">{{ activeDemo.advance }}</span>
+                    advance <span class="text-primary">{{ activeDemo.advance }}</span>
                   </span>
                   <span class="text-emerald-400">pack.mcmeta · 0 Error</span>
                 </div>
@@ -335,10 +335,10 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
     </section>
 
     <!-- Section 2: Clean Two-Module Breakdown (Hairline-divided, zero generic AI square cards) -->
-    <section aria-labelledby="fitur-heading" class="border-b border-border bg-[#0c0c10]">
+    <section aria-labelledby="fitur-heading" class="border-b border-border bg-card">
       <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div class="max-w-2xl space-y-2">
-          <p class="font-mono text-xs uppercase tracking-wider text-[#ff8f6b]">
+          <p class="font-mono text-xs uppercase tracking-wider text-primary">
             Dua Ruang Kerja Terpadu
           </p>
           <h2 id="fitur-heading" class="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -350,8 +350,8 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
           <!-- Module 1: Studio Rank & Glyph -->
           <div class="flex flex-col justify-between gap-6 p-6 sm:p-8">
             <div class="space-y-4">
-              <div class="flex items-center gap-2.5 font-mono text-xs text-[#ff8f6b]">
-                <Layers aria-hidden="true" class="h-4 w-4" />
+              <div class="flex items-center gap-2.5 font-mono text-xs text-primary">
+                <FontAwesomeIcon :icon="faLayerGroup" class="h-4 w-4" />
                 <span>MODUL 01 · RANK &amp; GLYPH STUDIO</span>
               </div>
               <h3 class="text-xl font-semibold text-foreground">
@@ -361,7 +361,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
                 Susun latar frame, ikon geometris sintetis, teks <code>3×5</code>/<code>5×5</code>, bayangan, serta sapuan pensil piksel langsung di kanvas. Alokator <code>U+E200+</code> menjaga rentang tetap aman dari PUA vanilla Bedrock.
               </p>
               <ul class="space-y-1.5 font-mono text-xs text-secondary-foreground">
-                <li>• Pratinjau langsung Chat, TAB, dan Nametag pada GUI Scale 1–4</li>
+                <li>• Pratinjau langsung Chat, TAB, dan Nametag in-game Minecraft</li>
                 <li>• Ekspor paket Java (.zip) siap pakai beserta JSON &amp; UUID</li>
                 <li>• Generator cuplikan LuckPerms, PlaceholderAPI, dan /tellraw</li>
               </ul>
@@ -370,7 +370,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
             <div>
               <Button type="button" variant="secondary" size="sm" class="gap-2" @click="openStudio('font')">
                 <span>Masuk ke Studio Rank</span>
-                <ArrowRight aria-hidden="true" class="h-3.5 w-3.5" />
+                <FontAwesomeIcon :icon="faArrowRight" class="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
@@ -379,7 +379,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
           <div class="flex flex-col justify-between gap-6 p-6 sm:p-8">
             <div class="space-y-4">
               <div class="flex items-center gap-2.5 font-mono text-xs text-sky-300">
-                <FileArchive aria-hidden="true" class="h-4 w-4" />
+                <FontAwesomeIcon :icon="faFileZipper" class="h-4 w-4" />
                 <span>MODUL 02 · VALIDATOR ZIP &amp; SHA-1</span>
               </div>
               <h3 class="text-xl font-semibold text-foreground">
@@ -398,7 +398,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
             <div>
               <Button type="button" variant="outline" size="sm" class="gap-2" @click="openStudio('validator')">
                 <span>Buka Validator Arsip</span>
-                <ArrowRight aria-hidden="true" class="h-3.5 w-3.5" />
+                <FontAwesomeIcon :icon="faArrowRight" class="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
@@ -410,7 +410,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
     <section aria-labelledby="versi-heading" class="border-b border-border bg-background">
       <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div class="max-w-2xl space-y-2">
-          <p class="font-mono text-xs uppercase tracking-wider text-[#ff8f6b]">
+          <p class="font-mono text-xs uppercase tracking-wider text-primary">
             Matriks Versi Terverifikasi
           </p>
           <h2 id="versi-heading" class="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -426,7 +426,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
             <caption class="sr-only">
               Daftar format pack.mcmeta untuk Minecraft Java 1.21.1 sampai 26.3
             </caption>
-            <TableHeader class="border-b border-border bg-[#131319]">
+            <TableHeader class="border-b border-border bg-muted">
               <TableRow class="border-border hover:bg-transparent">
                 <TableHead class="font-mono text-xs uppercase text-muted-foreground">Versi</TableHead>
                 <TableHead class="font-mono text-xs uppercase text-muted-foreground">Rilis</TableHead>
@@ -448,7 +448,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
                 <TableCell class="text-xs text-secondary-foreground">
                   {{ VERSION_MATRIX_META[profile.id].updateName }}
                 </TableCell>
-                <TableCell class="font-mono text-xs font-medium text-[#ff8f6b] tabular-nums">
+                <TableCell class="font-mono text-xs font-medium text-primary tabular-nums">
                   {{ VERSION_MATRIX_META[profile.id].formatDisplay }}
                 </TableCell>
                 <TableCell class="font-mono text-xs text-muted-foreground">
@@ -462,7 +462,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
                     type="button"
                     variant="ghost"
                     size="sm"
-                    class="h-7 font-mono text-xs text-[#ff8f6b] hover:text-primary"
+                    class="h-7 font-mono text-xs text-primary hover:text-primary/80"
                     @click="openStudio('validator', profile.id)"
                   >
                     Pilih
@@ -476,7 +476,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
     </section>
 
     <!-- Section 4: Focused Roadmap (Compact status table, zero marketing fluff) -->
-    <section aria-labelledby="roadmap-heading" class="bg-[#0c0c10]">
+    <section aria-labelledby="roadmap-heading" class="bg-card">
       <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-baseline justify-between gap-4">
           <div class="space-y-1">
@@ -487,7 +487,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
               Ekspor saat ini khusus Java Edition. Fitur fase selanjutnya tidak dibuka sebelum verifikasi teknis tuntas.
             </p>
           </div>
-          <Button type="button" size="sm" @click="openStudio('font')">
+          <Button type="button" variant="pill" size="pill" @click="openStudio('font')">
             Mulai di Studio
           </Button>
         </div>
@@ -495,7 +495,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
         <div class="mt-6 grid grid-cols-1 divide-y divide-border border border-border bg-background md:grid-cols-2 md:divide-x md:divide-y-0">
           <div class="space-y-3 p-5">
             <Badge variant="outline" class="gap-1 border-emerald-800 bg-emerald-950/50 font-mono text-[10px] text-emerald-200">
-              <Check aria-hidden="true" class="h-3 w-3" />
+              <FontAwesomeIcon :icon="faCheck" class="h-3 w-3" />
               Aktif · Fase 1 &amp; 2
             </Badge>
             <ul class="space-y-1.5 text-xs text-secondary-foreground">
@@ -506,7 +506,7 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
 
           <div class="space-y-3 p-5">
             <Badge variant="outline" class="gap-1 border-border bg-card font-mono text-[10px] text-muted-foreground">
-              <Lock aria-hidden="true" class="h-3 w-3" />
+              <FontAwesomeIcon :icon="faLock" class="h-3 w-3" />
               Berikutnya · Fase 3 &amp; 4
             </Badge>
             <ul class="space-y-1.5 text-xs text-muted-foreground">

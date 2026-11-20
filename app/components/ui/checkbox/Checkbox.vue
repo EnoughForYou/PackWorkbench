@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { CheckboxRootEmits, CheckboxRootProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
-import { Check } from "@lucide/vue"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faCheck } from "@fortawesome/free-solid-svg-icons"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from "reka-ui"
@@ -28,7 +29,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       class="grid place-content-center text-current transition-none"
     >
       <slot v-bind="slotProps">
-        <Check class="size-3.5" />
+        <FontAwesomeIcon :icon="faCheck" class="size-3.5" />
       </slot>
     </CheckboxIndicator>
   </CheckboxRoot>

@@ -83,7 +83,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     fontProject.value.entries[0]?.id ?? '',
   );
   const activeTool = ref<CanvasTool>('select');
-  const brushColor = ref<string>('#ff5e2c');
+  const brushColor = ref<string>('#9b73be');
   const showGrid = ref<boolean>(true);
   const stageMode = ref<CenterStageMode>('canvas');
   const zoom = ref<number>(12);

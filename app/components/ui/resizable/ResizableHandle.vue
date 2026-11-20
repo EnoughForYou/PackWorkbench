@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { SplitterResizeHandleEmits, SplitterResizeHandleProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
-import { GripVertical } from "@lucide/vue"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faGripVertical } from "@fortawesome/free-solid-svg-icons"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import { SplitterResizeHandle, useForwardPropsEmits } from "reka-ui"
@@ -22,7 +23,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     <template v-if="props.withHandle">
       <div class="bg-border z-10 flex h-4 w-3 items-center justify-center rounded-xs border">
         <slot>
-          <GripVertical class="size-2.5" />
+          <FontAwesomeIcon :icon="faGripVertical" class="size-2.5" />
         </slot>
       </div>
     </template>

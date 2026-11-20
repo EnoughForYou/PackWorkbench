@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { RefreshCw } from '@lucide/vue';
+import { faRotate } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { generateServerPropertiesSnippet } from '@core/report.ts';
 import type { Sha1ProgressState } from '@/stores/workbenchStore';
 import CopyButton from '@/components/shared/CopyButton.vue';
@@ -90,14 +91,14 @@ const snippetText = computed(() =>
         }}
       </span>
 
-      <p v-if="sha1State.status === 'error'" class="text-[11px] text-red-300">
+      <p v-if="sha1State.status === 'error'" class="text-[11px] text-destructive">
         SHA-1 Worker error: {{ sha1State.errorMessage }}
       </p>
 
-      <div class="flex items-center justify-between gap-2 bg-[#070709] px-2.5 py-2">
+      <div class="flex items-center justify-between gap-2 bg-background px-2.5 py-2">
         <code
           id="sha1-digest"
-          class="min-w-0 flex-1 break-all font-mono text-[11px] font-semibold text-[#ff8f6b] tabular-nums"
+          class="min-w-0 flex-1 break-all font-mono text-[11px] font-semibold text-primary tabular-nums"
         >
           {{ sha1State.sha1Hex ?? '—' }}
         </code>
@@ -129,7 +130,7 @@ const snippetText = computed(() =>
           v-model="downloadUrl"
           type="url"
           placeholder="https://cdn.example.com/packs/my-pack.zip"
-          class="h-8 bg-[#14141a] px-2.5 font-mono text-xs"
+          class="h-8 bg-input/40 px-2.5 font-mono text-xs"
         />
       </div>
 
@@ -154,7 +155,7 @@ const snippetText = computed(() =>
             id="rp-id-input"
             v-model="resourcePackId"
             type="text"
-            class="h-7 min-w-0 flex-1 bg-[#14141a] px-2 font-mono text-[11px]"
+            class="h-7 min-w-0 flex-1 bg-input/40 px-2 font-mono text-[11px]"
           />
           <Button
             type="button"
@@ -164,7 +165,7 @@ const snippetText = computed(() =>
             class="h-7 w-7 shrink-0"
             @click="resourcePackId = generateRandomUuid()"
           >
-            <RefreshCw aria-hidden="true" class="h-3 w-3" />
+            <FontAwesomeIcon :icon="faRotate" aria-hidden="true" class="h-3 w-3" />
           </Button>
         </div>
 
@@ -183,7 +184,7 @@ const snippetText = computed(() =>
             id="rp-prompt-input"
             v-model="resourcePackPrompt"
             type="text"
-            class="h-7 bg-[#14141a] px-2 font-mono text-[11px]"
+            class="h-7 bg-input/40 px-2 font-mono text-[11px]"
           />
         </div>
       </div>
@@ -206,7 +207,7 @@ const snippetText = computed(() =>
           role="region"
           aria-labelledby="snippet-heading"
           tabindex="0"
-          class="overflow-x-auto bg-[#070709] p-2.5 font-mono text-[11px] leading-relaxed text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+          class="overflow-x-auto bg-background p-2.5 font-mono text-[11px] leading-relaxed text-foreground focus-visible:outline-2 focus-visible:outline-primary"
         ><code id="snippet-code">{{ snippetText }}</code></pre>
       </div>
     </div>

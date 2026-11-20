@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
-  AlertTriangle,
-  Check,
-  CheckCircle2,
-  Grid2x2,
-  Maximize2,
-  Minus,
-  Plus,
-} from '@lucide/vue';
+  faBorderAll,
+  faCheck,
+  faCircleCheck,
+  faExpand,
+  faMinus,
+  faPlus,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
 import {
   buildFontJsonObject,
   buildPackMcmetaObject,
@@ -46,7 +47,7 @@ import {
 } from '@/components/ui/tooltip';
 
 const store = useWorkbenchStore();
-const { effectiveGuiScale, snippets, cursorRuns, renderInGameStrip } = useInGamePreview();
+const { snippets, cursorRuns, renderInGameStrip, effectiveGuiScale } = useInGamePreview();
 
 const pixelCanvasRef = ref<HTMLCanvasElement | null>(null);
 const inGameCanvasRef = ref<HTMLCanvasElement | null>(null);
@@ -81,9 +82,9 @@ function buildCheckerPattern(
   tile.height = cell * 2;
   const tctx = tile.getContext('2d');
   if (!tctx) return null;
-  tctx.fillStyle = '#0e0e14';
+  tctx.fillStyle = '#1e1f29';
   tctx.fillRect(0, 0, cell * 2, cell * 2);
-  tctx.fillStyle = '#15151e';
+  tctx.fillStyle = '#262736';
   tctx.fillRect(cell, 0, cell, cell);
   tctx.fillRect(0, cell, cell, cell);
   return ctx.createPattern(tile, 'repeat');
@@ -155,7 +156,7 @@ watchEffect(() => {
     ctx.fillStyle = pattern;
     ctx.fillRect(0, 0, displayW, displayH);
   } else {
-    ctx.fillStyle = '#0e0e14';
+    ctx.fillStyle = '#1e1f29';
     ctx.fillRect(0, 0, displayW, displayH);
   }
 
@@ -446,11 +447,11 @@ function handleStageModeChange(val: unknown): void {
 <template>
   <section
     aria-label="Workspace canvas and preview"
-    class="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#08080a]"
+    class="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background"
   >
     <!-- Floating Capsule Toolbar -->
-    <div class="flex items-center justify-center border-b border-border/50 bg-[#0b0b0e] px-3 py-1.5">
-      <div class="flex flex-wrap items-center justify-center gap-1.5 rounded-xl border border-border bg-[#131319] px-2 py-1 sm:rounded-full sm:py-0.5">
+    <div class="flex items-center justify-center border-b border-border bg-card px-3 py-1.5">
+      <div class="flex items-center justify-center gap-1.5 rounded-full border border-border bg-muted px-2 py-0.5">
         <ToggleGroup
           type="single"
           :model-value="store.stageMode"
@@ -486,10 +487,10 @@ function handleStageModeChange(val: unknown): void {
             variant="ghost"
             size="icon"
             aria-label="Zoom out"
-            class="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground"
+            class="touch-target-expand h-6 w-6 rounded-full text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
             @click="store.zoom = Math.max(2, store.zoom - 2)"
           >
-            <Minus aria-hidden="true" class="h-3 w-3" />
+            <FontAwesomeIcon :icon="faMinus" class="h-3 w-3" />
           </Button>
           <span class="min-w-8 text-center font-mono text-[11px] text-foreground tabular-nums">
             {{ store.zoom }}×
@@ -499,10 +500,10 @@ function handleStageModeChange(val: unknown): void {
             variant="ghost"
             size="icon"
             aria-label="Zoom in"
-            class="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground"
+            class="touch-target-expand h-6 w-6 rounded-full text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
             @click="store.zoom = Math.min(24, store.zoom + 2)"
           >
-            <Plus aria-hidden="true" class="h-3 w-3" />
+            <FontAwesomeIcon :icon="faPlus" class="h-3 w-3" />
           </Button>
           <Tooltip>
             <TooltipTrigger as-child>
@@ -511,10 +512,10 @@ function handleStageModeChange(val: unknown): void {
                 variant="ghost"
                 size="icon"
                 aria-label="Reset zoom to 12x"
-                class="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground"
+                class="touch-target-expand h-6 w-6 rounded-full text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
                 @click="store.zoom = 12"
               >
-                <Maximize2 aria-hidden="true" class="h-3 w-3" />
+                <FontAwesomeIcon :icon="faExpand" class="h-3 w-3" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Reset Zoom 12×</TooltipContent>
@@ -528,12 +529,12 @@ function handleStageModeChange(val: unknown): void {
                 :aria-pressed="store.showGrid"
                 aria-label="Toggle pixel grid"
                 :class="[
-                  'h-6 w-6 rounded-full',
+                  'touch-target-expand h-6 w-6 rounded-full transition-[color,transform] duration-100 ease-out active:scale-[0.96]',
                   store.showGrid ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
                 ]"
                 @click="store.showGrid = !store.showGrid"
               >
-                <Grid2x2 aria-hidden="true" class="h-3 w-3" />
+                <FontAwesomeIcon :icon="faBorderAll" class="h-3 w-3" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Toggle Pixel Grid (G)</TooltipContent>
@@ -549,14 +550,14 @@ function handleStageModeChange(val: unknown): void {
         v-if="store.copiedColorToast"
         role="status"
         aria-live="polite"
-        class="pointer-events-none absolute right-3 bottom-3 z-20 flex items-center gap-1.5 rounded-md border border-border bg-[#111118]/95 px-2.5 py-1.5 font-mono text-[11px] text-foreground shadow-lg"
+        class="pointer-events-none absolute right-3 bottom-3 z-20 flex items-center gap-1.5 rounded-md border border-border bg-card/95 px-2.5 py-1.5 font-mono text-[11px] text-foreground shadow-lg"
       >
         <span
           aria-hidden="true"
           class="h-3 w-3 rounded-[2px] border border-white/25"
           :style="{ backgroundColor: store.copiedColorToast.hex }"
         />
-        <Check aria-hidden="true" class="h-3 w-3 text-emerald-400" />
+        <FontAwesomeIcon :icon="faCheck" class="h-3 w-3 text-emerald-400" />
         <span>
           {{
             store.copiedColorToast.ok
@@ -574,7 +575,7 @@ function handleStageModeChange(val: unknown): void {
       >
         <ResizablePanel :default-size="store.stageMode === 'split' ? 56 : 100" :min-size="35">
           <div
-            class="pixel-checkerboard flex h-full min-h-[300px] overflow-auto p-4 sm:p-6"
+            class="pixel-checkerboard flex h-full min-h-[300px] overflow-auto p-6"
             @wheel="handleCanvasWheel"
           >
             <p v-if="!store.selectedEntry" class="m-auto text-xs text-muted-foreground">
@@ -584,16 +585,16 @@ function handleStageModeChange(val: unknown): void {
             <!-- Space Entry Visual Offset Gauge -->
             <div
               v-else-if="store.selectedEntry.kind === 'space'"
-              class="m-auto w-full max-w-md space-y-3 border border-border bg-[#0e0e12]/95 p-5 text-center"
+              class="m-auto w-full max-w-md space-y-3 border border-border bg-card/95 p-5 text-center"
             >
-              <p class="font-mono text-xs font-medium text-[#ff8f6b]">
+              <p class="font-mono text-xs font-medium text-primary">
                 SpaceProvider · {{ store.selectedEntry.label }}
               </p>
               <p class="font-mono text-3xl font-semibold text-foreground tabular-nums">
                 {{ store.selectedEntry.advance > 0 ? `+${store.selectedEntry.advance}` : store.selectedEntry.advance }} px
               </p>
-              <div class="relative h-7 border border-border bg-[#070709] px-3">
-                <div class="absolute inset-y-0 left-1/2 w-px bg-[#4a4a58]" />
+              <div class="relative h-7 border border-border bg-background px-3">
+                <div class="absolute inset-y-0 left-1/2 w-px bg-border" />
                 <div
                   :style="{
                     left:
@@ -621,13 +622,13 @@ function handleStageModeChange(val: unknown): void {
             <Alert
               v-else-if="selectedDecodeError || !activeRaster"
               variant="destructive"
-              class="m-auto max-w-md bg-red-950/50"
+              class="m-auto max-w-md bg-destructive/10 border-destructive/40"
             >
-              <AlertTriangle aria-hidden="true" class="h-4 w-4" />
+              <FontAwesomeIcon :icon="faTriangleExclamation" class="h-4 w-4 text-destructive" />
               <AlertTitle class="text-xs font-semibold">
                 Failed to decode PNG file (F03)
               </AlertTitle>
-              <AlertDescription class="text-xs text-red-200">
+              <AlertDescription class="text-xs text-destructive">
                 {{ selectedDecodeError ?? 'Upload a valid PNG file via explorer or inspector.' }}
               </AlertDescription>
             </Alert>
@@ -635,7 +636,7 @@ function handleStageModeChange(val: unknown): void {
             <!-- Crisp Pixel Canvas Wrapper -->
             <div
               v-else
-              class="m-auto inline-block shrink-0 ring-1 ring-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.65)]"
+              class="sprite-preview-outline m-auto inline-block shrink-0 ring-1 ring-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.65)]"
               :style="{
                 width: `${activeRaster.width * store.zoom}px`,
                 height: `${activeRaster.height * store.zoom}px`,
@@ -669,7 +670,7 @@ function handleStageModeChange(val: unknown): void {
         <template v-if="store.stageMode === 'split'">
           <ResizableHandle with-handle />
           <ResizablePanel :default-size="44" :min-size="25">
-            <div class="flex h-full min-h-0 flex-col bg-[#0a0a0d]">
+            <div class="flex h-full min-h-0 flex-col bg-card">
               <div class="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
                 <span class="font-mono text-[11px] font-medium text-foreground">
                   font.json &amp; pack.mcmeta
@@ -685,7 +686,7 @@ function handleStageModeChange(val: unknown): void {
               <ScrollArea class="min-h-0 flex-1">
                 <pre
                   tabindex="0"
-                  class="w-max min-w-full p-3.5 font-mono text-[11px] leading-relaxed text-[#e4e4e9] focus-visible:outline-2 focus-visible:outline-primary"
+                  class="w-max min-w-full p-3.5 font-mono text-[11px] leading-relaxed text-foreground focus-visible:outline-2 focus-visible:outline-primary"
                 ><code id="split-font-json-code">{{ jsonOutputText }}</code></pre>
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
@@ -702,17 +703,13 @@ function handleStageModeChange(val: unknown): void {
               <h2 class="text-sm font-semibold text-foreground">
                 In-Game Render Simulation ({{ store.fontProject.previewContext === 'Nametag' ? 'Third Person · Nametag' : store.fontProject.previewContext }})
               </h2>
-              <p class="mt-0.5 font-mono text-[11px] text-muted-foreground tabular-nums">
-                Window.calculateScale({{ store.fontProject.guiScale }}, {{ store.fontProject.forceUnicode }}) =
-                <strong class="text-[#ff8f6b]">{{ effectiveGuiScale }}×</strong>
-              </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <ToggleGroup
                 type="single"
                 :model-value="store.fontProject.previewContext"
                 aria-label="Preview scene context"
-                class="gap-0.5 border border-border bg-[#111116] p-0.5"
+                class="gap-0.5 border border-border bg-card p-0.5"
                 @update:model-value="
                   (val) => {
                     if (val === 'Chat' || val === 'TAB' || val === 'Nametag') {
@@ -745,7 +742,7 @@ function handleStageModeChange(val: unknown): void {
                 type="single"
                 :model-value="store.previewBackdropMode"
                 aria-label="Large preview backdrop mode"
-                class="gap-0.5 border border-border bg-[#111116] p-0.5"
+                class="gap-0.5 border border-border bg-card p-0.5"
                 @update:model-value="
                   (val) => {
                     if (val === 'world' || val === 'solid' || val === 'custom') {
@@ -777,16 +774,16 @@ function handleStageModeChange(val: unknown): void {
             </div>
           </div>
 
-          <div class="flex min-h-44 items-center justify-center overflow-x-auto border border-border bg-[#070709] p-3">
+          <div class="sprite-preview-outline flex min-h-44 items-center justify-center overflow-x-auto border border-border bg-background p-3">
             <canvas
               ref="inGameCanvasRef"
               role="img"
-              :aria-label="`${store.fontProject.previewContext} simulation at GUI Scale ${effectiveGuiScale}`"
+              :aria-label="`${store.fontProject.previewContext} simulation`"
               class="pixelated-canvas block max-w-full shrink-0 ring-1 ring-white/15"
             />
           </div>
 
-          <div class="grid grid-cols-1 gap-4 border-t border-border pt-4 md:grid-cols-2">
+          <div class="grid grid-cols-2 gap-4 border-t border-border pt-4">
             <div class="space-y-2">
               <Label for="stage-sample-chat-input" class="text-xs font-medium text-foreground">
                 Sample text after prefix
@@ -795,7 +792,7 @@ function handleStageModeChange(val: unknown): void {
                 id="stage-sample-chat-input"
                 type="text"
                 :model-value="store.fontProject.sampleChatText"
-                class="h-8 bg-[#121218] font-mono text-xs"
+                class="h-8 bg-muted font-mono text-xs"
                 @update:model-value="store.setSampleChatText(String($event ?? ''))"
               />
               <p class="text-[11px] text-muted-foreground">
@@ -814,7 +811,7 @@ function handleStageModeChange(val: unknown): void {
                   type="button"
                   size="sm"
                   :variant="store.fontProject.prefixSequenceIds.includes(entry.id) ? 'default' : 'outline'"
-                  class="h-7 px-2 font-mono text-[11px]"
+                  class="h-7 px-2 font-mono text-[11px] transition-[background-color,color,transform] duration-100 ease-out active:scale-[0.96]"
                   @click="store.togglePrefixEntry(entry.id)"
                 >
                   {{ store.fontProject.prefixSequenceIds.includes(entry.id) ? '✓ ' : '+ ' }}{{ entry.label }}
@@ -827,9 +824,9 @@ function handleStageModeChange(val: unknown): void {
             <h3 class="text-xs font-semibold text-foreground">
               Raw float cursor accumulation (<code class="text-muted-foreground">PreparedTextBuilder</code>)
             </h3>
-            <div class="overflow-x-auto border border-border bg-[#0e0e12]">
+            <div class="overflow-x-auto border border-border bg-card">
               <Table>
-                <TableHeader class="border-b border-border bg-[#131318]">
+                <TableHeader class="border-b border-border bg-muted">
                   <TableRow class="border-border hover:bg-transparent">
                     <TableHead class="h-8 font-mono text-[11px]">Token</TableHead>
                     <TableHead class="h-8 font-mono text-[11px]">xStart</TableHead>
@@ -843,7 +840,7 @@ function handleStageModeChange(val: unknown): void {
                     :key="idx"
                     class="border-border/50"
                   >
-                    <TableCell class="py-1.5 text-[#ff8f6b]">{{ run.label }}</TableCell>
+                    <TableCell class="py-1.5 text-primary">{{ run.label }}</TableCell>
                     <TableCell class="py-1.5">{{ run.xStartFloat.toFixed(3) }}</TableCell>
                     <TableCell class="py-1.5">{{ run.advance }}</TableCell>
                     <TableCell class="py-1.5">{{ run.xEndFloat.toFixed(3) }}</TableCell>
@@ -857,7 +854,7 @@ function handleStageModeChange(val: unknown): void {
     </div>
 
     <!-- Bottom 28px IDE Status Bar -->
-    <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-border bg-[#0b0b0e] px-3 py-1 font-mono text-[11px] text-muted-foreground tabular-nums lg:flex-nowrap">
+    <div class="flex items-center justify-between gap-3 border-t border-border bg-card px-3 py-1 font-mono text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
       <div class="flex min-w-0 items-center gap-2.5 overflow-hidden whitespace-nowrap">
         <template v-if="hoverPixel">
           <span class="text-foreground">
@@ -881,7 +878,7 @@ function handleStageModeChange(val: unknown): void {
           <span class="text-sky-300">
             w {{ selectedMetrics.primaryActualGlyphWidth }}
           </span>
-          <span class="text-[#ff8f6b]">
+          <span class="text-primary">
             adv {{ selectedMetrics.primaryAdvance }}
           </span>
           <span>top {{ selectedMetrics.top }}</span>
@@ -896,25 +893,25 @@ function handleStageModeChange(val: unknown): void {
         <Tooltip>
           <TooltipTrigger as-child>
             <span class="inline-flex cursor-help items-center gap-1 text-amber-300">
-              <AlertTriangle aria-hidden="true" class="h-3 w-3" />
-              <span>[UNVERIFIED] Float GUI {{ effectiveGuiScale }}×</span>
+              <FontAwesomeIcon :icon="faTriangleExclamation" class="h-3 w-3" />
+              <span>[UNVERIFIED] Float Simulation</span>
             </span>
           </TooltipTrigger>
           <TooltipContent side="top" class="max-w-xs text-[11px]">
-            Float coordinate simulation is derived from Mojang bytecode; actual GUI Scale 1–4 rasterization and 1.21.11+ Texture Filtering still require live Minecraft client verification.
+            Float coordinate simulation is derived from Mojang bytecode; actual client rasterization and 1.21.11+ Texture Filtering still require live Minecraft client verification.
           </TooltipContent>
         </Tooltip>
 
         <button
           type="button"
           :class="[
-            'inline-flex cursor-pointer items-center gap-1 font-medium focus-visible:outline-2 focus-visible:outline-primary',
-            store.validation.errors > 0 ? 'text-red-300' : 'text-emerald-300',
+            'inline-flex cursor-pointer items-center gap-1 font-medium focus-visible:outline-2 focus-visible:outline-primary transition-[color,transform] duration-100 ease-out active:scale-[0.96]',
+            store.validation.errors > 0 ? 'text-destructive' : 'text-emerald-300',
           ]"
           @click="store.inspectorTab = 'validate'"
         >
-          <CheckCircle2 v-if="store.validation.errors === 0" aria-hidden="true" class="h-3 w-3" />
-          <AlertTriangle v-else aria-hidden="true" class="h-3 w-3" />
+          <FontAwesomeIcon v-if="store.validation.errors === 0" :icon="faCircleCheck" class="h-3 w-3" />
+          <FontAwesomeIcon v-else :icon="faTriangleExclamation" class="h-3 w-3" />
           <span>
             {{
               store.validation.errors > 0

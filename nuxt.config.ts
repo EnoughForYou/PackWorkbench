@@ -10,7 +10,10 @@ export default defineNuxtConfig({
   pinia: {
     storesDirs: ['./app/stores/**', './stores/**'],
   },
-  css: ['~/assets/css/tailwind.css'],
+  css: [
+    '@fortawesome/fontawesome-svg-core/styles.css',
+    '~/assets/css/tailwind.css',
+  ],
   alias: {
     '@core': fileURLToPath(new URL('./src/core', import.meta.url)),
     '@workers': fileURLToPath(new URL('./src/workers', import.meta.url)),
@@ -36,7 +39,7 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Onest:wght@400;500;600;700&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..800&family=Onest:wght@300..800&display=swap',
         },
       ],
     },

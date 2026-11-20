@@ -46,7 +46,7 @@ function handleChange(val: unknown): void {
       <Badge
         v-if="autoDetectedTarget"
         variant="secondary"
-        class="h-4 px-1.5 font-mono text-[10px] text-[#ff8f6b]"
+        class="h-4 px-1.5 font-mono text-[10px] text-primary"
       >
         Detected: {{ autoDetectedTarget }}
       </Badge>
@@ -59,7 +59,7 @@ function handleChange(val: unknown): void {
       <Select :model-value="selectedVersion" @update:model-value="handleChange">
         <SelectTrigger
           id="validator-version-select"
-          class="h-8 w-full bg-[#14141a] font-mono text-xs"
+          class="h-8 w-full bg-card font-mono text-xs"
         >
           <SelectValue />
         </SelectTrigger>
@@ -91,10 +91,10 @@ function handleChange(val: unknown): void {
         :key="profile.id"
         type="button"
         :class="[
-          'cursor-pointer px-1.5 py-0.5 font-mono text-[10px] transition-colors',
+          'touch-target-expand cursor-pointer rounded-sm px-1.5 py-0.5 font-mono text-[10px] transition-[background-color,transform] duration-100 ease-out active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
           selectedVersion === profile.id
             ? 'bg-primary text-primary-foreground font-semibold'
-            : 'bg-[#17171e] text-foreground hover:bg-accent',
+            : 'bg-muted text-foreground hover:bg-accent',
         ]"
         @click="emit('change', profile.id)"
       >

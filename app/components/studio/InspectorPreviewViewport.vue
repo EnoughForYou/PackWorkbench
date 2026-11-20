@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
-import { ImagePlus, Maximize2, X } from '@lucide/vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faExpand, faImage, faXmark } from '@fortawesome/free-solid-svg-icons';
 import type { PreviewContext } from '@core/font/types.ts';
 import {
   useWorkbenchStore,
@@ -10,7 +11,6 @@ import { useInGamePreview } from '@/composables/useInGamePreview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/tooltip';
 
 const store = useWorkbenchStore();
-const { effectiveGuiScale, snippets, renderInGameStrip } = useInGamePreview();
+const { snippets, renderInGameStrip } = useInGamePreview();
 
 const livePreviewCanvasRef = ref<HTMLCanvasElement | null>(null);
 const customBgInputRef = ref<HTMLInputElement | null>(null);
@@ -54,13 +54,6 @@ function handleContextChange(val: string | number): void {
   }
 }
 
-function handleScaleChange(val: unknown): void {
-  const n = Number(val);
-  if (n === 1 || n === 2 || n === 3 || n === 4) {
-    store.setGuiScale(n);
-  }
-}
-
 function handleBackdropModeChange(val: unknown): void {
   if (val === 'world' || val === 'solid' || val === 'custom') {
     store.setPreviewBackdropMode(val as PreviewBackdropMode);
@@ -78,7 +71,7 @@ function onCustomBgSelected(event: Event): void {
 </script>
 
 <template>
-  <div class="shrink-0 border-b border-border bg-[#0b0b0e]">
+  <div class="shrink-0 border-b border-border bg-card">
     <div class="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-1.5">
       <Tabs
         :model-value="store.fontProject.previewContext"
@@ -108,24 +101,6 @@ function onCustomBgSelected(event: Event): void {
       </Tabs>
 
       <div class="flex items-center gap-1">
-        <ToggleGroup
-          type="single"
-          :model-value="String(store.fontProject.guiScale)"
-          aria-label="GUI Scale 1 to 4"
-          class="gap-0.5"
-          @update:model-value="handleScaleChange"
-        >
-          <ToggleGroupItem
-            v-for="s in ([1, 2, 3, 4] as const)"
-            :key="s"
-            :value="String(s)"
-            :aria-label="`GUI Scale ${s}`"
-            class="h-6 min-w-6 px-1 font-mono text-[10px] data-[state=on]:bg-accent data-[state=on]:text-[#ff8f6b]"
-          >
-            {{ s }}×
-          </ToggleGroupItem>
-        </ToggleGroup>
-
         <Tooltip>
           <TooltipTrigger as-child>
             <Button
@@ -133,10 +108,10 @@ function onCustomBgSelected(event: Event): void {
               variant="ghost"
               size="icon"
               aria-label="Expand in-game preview to center stage"
-              class="h-6 w-6 text-muted-foreground hover:text-foreground"
+              class="h-6 w-6 text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
               @click="store.stageMode = 'preview'"
             >
-              <Maximize2 aria-hidden="true" class="h-3.5 w-3.5" />
+              <FontAwesomeIcon :icon="faExpand" class="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="left">Open Full In-Game View</TooltipContent>
@@ -145,11 +120,11 @@ function onCustomBgSelected(event: Event): void {
     </div>
 
     <div class="px-3 py-2.5">
-      <div class="flex items-center justify-center overflow-hidden border border-border/80 bg-[#070709]">
+      <div class="sprite-preview-outline flex items-center justify-center overflow-hidden border border-border/80 bg-background">
         <canvas
           ref="livePreviewCanvasRef"
           role="img"
-          :aria-label="`Live ${store.fontProject.previewContext} preview at effective scale ${effectiveGuiScale}x`"
+          :aria-label="`Live ${store.fontProject.previewContext} preview`"
           class="pixelated-canvas block h-auto w-full"
         />
       </div>
@@ -164,28 +139,13 @@ function onCustomBgSelected(event: Event): void {
             type="text"
             :model-value="store.fontProject.sampleChatText"
             placeholder="P0TAT0D0G: Hi, thanks for using my tools!"
-            class="h-6 border-border/70 bg-[#121218] px-2 font-mono text-[10px] text-foreground"
+            class="h-6 border-border/70 bg-muted px-2 font-mono text-[10px] text-foreground"
             @update:model-value="store.setSampleChatText(String($event ?? ''))"
-          />
-        </div>
-
-        <div class="flex shrink-0 items-center gap-1.5">
-          <Label
-            for="quick-force-unicode"
-            class="cursor-pointer font-mono text-[10px] text-muted-foreground"
-          >
-            Unicode
-          </Label>
-          <Switch
-            id="quick-force-unicode"
-            :model-value="store.fontProject.forceUnicode"
-            class="scale-75"
-            @update:model-value="store.toggleForceUnicode()"
           />
         </div>
       </div>
 
-      <div class="mt-1.5 flex items-center justify-between gap-2 font-mono text-[10px] text-[#8d8d9b] tabular-nums">
+      <div class="mt-1.5 flex items-center justify-between gap-2 font-mono text-[10px] text-muted-foreground tabular-nums">
         <div class="flex items-center gap-1">
           <span>Bg:</span>
           <ToggleGroup
@@ -231,10 +191,10 @@ function onCustomBgSelected(event: Event): void {
                 variant="ghost"
                 size="icon"
                 aria-label="Upload local screenshot backdrop from device"
-                class="h-5 w-5 text-muted-foreground hover:text-foreground"
+                class="h-5 w-5 text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
                 @click="customBgInputRef?.click()"
               >
-                <ImagePlus aria-hidden="true" class="h-3 w-3" />
+                <FontAwesomeIcon :icon="faImage" class="h-3 w-3" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -248,10 +208,10 @@ function onCustomBgSelected(event: Event): void {
             variant="ghost"
             size="icon"
             aria-label="Remove custom screenshot backdrop"
-            class="h-5 w-5 text-muted-foreground hover:text-red-300"
+            class="h-5 w-5 text-muted-foreground hover:text-destructive transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
             @click="store.clearCustomBackdropFile()"
           >
-            <X aria-hidden="true" class="h-3 w-3" />
+            <FontAwesomeIcon :icon="faXmark" class="h-3 w-3" />
           </Button>
         </div>
 
@@ -259,14 +219,13 @@ function onCustomBgSelected(event: Event): void {
           <button
             v-if="canPreviewSelected && store.selectedEntry"
             type="button"
-            class="cursor-pointer rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-medium text-[#ff8f6b] hover:bg-primary/20"
+            class="cursor-pointer rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-medium text-primary hover:bg-primary/20 transition-[background-color,transform] duration-100 ease-out active:scale-[0.96]"
             @click="store.setSoloPrefixEntry(store.selectedEntry.id)"
           >
             Preview {{ store.selectedEntry.label }}
           </button>
           <span class="truncate" :title="`Active prefix: ${activePrefixLabel} (${snippets.prefixEscaped || '—'})`">
-            <code class="text-[#ff8f6b]">{{ activePrefixLabel }}</code>
-            · {{ effectiveGuiScale }}×
+            <code class="text-primary">{{ activePrefixLabel }}</code>
           </span>
         </div>
       </div>

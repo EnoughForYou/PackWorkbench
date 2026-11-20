@@ -147,7 +147,7 @@ Studio mengadopsi struktur panel terintegrasi desktop-grade:
 
 ```
 +-----------------------------------------------------------------------------------------+
-| TOP: Menu Bar + Project Toolbar (Namespace, Versi, Force Unicode, Undo/Redo, Export)   |
+| TOP: Menu Bar + Project Toolbar (Namespace, Versi Target, Undo/Redo, Export Pack)       |
 +---------+--------------------+------------------------------------+---------------------+
 | LEFT    | LEFT PANEL         | CENTER STAGE                       | RIGHT PANEL         |
 | RAIL    | Rank & Asset       | Pixel Canvas / Live Preview        | Inspector / Layers  |
@@ -168,7 +168,6 @@ Studio mengadopsi struktur panel terintegrasi desktop-grade:
 - **Project Toolbar**:
   - Input Namespace resource pack (validasi regex `[a-z0-9_.-]+`).
   - Target Version Dropdown (`1.21.1`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, `26.3`).
-  - Force Unicode toggle.
   - Tombol Undo (`Ctrl+Z`) dan Redo (`Ctrl+Y`).
   - Tombol Utama: **Export Pack** (Pill `#9b73be` Amethyst Lavender tegas berteks kontras).
 

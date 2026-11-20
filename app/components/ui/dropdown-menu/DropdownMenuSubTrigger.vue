@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { DropdownMenuSubTriggerProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
-import { ChevronRight } from "@lucide/vue"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import {
@@ -26,6 +27,6 @@ const forwardedProps = useForwardProps(delegatedProps)
     )"
   >
     <slot />
-    <ChevronRight class="ml-auto size-4" />
+    <FontAwesomeIcon :icon="faChevronRight" class="ml-auto size-3" />
   </DropdownMenuSubTrigger>
 </template>

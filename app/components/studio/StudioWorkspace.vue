@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useMediaQuery } from '@vueuse/core';
 import ToolDockRail from './ToolDockRail.vue';
 import RankExplorerSidebar from './RankExplorerSidebar.vue';
 import CenterStageCanvas from './CenterStageCanvas.vue';
@@ -9,14 +8,12 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-
-const isDesktop = useMediaQuery('(min-width: 1024px)');
 </script>
 
 <template>
   <main
     id="main-content"
-    class="flex min-h-0 flex-1 flex-col lg:flex-row lg:overflow-hidden"
+    class="flex min-h-0 min-w-[1280px] flex-1 flex-row overflow-hidden"
   >
     <h1 id="studio-title" tabindex="-1" class="sr-only">
       Rank Badge, Font, and Negative Space Studio — Minecraft Java Edition
@@ -24,9 +21,8 @@ const isDesktop = useMediaQuery('(min-width: 1024px)');
 
     <ToolDockRail />
 
-    <!-- Desktop: Smooth 3-pane Resizable IDE Panels (PackSMC / xqedii layout) -->
+    <!-- Desktop: Smooth 3-pane Resizable IDE Panels -->
     <ResizablePanelGroup
-      v-if="isDesktop"
       direction="horizontal"
       auto-save-id="pack-workbench-studio-panels"
       class="min-h-0 flex-1"
@@ -47,18 +43,5 @@ const isDesktop = useMediaQuery('(min-width: 1024px)');
         <InspectorPanel />
       </ResizablePanel>
     </ResizablePanelGroup>
-
-    <!-- Mobile / Tablet: Clean Vertical Flow -->
-    <div v-else class="flex min-h-0 flex-1 flex-col divide-y divide-border">
-      <div class="max-h-64 overflow-hidden">
-        <RankExplorerSidebar />
-      </div>
-      <div class="min-h-[380px]">
-        <CenterStageCanvas />
-      </div>
-      <div>
-        <InspectorPanel />
-      </div>
-    </div>
   </main>
 </template>

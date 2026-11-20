@@ -577,7 +577,7 @@ export function useInGamePreview() {
         text: 'VIP',
         fontSize: '3x5',
         textColor: '#ffffff',
-        shadowColor: '#111116',
+        shadowColor: '#0c0a09',
         frameStyle: 'bevel',
         frameColor: '#e11d48',
         frameBorderColor: '#fda4af',
@@ -648,7 +648,7 @@ export function useInGamePreview() {
         nametagCenterX = res.cx;
       }
     } else {
-      ctx.fillStyle = '#070709';
+      ctx.fillStyle = '#1e1f29';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 

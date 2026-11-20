@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, watch } from 'vue';
-import { Download, ShieldCheck } from '@lucide/vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faFileZipper, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import { VERSION_PROFILES } from '@core/versions.ts';
 import type { TargetVersionId } from '@core/types.ts';
 import { useWorkbenchStore, type StudioMode } from '@/stores/workbenchStore';
@@ -95,6 +96,11 @@ function handleStudioKeyDown(event: KeyboardEvent): void {
     store.undoPaint();
     return;
   }
+  if ((event.ctrlKey || event.metaKey) && (key === '0' || key === '1')) {
+    event.preventDefault();
+    store.zoom = key === '0' ? 12 : 2;
+    return;
+  }
   if (event.ctrlKey || event.metaKey || event.altKey) return;
 
   if (key === 'v') {
@@ -124,29 +130,24 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    :class="[
-      'flex min-h-screen flex-col bg-background text-foreground',
-      'lg:h-screen lg:overflow-hidden',
-    ]"
-  >
-    <!-- Pure IDE Top Toolbar -->
-    <header class="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-[#0b0b0e] px-3 py-1">
+  <div class="flex h-screen min-w-[1280px] flex-col overflow-hidden bg-background text-foreground">
+    <!-- Pure Desktop IDE Top Toolbar -->
+    <header class="flex min-h-12 shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-3 py-1">
       <!-- Left: Brand + quiet Home/About links + Mode ToggleGroup -->
-      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div class="flex items-center gap-3">
         <NuxtLink
           to="/"
           class="flex shrink-0 items-center gap-2 rounded py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <span
             aria-hidden="true"
-            class="flex h-6 w-6 items-center justify-center rounded border border-primary/40 bg-[#1a1310]"
+            class="flex h-6 w-6 items-center justify-center rounded border border-primary/40 bg-muted"
           >
             <svg viewBox="0 0 16 16" fill="currentColor" class="h-3.5 w-3.5 text-primary">
               <path d="M2 2h4v4H2V2Zm8 0h4v4h-4V2ZM6 6h4v4H6V6Zm-4 4h4v4H2v-4Zm8 0h4v4h-4v-4Z" />
             </svg>
           </span>
-          <span class="text-xs font-semibold tracking-tight text-foreground sm:text-sm">
+          <span class="text-sm font-semibold tracking-tight text-foreground">
             Pack Workbench
           </span>
         </NuxtLink>
@@ -173,13 +174,13 @@ onBeforeUnmount(() => {
           </NuxtLink>
         </nav>
 
-        <Separator orientation="vertical" class="hidden h-5 sm:block" />
+        <Separator orientation="vertical" class="h-5" />
 
         <ToggleGroup
           type="single"
           :model-value="store.studioMode"
           aria-label="Select Studio workspace"
-          class="gap-0.5 rounded-md border border-border bg-[#131319] p-0.5"
+          class="gap-0.5 rounded-md border border-border bg-muted p-0.5"
           @update:model-value="setMode"
         >
           <ToggleGroupItem
@@ -198,9 +199,9 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Right: Active Project Metadata + Export Action -->
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2">
         <template v-if="store.studioMode === 'font'">
-          <div class="hidden items-center gap-1.5 sm:flex">
+          <div class="flex items-center gap-1.5">
             <Label for="studio-ns-input" class="font-mono text-[11px] text-muted-foreground">
               ns:
             </Label>
@@ -208,7 +209,7 @@ onBeforeUnmount(() => {
               id="studio-ns-input"
               type="text"
               :model-value="store.fontProject.namespace"
-              class="h-7 w-24 bg-[#14141a] px-2 font-mono text-xs"
+              class="h-7 w-24 bg-muted px-2 font-mono text-xs"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -227,7 +228,7 @@ onBeforeUnmount(() => {
           >
             <SelectTrigger
               id="studio-target-select"
-              class="h-7 w-36 bg-[#14141a] font-mono text-xs"
+              class="h-7 w-36 bg-muted font-mono text-xs"
             >
               <SelectValue />
             </SelectTrigger>
@@ -250,9 +251,9 @@ onBeforeUnmount(() => {
             <TooltipTrigger as-child>
               <Badge
                 variant="outline"
-                class="hidden h-7 cursor-default gap-1 border-border bg-[#121218] font-mono text-[10px] text-muted-foreground md:inline-flex"
+                class="h-7 cursor-default gap-1 border-border bg-muted font-mono text-[10px] text-muted-foreground"
               >
-                <ShieldCheck aria-hidden="true" class="h-3 w-3 text-emerald-400" />
+                <FontAwesomeIcon :icon="faShieldHalved" class="h-3 w-3 text-emerald-400" />
                 <span>Local</span>
               </Badge>
             </TooltipTrigger>
@@ -263,19 +264,20 @@ onBeforeUnmount(() => {
 
           <Button
             type="button"
-            size="sm"
+            variant="pill"
+            size="pill"
             :disabled="store.validation.errors > 0 || store.isExporting"
-            class="h-7 gap-1.5 px-3 text-xs font-semibold"
+            class="gap-1.5"
             @click="store.exportAndDownload()"
           >
-            <Download aria-hidden="true" class="h-3.5 w-3.5" />
+            <FontAwesomeIcon :icon="faFileZipper" class="h-3.5 w-3.5" />
             <span>
               {{
                 store.isExporting
                   ? 'Building...'
                   : store.validation.errors > 0
                     ? `${store.validation.errors} Errors`
-                    : 'Export ZIP'
+                    : 'Export Pack'
               }}
             </span>
           </Button>
@@ -291,7 +293,7 @@ onBeforeUnmount(() => {
           >
             <SelectTrigger
               id="validator-top-version-select"
-              class="h-7 w-36 bg-[#14141a] font-mono text-xs"
+              class="h-7 w-36 bg-muted font-mono text-xs"
             >
               <SelectValue />
             </SelectTrigger>
@@ -312,7 +314,7 @@ onBeforeUnmount(() => {
 
           <Badge
             variant="outline"
-            class="h-7 border-border bg-[#121218] font-mono text-[10px] text-muted-foreground"
+            class="h-7 border-border bg-muted font-mono text-[10px] text-muted-foreground"
           >
             Local · SHA-1 Worker
           </Badge>

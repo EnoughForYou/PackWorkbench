@@ -1,12 +1,12 @@
 <template>
-  <footer class="border-t border-border bg-[#09090c]">
-    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 gap-10 md:grid-cols-12">
-        <div class="space-y-3 md:col-span-5">
+  <footer class="border-t border-border bg-card">
+    <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+      <div class="grid grid-cols-12 gap-10">
+        <div class="col-span-5 space-y-3">
           <div class="flex items-center gap-2.5">
             <span
               aria-hidden="true"
-              class="flex h-6 w-6 items-center justify-center rounded border border-primary/40 bg-[#1a1310]"
+              class="flex h-6 w-6 items-center justify-center rounded border border-primary/40 bg-muted"
             >
               <svg viewBox="0 0 16 16" fill="currentColor" class="h-3.5 w-3.5 text-primary">
                 <path d="M2 2h4v4H2V2Zm8 0h4v4h-4V2ZM6 6h4v4H6V6Zm-4 4h4v4H2v-4Zm8 0h4v4h-4v-4Z" />
@@ -17,13 +17,13 @@
           <p class="max-w-sm text-sm leading-relaxed text-muted-foreground">
             Semua pemeriksaan <code class="text-foreground">.zip</code>, kalkulasi hash SHA-1, dan perakitan font berjalan lokal di browser tanpa unggahan berkas.
           </p>
-          <p class="font-mono text-xs text-[#7c7c88]">
-            Acuan format: <code class="text-muted-foreground">docs/knowledge/</code>
+          <p class="font-mono text-xs text-muted-foreground">
+            Acuan format: <code class="text-foreground">docs/knowledge/</code>
           </p>
         </div>
 
-        <div class="space-y-3 md:col-span-3">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-[#7c7c88]">
+        <div class="col-span-3 space-y-3">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Halaman
           </h2>
           <ul class="space-y-2 text-sm">
@@ -54,8 +54,8 @@
           </ul>
         </div>
 
-        <div class="space-y-3 md:col-span-4">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-[#7c7c88]">
+        <div class="col-span-4 space-y-3">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Ruang Kerja
           </h2>
           <ul class="space-y-2 text-sm text-muted-foreground">
@@ -75,16 +75,16 @@
                 Validator <code class="text-xs text-foreground">.zip</code> &amp; Generator SHA-1
               </NuxtLink>
             </li>
-            <li class="text-xs leading-relaxed text-[#7c7c88]">
-              Khusus Minecraft Java Edition (<code class="text-muted-foreground">1.21.1–26.3</code>). Tanpa aset vanilla Mojang.
+            <li class="text-xs leading-relaxed text-muted-foreground">
+              Khusus Minecraft Java Edition (<code class="text-foreground">1.21.1–26.3</code>). Tanpa aset vanilla Mojang.
             </li>
           </ul>
         </div>
       </div>
 
-      <div class="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 text-xs text-[#7c7c88]">
+      <div class="mt-10 flex items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground">
         <span>Berjalan penuh di peramban: tanpa akun, backend, atau telemetri.</span>
-        <span class="font-mono text-muted-foreground">Nuxt · Vue · Pinia · shadcn-vue</span>
+        <span class="font-mono text-muted-foreground">Nuxt · Vue · Pinia · Font Awesome · shadcn-vue</span>
       </div>
     </div>
   </footer>

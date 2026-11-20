@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { SelectTriggerProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
-import { ChevronDown } from "@lucide/vue"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faChevronDown } from "@fortawesome/free-solid-svg-icons"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import { SelectIcon, SelectTrigger, useForwardProps } from "reka-ui"
@@ -27,7 +28,7 @@ const forwardedProps = useForwardProps(delegatedProps)
   >
     <slot />
     <SelectIcon as-child>
-      <ChevronDown class="size-4 opacity-50" />
+      <FontAwesomeIcon :icon="faChevronDown" class="size-3 opacity-50" />
     </SelectIcon>
   </SelectTrigger>
 </template>

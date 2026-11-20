@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
-  Check,
-  Eraser,
-  Grid2x2,
-  MousePointer2,
-  Pencil,
-  Pipette,
-  Redo2,
-  Undo2,
-} from '@lucide/vue';
+  faArrowPointer,
+  faBorderAll,
+  faCheck,
+  faEraser,
+  faEyeDropper,
+  faMagnifyingGlassPlus,
+  faPencil,
+  faRotateLeft,
+  faRotateRight,
+} from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -31,15 +33,15 @@ const store = useWorkbenchStore();
 const BRUSH_SWATCHES = [
   '#ffffff',
   '#e4e4e7',
-  '#94a3b8',
-  '#111115',
-  '#ff5e2c',
-  '#ef4444',
+  '#9da0b8',
+  '#1e1f29',
+  '#9b73be',
+  '#e05252',
   '#fb7185',
   '#f43f5e',
   '#fcd34d',
   '#f59e0b',
-  '#34d399',
+  '#22c55e',
   '#10b981',
   '#38bdf8',
   '#3b82f6',
@@ -49,9 +51,9 @@ const BRUSH_SWATCHES = [
 
 const QUICK_DOCK_SWATCHES = [
   '#ffffff',
-  '#ff5e2c',
+  '#9b73be',
   '#38bdf8',
-  '#34d399',
+  '#22c55e',
   '#fcd34d',
   '#fb7185',
 ] as const;
@@ -80,14 +82,14 @@ function selectAndCopySwatch(hex: string): void {
     aria-orientation="vertical"
     aria-label="Pixel canvas tools"
     aria-controls="studio-pixel-canvas"
-    class="flex shrink-0 flex-row items-center justify-between gap-2 border-b border-border bg-[#0b0b0e] px-2 py-1.5 lg:w-11 lg:flex-col lg:border-r lg:border-b-0 lg:px-1.5 lg:py-2"
+    class="flex w-12 shrink-0 flex-col items-center justify-between border-r border-border bg-card px-1 py-2"
   >
-    <div class="flex flex-row items-center gap-0.5 lg:flex-col">
+    <div class="flex flex-col items-center gap-1">
       <ToggleGroup
         type="single"
         :model-value="store.activeTool"
         orientation="vertical"
-        class="flex flex-row gap-0.5 lg:flex-col"
+        class="flex flex-col gap-1"
         @update:model-value="handleToolChange"
       >
         <Tooltip>
@@ -95,9 +97,9 @@ function selectAndCopySwatch(hex: string): void {
             <ToggleGroupItem
               value="select"
               aria-label="Select and inspect pixels"
-              class="h-7 w-7 p-0 data-[state=on]:bg-primary/15 data-[state=on]:text-[#ff8f6b]"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
             >
-              <MousePointer2 aria-hidden="true" class="h-3.5 w-3.5" />
+              <FontAwesomeIcon :icon="faArrowPointer" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
           <TooltipContent side="right">Select &amp; Inspect (V)</TooltipContent>
@@ -108,9 +110,9 @@ function selectAndCopySwatch(hex: string): void {
             <ToggleGroupItem
               value="pencil"
               aria-label="Pixel pencil"
-              class="h-7 w-7 p-0 data-[state=on]:bg-primary/15 data-[state=on]:text-[#ff8f6b]"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
             >
-              <Pencil aria-hidden="true" class="h-3.5 w-3.5" />
+              <FontAwesomeIcon :icon="faPencil" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
           <TooltipContent side="right">Pixel Pencil (B)</TooltipContent>
@@ -121,9 +123,9 @@ function selectAndCopySwatch(hex: string): void {
             <ToggleGroupItem
               value="eraser"
               aria-label="Transparent eraser"
-              class="h-7 w-7 p-0 data-[state=on]:bg-primary/15 data-[state=on]:text-[#ff8f6b]"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
             >
-              <Eraser aria-hidden="true" class="h-3.5 w-3.5" />
+              <FontAwesomeIcon :icon="faEraser" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
           <TooltipContent side="right">Transparent Eraser (E)</TooltipContent>
@@ -134,9 +136,9 @@ function selectAndCopySwatch(hex: string): void {
             <ToggleGroupItem
               value="eyedropper"
               aria-label="Eyedropper pick and copy color"
-              class="h-7 w-7 p-0 data-[state=on]:bg-primary/15 data-[state=on]:text-[#ff8f6b]"
+              class="h-10 w-10 min-h-10 min-w-10 p-0 rounded-md transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
             >
-              <Pipette aria-hidden="true" class="h-3.5 w-3.5" />
+              <FontAwesomeIcon :icon="faEyeDropper" class="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
           <TooltipContent side="right">Eyedropper · Pick &amp; Copy (I)</TooltipContent>
@@ -145,7 +147,7 @@ function selectAndCopySwatch(hex: string): void {
 
       <div
         aria-hidden="true"
-        class="mx-1 h-4 w-px shrink-0 bg-border lg:mx-0 lg:my-0.5 lg:h-px lg:w-6"
+        class="my-1 h-px w-6 shrink-0 bg-border"
       />
 
       <Tooltip>
@@ -157,14 +159,14 @@ function selectAndCopySwatch(hex: string): void {
             :aria-pressed="store.showGrid"
             aria-label="Toggle pixel grid"
             :class="[
-              'h-7 w-7',
+              'h-10 w-10 min-h-10 min-w-10 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]',
               store.showGrid
                 ? 'bg-accent text-foreground'
                 : 'text-muted-foreground hover:text-foreground',
             ]"
             @click="store.showGrid = !store.showGrid"
           >
-            <Grid2x2 aria-hidden="true" class="h-3.5 w-3.5" />
+            <FontAwesomeIcon :icon="faBorderAll" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right">Toggle Pixel Grid (G)</TooltipContent>
@@ -178,10 +180,10 @@ function selectAndCopySwatch(hex: string): void {
             size="icon"
             :disabled="store.undoStack.length === 0"
             aria-label="Undo last paint stroke"
-            class="h-7 w-7 text-muted-foreground hover:text-foreground"
+            class="h-10 w-10 min-h-10 min-w-10 text-muted-foreground hover:text-foreground transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
             @click="store.undoPaint()"
           >
-            <Undo2 aria-hidden="true" class="h-3.5 w-3.5" />
+            <FontAwesomeIcon :icon="faRotateLeft" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right">Undo Stroke (Ctrl+Z)</TooltipContent>
@@ -195,19 +197,35 @@ function selectAndCopySwatch(hex: string): void {
             size="icon"
             :disabled="store.redoStack.length === 0"
             aria-label="Redo paint stroke"
-            class="h-7 w-7 text-muted-foreground hover:text-foreground"
+            class="h-10 w-10 min-h-10 min-w-10 text-muted-foreground hover:text-foreground transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
             @click="store.redoPaint()"
           >
-            <Redo2 aria-hidden="true" class="h-3.5 w-3.5" />
+            <FontAwesomeIcon :icon="faRotateRight" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right">Redo Stroke (Ctrl+Y / Ctrl+Shift+Z)</TooltipContent>
       </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Reset zoom to 12x"
+            class="h-10 w-10 min-h-10 min-w-10 text-muted-foreground hover:text-foreground transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]"
+            @click="store.zoom = 12"
+          >
+            <FontAwesomeIcon :icon="faMagnifyingGlassPlus" class="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">Zoom Reset / Fit (Ctrl+0 / Ctrl+1)</TooltipContent>
+      </Tooltip>
     </div>
 
     <!-- Bottom Quick Swatches (Click to Select & Auto-Copy HEX) + Full Palette Popover -->
-    <div class="flex items-center gap-1 lg:flex-col lg:gap-1.5">
-      <div class="hidden items-center gap-1 sm:flex lg:flex-col">
+    <div class="flex flex-col items-center gap-1.5">
+      <div class="flex flex-col items-center gap-1">
         <Tooltip v-for="hex in QUICK_DOCK_SWATCHES" :key="hex">
           <TooltipTrigger as-child>
             <button
@@ -216,7 +234,7 @@ function selectAndCopySwatch(hex: string): void {
               :aria-pressed="store.brushColor.toLowerCase() === hex"
               :style="{ backgroundColor: hex }"
               :class="[
-                'h-4 w-4 cursor-pointer rounded-[3px] border transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-primary lg:w-5',
+                'touch-target-expand h-5 w-5 cursor-pointer rounded-[3px] border transition-transform hover:scale-110 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
                 store.brushColor.toLowerCase() === hex
                   ? 'border-white ring-1 ring-primary'
                   : 'border-white/20',
@@ -232,7 +250,7 @@ function selectAndCopySwatch(hex: string): void {
 
       <div
         aria-hidden="true"
-        class="mx-0.5 hidden h-4 w-px shrink-0 bg-border sm:block lg:mx-0 lg:my-0.5 lg:h-px lg:w-6"
+        class="my-0.5 h-px w-6 shrink-0 bg-border"
       />
 
       <DropdownMenu>
@@ -244,7 +262,7 @@ function selectAndCopySwatch(hex: string): void {
                 variant="ghost"
                 size="icon"
                 aria-label="Open paint palette and copy hex"
-                class="h-8 w-8 p-0"
+                class="h-10 w-10 min-h-10 min-w-10 p-0"
               >
                 <span
                   aria-hidden="true"
@@ -268,7 +286,7 @@ function selectAndCopySwatch(hex: string): void {
               v-if="store.copiedColorToast"
               class="inline-flex items-center gap-0.5 font-mono text-[10px] text-emerald-400"
             >
-              <Check aria-hidden="true" class="h-3 w-3" />
+              <FontAwesomeIcon :icon="faCheck" class="h-3 w-3" />
               {{ store.copiedColorToast.hex }}
             </span>
           </div>
@@ -283,7 +301,7 @@ function selectAndCopySwatch(hex: string): void {
               :title="`Click to use & copy ${hex.toUpperCase()}`"
               :style="{ backgroundColor: hex }"
               :class="[
-                'h-6 w-full cursor-pointer rounded border transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-primary',
+                'h-6 w-full cursor-pointer rounded border transition-transform hover:scale-105 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
                 store.brushColor.toLowerCase() === hex
                   ? 'border-2 border-primary'
                   : 'border-white/15',
@@ -303,7 +321,7 @@ function selectAndCopySwatch(hex: string): void {
             <div class="flex items-center gap-1.5">
               <button
                 type="button"
-                class="cursor-pointer rounded bg-[#15151b] px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
+                class="cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground hover:bg-accent"
                 title="Copy current HEX"
                 @click="store.copyColorHex(store.brushColor)"
               >

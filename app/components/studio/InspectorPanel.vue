@@ -24,7 +24,7 @@ function handleInspectorTabChange(val: string | number): void {
 <template>
   <aside
     aria-label="In-game preview and property inspector"
-    class="flex h-full min-h-0 flex-col bg-[#0e0e12]"
+    class="flex h-full min-h-0 flex-col bg-card"
   >
     <InspectorPreviewViewport />
 
@@ -33,7 +33,7 @@ function handleInspectorTabChange(val: string | number): void {
       class="flex min-h-0 flex-1 flex-col gap-0"
       @update:model-value="handleInspectorTabChange"
     >
-      <TabsList class="h-9 w-full shrink-0 justify-start gap-1 rounded-none border-b border-border bg-[#0b0b0e] px-2 py-0">
+      <TabsList class="h-9 w-full shrink-0 justify-start gap-1 rounded-none border-b border-border bg-card px-2 py-0">
         <TabsTrigger
           value="properties"
           class="tab-underline relative h-9 flex-none rounded-none border-0 bg-transparent px-2.5 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"

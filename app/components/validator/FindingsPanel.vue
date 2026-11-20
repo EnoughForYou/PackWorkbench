@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  FileArchive,
-  FileCheck2,
-  Info,
-} from '@lucide/vue';
+  faCircleCheck,
+  faCircleExclamation,
+  faCircleInfo,
+  faFileCircleCheck,
+  faFileZipper,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import type { Severity, ValidationReport } from '@core/types.ts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,15 +54,15 @@ const SEVERITY_LABEL: Readonly<Record<Severity, string>> = {
 };
 
 const SEVERITY_ACCENT: Readonly<Record<Severity, string>> = {
-  ERROR: 'border-l-red-500 bg-red-950/15',
-  WARN: 'border-l-amber-400 bg-amber-950/15',
-  INFO: 'border-l-sky-400 bg-sky-950/15',
+  ERROR: 'border-l-destructive bg-destructive/10',
+  WARN: 'border-l-amber-400 bg-amber-400/10',
+  INFO: 'border-l-sky-400 bg-sky-400/10',
 };
 
 const SEVERITY_BADGE: Readonly<Record<Severity, string>> = {
-  ERROR: 'border-red-700/80 bg-red-950 text-red-100',
-  WARN: 'border-amber-700/80 bg-amber-950 text-amber-100',
-  INFO: 'border-sky-700/80 bg-sky-950 text-sky-100',
+  ERROR: 'border-destructive/60 bg-destructive/20 text-destructive',
+  WARN: 'border-amber-500/60 bg-amber-500/20 text-amber-300',
+  INFO: 'border-sky-500/60 bg-sky-500/20 text-sky-300',
 };
 
 function handleFilterChange(val: unknown): void {
@@ -77,7 +78,7 @@ function handleFilterChange(val: unknown): void {
     aria-labelledby="findings-heading"
     class="flex h-full min-h-[260px] flex-col items-center justify-center p-8 text-center"
   >
-    <FileCheck2 aria-hidden="true" class="h-8 w-8 text-[#525260]" />
+    <FontAwesomeIcon :icon="faFileCircleCheck" aria-hidden="true" class="h-8 w-8 text-muted-foreground" />
     <h2 id="findings-heading" class="mt-3 text-sm font-semibold text-foreground">
       Upload a <code>.zip</code> archive to start validating
     </h2>
@@ -92,7 +93,7 @@ function handleFilterChange(val: unknown): void {
     class="flex h-full min-h-0 flex-col"
   >
     <!-- Flat Audit Toolbar Strip -->
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-[#0b0b0e] px-4 py-2.5">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card px-4 py-2.5">
       <div class="flex flex-wrap items-center gap-2.5">
         <h2 id="findings-heading" class="text-sm font-semibold text-foreground">
           Validation Report ({{ report.targetVersion }})
@@ -103,15 +104,21 @@ function handleFilterChange(val: unknown): void {
           aria-live="polite"
           :class="[
             'inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold',
-            report.summary.errors === 0 ? 'text-emerald-300' : 'text-red-300',
+            report.summary.errors === 0 ? 'text-emerald-400' : 'text-destructive',
           ]"
         >
-          <CheckCircle2
+          <FontAwesomeIcon
             v-if="report.summary.errors === 0"
+            :icon="faCircleCheck"
             aria-hidden="true"
             class="h-3.5 w-3.5"
           />
-          <AlertCircle v-else aria-hidden="true" class="h-3.5 w-3.5" />
+          <FontAwesomeIcon
+            v-else
+            :icon="faCircleExclamation"
+            aria-hidden="true"
+            class="h-3.5 w-3.5"
+          />
           <span>
             {{
               report.summary.errors === 0
@@ -126,30 +133,30 @@ function handleFilterChange(val: unknown): void {
         type="single"
         :model-value="filter"
         aria-label="Filter severity level"
-        class="gap-1"
+        class="gap-0.5 rounded-md border border-border bg-muted p-0.5"
         @update:model-value="handleFilterChange"
       >
         <ToggleGroupItem
           value="ALL"
-          class="h-7 px-2 font-mono text-[11px] data-[state=on]:bg-accent data-[state=on]:text-foreground"
+          class="h-7 rounded-sm px-2 font-mono text-[11px] data-[state=on]:bg-card data-[state=on]:text-foreground"
         >
           All ({{ report.findings.length }})
         </ToggleGroupItem>
         <ToggleGroupItem
           value="ERROR"
-          class="h-7 px-2 font-mono text-[11px] data-[state=on]:bg-red-950/70 data-[state=on]:text-red-200"
+          class="h-7 rounded-sm px-2 font-mono text-[11px] data-[state=on]:bg-destructive data-[state=on]:text-white font-medium"
         >
           Error ({{ report.summary.errors }})
         </ToggleGroupItem>
         <ToggleGroupItem
           value="WARN"
-          class="h-7 px-2 font-mono text-[11px] data-[state=on]:bg-amber-950/70 data-[state=on]:text-amber-200"
+          class="h-7 rounded-sm px-2 font-mono text-[11px] data-[state=on]:bg-amber-600 data-[state=on]:text-white font-medium"
         >
           Warn ({{ report.summary.warns }})
         </ToggleGroupItem>
         <ToggleGroupItem
           value="INFO"
-          class="h-7 px-2 font-mono text-[11px] data-[state=on]:bg-sky-950/70 data-[state=on]:text-sky-200"
+          class="h-7 rounded-sm px-2 font-mono text-[11px] data-[state=on]:bg-sky-600 data-[state=on]:text-white font-medium"
         >
           Info ({{ report.summary.infos }})
         </ToggleGroupItem>
@@ -160,7 +167,7 @@ function handleFilterChange(val: unknown): void {
       <!-- Detected Plugin Bundle / Nested Vanilla ZIP Helper Strip -->
       <div
         v-if="hasPluginBundleSignals"
-        class="border-b border-border bg-[#0e0e14] px-4 py-3"
+        class="border-b border-border bg-card px-4 py-3"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex flex-wrap items-center gap-1.5">
@@ -171,7 +178,7 @@ function handleFilterChange(val: unknown): void {
               v-for="eco in report.zipInspection.pluginBundle.ecosystems"
               :key="eco"
               variant="outline"
-              class="h-5 border-primary/50 bg-primary/10 px-1.5 font-mono text-[10px] text-[#ff8f6b]"
+              class="h-5 border-primary/50 bg-primary/10 px-1.5 font-mono text-[10px] text-primary"
             >
               {{ eco === 'itemsadder' ? 'ItemsAdder' : eco === 'oraxen' ? 'Oraxen' : 'Nexo' }}
             </Badge>
@@ -201,7 +208,7 @@ function handleFilterChange(val: unknown): void {
             class="h-7 gap-1.5 px-2.5 font-mono text-[11px]"
             @click="emit('inspectNestedZip', nestedPath)"
           >
-            <FileArchive aria-hidden="true" class="h-3.5 w-3.5 text-primary" />
+            <FontAwesomeIcon :icon="faFileZipper" aria-hidden="true" class="h-3.5 w-3.5 text-primary" />
             <span>Inspect Nested Pack: {{ nestedPath.split('/').pop() }}</span>
           </Button>
         </div>
@@ -227,12 +234,12 @@ function handleFilterChange(val: unknown): void {
                 variant="outline"
                 :class="['h-5 gap-1 px-1.5 font-mono text-[10px]', SEVERITY_BADGE[finding.severity]]"
               >
-                <AlertCircle v-if="finding.severity === 'ERROR'" aria-hidden="true" class="h-3 w-3" />
-                <AlertTriangle v-else-if="finding.severity === 'WARN'" aria-hidden="true" class="h-3 w-3" />
-                <Info v-else aria-hidden="true" class="h-3 w-3" />
+                <FontAwesomeIcon v-if="finding.severity === 'ERROR'" :icon="faCircleExclamation" aria-hidden="true" class="h-3 w-3" />
+                <FontAwesomeIcon v-else-if="finding.severity === 'WARN'" :icon="faTriangleExclamation" aria-hidden="true" class="h-3 w-3" />
+                <FontAwesomeIcon v-else :icon="faCircleInfo" aria-hidden="true" class="h-3 w-3" />
                 <span>{{ SEVERITY_LABEL[finding.severity] }}</span>
               </Badge>
-              <code class="bg-[#181820] px-1.5 py-0.5 text-xs font-semibold text-foreground">
+              <code class="bg-muted px-1.5 py-0.5 text-xs font-semibold text-foreground">
                 {{ finding.id }}
               </code>
               <h3 class="text-sm font-semibold text-foreground">
@@ -248,7 +255,7 @@ function handleFilterChange(val: unknown): void {
             {{ finding.message }}
           </p>
 
-          <p class="mt-2 border-l border-border pl-2.5 text-xs leading-relaxed text-[#ff8f6b]">
+          <p class="mt-2 border-l border-border pl-2.5 text-xs leading-relaxed text-primary">
             <strong class="text-foreground">Fix: </strong>{{ finding.fixHint }}
           </p>
 
