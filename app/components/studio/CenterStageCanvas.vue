@@ -101,13 +101,6 @@ onBeforeUnmount(() => {
   }
 });
 
-watch(
-  () => [store.zoom, activeRaster.value?.width, activeRaster.value?.height],
-  () => {
-    invalidateCanvasRect();
-  },
-);
-
 function buildCheckerPattern(
   ctx: CanvasRenderingContext2D,
   zoomVal: number,
@@ -144,6 +137,13 @@ const activeRaster = computed(() => {
   if (!entry || entry.kind !== 'bitmap') return null;
   return resolveBitmapEntryRaster(entry, store.decodedUploads.get(entry.id));
 });
+
+watch(
+  () => [store.zoom, activeRaster.value?.width, activeRaster.value?.height],
+  () => {
+    invalidateCanvasRect();
+  },
+);
 
 const jsonOutputText = computed(() => {
   const proj = store.fontProject;
