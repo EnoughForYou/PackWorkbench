@@ -10,6 +10,8 @@ import {
   faEye,
   faEyeSlash,
   faGripVertical,
+  faLock,
+  faLockOpen,
   faRotateLeft,
   faTrashCan,
 } from '@fortawesome/free-solid-svg-icons';
@@ -120,7 +122,15 @@ function getStyleFor(entry: BitmapFontEntry, id: RankLayerId): RankLayerStyle {
     opacity: raw?.opacity ?? 100,
     offsetX: raw?.offsetX ?? 0,
     offsetY: raw?.offsetY ?? 0,
+    locked: raw?.locked ?? false,
   };
+}
+
+function toggleLayerLock(id: RankLayerId): void {
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap') return;
+  const current = getStyleFor(entry, id);
+  updateLayerStyle(id, { locked: !current.locked });
 }
 
 function toggleLayerVisibility(key: keyof RankLayerVisibility): void {
@@ -164,6 +174,9 @@ function updateLayerStyle(
 ): void {
   updateBitmap((prev) => {
     const current = getStyleFor(prev, id);
+    if (current.locked && patch.locked === undefined) {
+      return prev;
+    }
     return {
       ...prev,
       layerStyles: {
@@ -178,7 +191,28 @@ function updateLayerStyle(
 }
 
 function resetLayerStyle(id: RankLayerId): void {
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap') return;
+  if (getStyleFor(entry, id).locked) return;
   updateLayerStyle(id, { opacity: 100, offsetX: 0, offsetY: 0 });
+}
+
+function deleteLayer(id: RankLayerId): boolean {
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap') return false;
+  if (getStyleFor(entry, id).locked) return false;
+  if (id === 'paint') {
+    updateBitmap((prev) => ({ ...prev, paintEdits: {} }));
+    return true;
+  }
+  updateBitmap((prev) => ({
+    ...prev,
+    layerVisibility: {
+      ...prev.layerVisibility,
+      [id]: false,
+    },
+  }));
+  return true;
 }
 
 function copyColor(tag: string, hex: string): void {
@@ -335,6 +369,14 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 <span class="flex items-center gap-1.5 truncate text-xs font-medium text-foreground">
                   <span class="truncate">{{ getLayerMeta(store.selectedEntry, layerId).title }}</span>
                   <span
+                    v-if="getStyleFor(store.selectedEntry, layerId).locked"
+                    class="inline-flex items-center gap-1 rounded bg-amber-500/15 border border-amber-500/30 px-1 py-0.2 font-mono text-[9px] font-semibold text-amber-400"
+                    data-testid="layer-lock-badge"
+                  >
+                    <FontAwesomeIcon :icon="faLock" class="h-2 w-2" />
+                    <span>Terkunci</span>
+                  </span>
+                  <span
                     v-if="
                       getStyleFor(store.selectedEntry, layerId).opacity < 100 ||
                       getStyleFor(store.selectedEntry, layerId).offsetX !== 0 ||
@@ -373,6 +415,24 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 @click="moveLayer(layerId, 'down')"
               >
                 <FontAwesomeIcon :icon="faArrowDown" class="h-3 w-3" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                :aria-label="getStyleFor(store.selectedEntry, layerId).locked ? `Buka kunci lapisan ${layerId}` : `Kunci lapisan ${layerId}`"
+                :class="[
+                  'h-6 w-6 rounded-sm transition-[color,transform] duration-100 ease-out active:scale-[0.96]',
+                  getStyleFor(store.selectedEntry, layerId).locked
+                    ? 'text-amber-400 hover:text-amber-300'
+                    : 'text-muted-foreground hover:text-foreground',
+                ]"
+                @click="toggleLayerLock(layerId)"
+              >
+                <FontAwesomeIcon
+                  :icon="getStyleFor(store.selectedEntry, layerId).locked ? faLock : faLockOpen"
+                  class="h-3 w-3"
+                />
               </Button>
               <Button
                 type="button"
@@ -426,6 +486,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 :min="0"
                 :max="100"
                 :step="5"
+                :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                 :aria-label="`Opasitas lapisan ${layerId}`"
                 @update:model-value="
                   (vals) => {
@@ -450,8 +511,9 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     type="number"
                     :min="-8"
                     :max="8"
+                    :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                     :model-value="getStyleFor(store.selectedEntry, layerId).offsetX"
-                    class="h-6 rounded-sm bg-card px-1.5 font-mono text-[11px] tabular-nums text-foreground"
+                    class="h-6 rounded-sm bg-card px-1.5 font-mono text-[11px] tabular-nums text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     @update:model-value="
                       updateLayerStyle(layerId, {
                         offsetX: Math.max(-8, Math.min(8, Number.parseInt(String($event ?? '0'), 10) || 0)),
@@ -466,8 +528,9 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     type="number"
                     :min="-8"
                     :max="8"
+                    :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                     :model-value="getStyleFor(store.selectedEntry, layerId).offsetY"
-                    class="h-6 rounded-sm bg-card px-1.5 font-mono text-[11px] tabular-nums text-foreground"
+                    class="h-6 rounded-sm bg-card px-1.5 font-mono text-[11px] tabular-nums text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     @update:model-value="
                       updateLayerStyle(layerId, {
                         offsetY: Math.max(-8, Math.min(8, Number.parseInt(String($event ?? '0'), 10) || 0)),
@@ -613,7 +676,8 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 type="button"
                 variant="ghost"
                 size="sm"
-                class="h-6 gap-1 rounded-sm px-2 text-[10px] text-muted-foreground hover:text-foreground transition-transform active:scale-[0.96]"
+                :disabled="getStyleFor(store.selectedEntry, layerId).locked"
+                class="h-6 gap-1 rounded-sm px-2 text-[10px] text-muted-foreground hover:text-foreground transition-transform active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="resetLayerStyle(layerId)"
               >
                 <FontAwesomeIcon :icon="faRotateLeft" class="h-3 w-3" />
@@ -632,8 +696,9 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
           type="button"
           variant="ghost"
           size="sm"
-          class="h-8 w-full justify-center gap-1.5 rounded-sm text-xs text-destructive hover:bg-destructive/20 hover:text-destructive transition-transform active:scale-[0.96]"
-          @click="updateBitmap((prev) => ({ ...prev, paintEdits: {} }))"
+          :disabled="getStyleFor(store.selectedEntry, 'paint').locked"
+          class="h-8 w-full justify-center gap-1.5 rounded-sm text-xs text-destructive hover:bg-destructive/20 hover:text-destructive transition-transform active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="deleteLayer('paint')"
         >
           <FontAwesomeIcon :icon="faTrashCan" class="h-3.5 w-3.5" />
           <span>
