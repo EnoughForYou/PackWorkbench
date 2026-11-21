@@ -22,16 +22,16 @@ Alat bantu browser-only untuk:
 
 ## Positioning
 
-Aturan format dan metrik dihitung dari perilaku aktual codec `PackFormat`, `BitmapProvider$Definition`, `SpaceProvider$Definition`, `Window.calculateScale`, dan `FontSet` hasil verifikasi bytecode `client.jar` dalam `docs/knowledge/`. Semua berkas diproses 100% lokal di browser tanpa unggahan jaringan, tanpa akun, dan tanpa menyertakan aset vanilla Mojang.
+Aturan format dan metrik dihitung langsung dari perilaku codec `PackFormat`, `BitmapProvider$Definition`, `SpaceProvider$Definition`, `Window.calculateScale`, dan `FontSet` hasil verifikasi bytecode `client.jar` pada `docs/knowledge/`. Seluruh berkas diproses di peramban tanpa pengiriman data ke jaringan, tanpa akun, dan tanpa menyertakan aset vanilla Mojang.
 
 ## Operating Context
 
-Desktop-Only Creative Suite (resolusi kerja target >= 1280px). Tidak mendukung dan tidak menyediakan layout ponsel atau tablet. Seluruh pemrosesan dilakukan 100% secara lokal di browser klien (Client-Side Execution) tanpa jaringan backend, tanpa akun, dan tanpa telemetri. Digunakan oleh kreator resource pack dan administrator server Minecraft Java Edition untuk menyusun font bitmap, rank badge berlapis, spasi negatif, serta memvalidasi arsip ZIP dan pack.mcmeta secara presisi.
+Lingkungan kerja desktop (target resolusi >= 1280px) tanpa layout ponsel atau tablet. Aplikasi berjalan di peramban klien tanpa API backend, tanpa akun, dan tanpa telemetri. Dirancang untuk kreator resource pack dan pengelola server Minecraft Java Edition yang membutuhkan perakitan font bitmap, rank badge berlapis, dan validasi pack.mcmeta secara langsung.
 
 ## Capabilities and Constraints
 
 - Arsitektur 100% browser-only; Worker SHA-1 streaming menjaga tab tetap responsif untuk arsip besar hingga batas server `250 MiB`.
-- `src/core/` harus tetap TypeScript murni dan lolos seluruh 48 unit test Vitest.
+- `src/core/` harus tetap TypeScript murni dan lolos seluruh unit test Vitest.
 - Struktur navigasi & rute (`A2`): Navbar hanya memuat 3 tautan utama (`Beranda`, `Studio`, `About`); Beranda (`/`) berisi informasi, pratinjau interaktif Studio & Validator, matriks versi, roadmap, dan footer; `/studio` terpisah dan memuat mode `Studio Rank & Glyph` serta `Validator ZIP & SHA-1`; `/about` memuat informasi cakupan, teknologi, privasi, dan rujukan teknis.
 - Cakupan ekspor saat ini khusus Minecraft Java Edition (`1.21.1`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, `26.3`). Fitur Fase 3 (DeluxeMenus/CustomModelData) dan Fase 4 (konverter Java ke Bedrock) ditampilkan sebagai roadmap terkunci dan belum diaktifkan.
 - Fakta yang masih `[UNVERIFIED]` (uji klien Minecraft nyata untuk rasterisasi font & Texture Filtering `1.21.11+`) wajib mempertahankan label `[UNVERIFIED]` di UI.
@@ -52,7 +52,7 @@ Desktop-Only Creative Suite (resolusi kerja target >= 1280px). Tidak mendukung d
 ## Evidence on Hand
 
 - `docs/knowledge/00-ringkasan-perbedaan-versi.md`, `docs/knowledge/font-dan-glyph.md`, `docs/knowledge/bedrock-geyser.md`, `docs/knowledge/99-pertanyaan-terbuka.md`: verifikasi primer `piston-meta.mojang.com` dan `client.jar`.
-- `src/core/` & `tests/*.test.ts`: 67 tes Vitest terkonfirmasi hijau untuk codec PNG, metrik bitmap, alokasi PUA, `fontRules` (`F01–F10`), `zipRules` (`Z01–Z09`, `Z10–Z12`), `mcmetaRules` (`M01–M10`), `packBuilder`, `sha1Stream`, dan `workbenchStore`.
+- `src/core/` & `tests/*.test.ts`: Seluruh unit test Vitest terkonfirmasi hijau untuk codec PNG, metrik bitmap, alokasi PUA, `fontRules` (`F01–F10`), `zipRules` (`Z01–Z09`, `Z10–Z12`), `mcmetaRules` (`M01–M10`), `packBuilder`, `sha1Stream`, dan `workbenchStore`.
 - Pratinjau visual rank badge sintetis orisinal dari `src/core/font/pixelSynth.ts`. Belum ada testimoni pengguna, angka adopsi, atau tangkapan layar klien game live.
 
 ## Product Principles

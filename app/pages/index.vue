@@ -31,7 +31,7 @@ definePageMeta({
 });
 
 useHead({
-  title: 'Pack Workbench — Studio Font Rank & Validator Resource Pack Minecraft Java',
+  title: 'Pack Workbench: Studio Font Rank & Validator Resource Pack Minecraft Java',
 });
 
 const store = useWorkbenchStore();

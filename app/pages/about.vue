@@ -16,7 +16,7 @@ definePageMeta({
 });
 
 useHead({
-  title: 'Tentang — Pack Workbench',
+  title: 'Tentang: Pack Workbench',
 });
 
 const STACK_ROWS = [
@@ -56,7 +56,7 @@ const STACK_ROWS = [
         Aturan validator (<code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground tabular-nums">Z01–Z09</code>, <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground tabular-nums">M01–M10</code>, <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground tabular-nums">F01–F10</code>) serta perhitungan posisi piksel merujuk langsung pada catatan pengujian <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">piston-meta.mojang.com</code> dan bytecode <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">client.jar</code> di folder <code class="rounded border border-border/50 bg-muted/60 px-1 py-0.5 font-mono text-xs text-foreground">docs/knowledge/</code>.
       </p>
       <p class="text-sm leading-relaxed text-pretty text-muted-foreground">
-        Bagian yang belum diuji di klien game asli—seperti hasil rasterisasi antar-skala GUI <code class="font-mono text-xs text-foreground tabular-nums">1–4</code> dan efek Texture Filtering modern—selalu membawa penanda <code class="rounded border border-amber-800/60 bg-amber-950/40 px-1.5 py-0.5 font-mono text-xs font-semibold text-amber-300">[UNVERIFIED]</code> agar Anda tahu kapan perlu uji langsung di game.
+        Bagian yang belum diuji di klien game asli (seperti hasil rasterisasi antar-skala GUI <code class="font-mono text-xs text-foreground tabular-nums">1–4</code> dan efek Texture Filtering modern) selalu membawa penanda <code class="rounded border border-amber-800/60 bg-amber-950/40 px-1.5 py-0.5 font-mono text-xs font-semibold text-amber-300">[UNVERIFIED]</code> agar Anda tahu kapan perlu uji langsung di game.
       </p>
     </section>
 

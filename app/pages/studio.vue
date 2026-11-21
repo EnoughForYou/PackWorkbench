@@ -29,7 +29,7 @@ definePageMeta({
 });
 
 useHead({
-  title: 'Studio — Pack Workbench',
+  title: 'Studio: Pack Workbench',
 });
 
 const store = useWorkbenchStore();
