@@ -10,6 +10,13 @@ const NAV_LINKS = [
   { to: '/studio', label: 'Studio' },
   { to: '/about', label: 'About' },
 ] as const;
+
+function isLinkActive(to: string): boolean {
+  if (to === '/') {
+    return route.path === '/';
+  }
+  return route.path === to || route.path.startsWith(`${to}/`);
+}
 </script>
 
 <template>
@@ -36,15 +43,20 @@ const NAV_LINKS = [
           v-for="item in NAV_LINKS"
           :key="item.to"
           :to="item.to"
-          :aria-current="route.path === item.to ? 'page' : undefined"
+          :aria-current="isLinkActive(item.to) ? 'page' : undefined"
           :class="[
-            'nav-underline flex min-h-10 items-center px-3.5 py-2 text-sm font-medium transition-colors duration-75 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-            route.path === item.to
-              ? 'text-foreground'
-              : 'text-muted-foreground hover:text-foreground',
+            'nav-underline relative flex min-h-10 items-center rounded-md px-3.5 py-2 text-sm font-medium transition-colors duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+            isLinkActive(item.to)
+              ? 'bg-muted/40 font-semibold text-foreground'
+              : 'text-muted-foreground hover:bg-muted/20 hover:text-foreground',
           ]"
         >
           {{ item.label }}
+          <span
+            v-if="isLinkActive(item.to)"
+            class="absolute bottom-0 inset-x-2 h-0.5 rounded-full bg-primary"
+            aria-hidden="true"
+          />
         </NuxtLink>
       </nav>
 
