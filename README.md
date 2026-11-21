@@ -1,41 +1,87 @@
-# Resource Pack Workbench
+# PackWorkbench
 
-Aplikasi web untuk memvalidasi struktur resource pack Minecraft Java Edition (`1.21.1` sampai `26.3`), menghitung hash SHA-1, dan menyusun font bitmap serta rank badge langsung di peramban tanpa koneksi server backend.
+Lingkungan kerja berbasis web untuk menyusun font bitmap, merakit rank badge, dan memvalidasi resource pack Minecraft Java Edition (`1.21.1` sampai `26.3`).
+
+Seluruh pemrosesan berkas, kalkulasi hash, dan manipulasi piksel berjalan 100% secara lokal di peramban pengguna. Tidak ada data yang dikirim ke server luar.
+
+---
+
+## Apa Itu PackWorkbench?
+
+Saat mengelola server Minecraft atau membuat custom resource pack, kreator sering menghadapi kendala teknis yang memakan waktu: struktur zip yang salah format, nilai `pack_format` yang tidak kompatibel dengan versi game, lambatnya menghitung SHA-1 untuk `server.properties`, serta rumitnya menyusun koordinat font bitmap dan rank badge.
+
+PackWorkbench menyatukan solusi masalah tersebut dalam satu antarmuka desktop yang fungsional:
+1. Memeriksa integritas arsip (.zip): Memvalidasi struktur folder, sintaks `pack.mcmeta`, path tekstur font, serta mendeteksi berkas sampah sistem operasi sebelum pack dibagikan ke publik atau dipasang ke server.
+2. Menghitung SHA-1 secara streaming: Memproses hash 40-karakter melalui Web Worker per potongan 4 MiB agar browser tidak membeku, lengkap dengan generator baris `server.properties`.
+3. Merakit rank badge & font glyph: Editor visual berlapis (*frame*, *icon*, teks mini, dan bayangan) untuk membuat badge pangkat server dengan alokasi otomatis karakter PUA (`U+E200+`) yang aman dari tabrakan HUD vanilla Bedrock.
+4. Pratinjau langsung in-game: Mensimulasikan tampilan badge dan teks pada Chat, daftar TAB, dan Nametag karakter dalam berbagai skala GUI Minecraft (1–4).
+
+---
 
 ## Fitur Utama
 
-- **Validator Arsip & Metadata**: Memeriksa kelengkapan file dalam `.zip`, penempatan `pack.mcmeta`, format versi (`pack_format` tunggal maupun array `min_format`/`max_format`), integritas path tekstur font, serta membersihkan berkas sampah sistem operasi.
-- **Generator SHA-1**: Menghitung hash 40-karakter secara streaming melalui Web Worker agar browser tetap responsif saat memproses berkas besar, lengkap dengan konfigurasi `server.properties`.
-- **Studio Font & Rank Badge**: Editor visual untuk menyusun rank badge multi-layer (latar, ikon piksel, teks font mini, bayangan), penataan negative space, serta alokasi otomatis karakter PUA pada rentang `U+E200+`.
-- **Pratinjau Antarmuka Game**: Simulasi rendering teks dan badge pada tampilan Chat, TAB list, dan Nametag dengan berbagai skala GUI.
-- **Ekspor Format Server**: Menghasilkan arsip `.zip` siap pakai beserta cuplikan konfigurasi untuk LuckPerms, PlaceholderAPI, ItemsAdder, Oraxen, dan Nexo.
+- **Studio Rank & Glyph**: Editor kanvas piksel dengan dukungan kuas pensil, penghapus, eyedropper, riwayat undo/redo, serta generator provider `space` negatif dan positif.
+- **Validator 29 Aturan Teknis**: Evaluasi komprehensif aturan `Z01–Z12`, `M01–M10`, dan `F01–F10` yang disusun dari analisis bytecode `client.jar` resmi, mencakup era Java 1.21.1 (`34`) hingga format modern 26.3 (`[97, 1]`).
+- **Ekspor Konfigurasi Siap Pakai**: Menghasilkan arsip `.zip` yang valid beserta cuplikan konfigurasi untuk LuckPerms, PlaceholderAPI, ItemsAdder, Oraxen, dan Nexo.
+- **Nol Aset Berhak Cipta**: Seluruh ikon preset dan glif bawaan dibuat secara prosedural. Repositori ini tidak menyertakan aset vanilla Mojang.
 
-## Menjalankan Proyek
+---
 
-Pastikan Node.js (versi 18 ke atas) dan npm sudah terpasang.
+## Teknologi dan Framework
+
+Aplikasi web ini dibangun dengan stack modern yang dirancang untuk performa tinggi di peramban:
+
+| Kategori | Teknologi | Peran dalam Aplikasi |
+| :--- | :--- | :--- |
+| **Framework Utama** | [Nuxt 4](https://nuxt.com/) | Kerangka kerja aplikasi web mode SPA statis (`ssr: false`) tanpa server runtime |
+| **Antarmuka & Reaktivitas** | [Vue 3](https://vuejs.org/) & [Pinia](https://pinia.vuejs.org/) | Rendering komponen antarmuka reaktif dan manajemen state terpusat |
+| **Styling & Token Desain** | [Tailwind CSS v4](https://tailwindcss.com/) | Utilitas desain bertema *Aseprite Retro Studio* dengan palet kontras tinggi |
+| **Komponen UI Desktop** | [shadcn-vue](https://www.shadcn-vue.com/) & Reka UI | Primitif antarmuka aksesibel (panel resizable, tabs, dropdown, dialog) |
+| **Ikonografi** | [Font Awesome 6 SVG](https://fontawesome.com/) | Sistem ikon antarmuka terstandar melalui `@fortawesome/vue-fontawesome` |
+| **Tipografi** | Google Fonts API | Variable fonts `Onest` untuk teks UI dan `JetBrains Mono` tabular untuk metrik |
+| **Logika Inti (Core Engine)** | TypeScript Murni | Mesin aturan di `src/core/` yang berjalan independen tanpa dependensi DOM |
+| **Pemrosesan Biner & Hash** | `@noble/hashes` & `JSZip` | Streaming SHA-1 di Web Worker dan manipulasi arsip ZIP lokal di memori |
+| **Pengujian Unit** | [Vitest](https://vitest.dev/) | Menjalankan 85 unit test otomatis untuk menjamin keandalan seluruh aturan |
+
+---
+
+## Menjalankan Proyek di Lokal
+
+### Prasyarat
+- [Node.js](https://nodejs.org/) versi 18 ke atas (teruji pada Node v26).
+- Manajer paket `npm`.
+
+### Perintah Pengembangan
 
 ```bash
-# Pasang dependensi
+# 1. Pasang seluruh dependensi proyek
 npm install
 
-# Jalankan server pengembangan
+# 2. Jalankan server pengembangan lokal
 npm run dev
 
-# Jalankan rangkaian tes unit
+# 3. Jalankan pengujian unit otomatis
 npm test
 
-# Periksa tipe TypeScript
+# 4. Validasi tipe data TypeScript
 npm run typecheck
 
-# Build situs statis
+# 5. Bangun berkas statis produksi (.output/public/)
 npm run generate
+
+# 6. Pratinjau hasil build statis di lokal
+npm run preview
 ```
 
-## Privasi dan Batasan
+---
 
-- Seluruh pemrosesan berkas ZIP, gambar PNG, dan perhitungan hash berlangsung secara lokal di memori peramban klien. Tidak ada data yang diunggah ke server luar.
-- Proyek ini tidak menyertakan maupun mendistribusikan aset resmi dari instalasi vanilla game. Seluruh glif dan tekstur bawaan dibuat secara prosedural.
+## Pengembang (Author)
+
+Dikembangkan oleh EnoughForYou  
+GitHub: [@EnoughForYou](https://github.com/EnoughForYou)
+
+---
 
 ## Lisensi
 
-Proyek ini dirilis di bawah lisensi MIT. Lihat berkas [LICENSE](LICENSE) untuk rincian lengkap.
+Proyek ini dirilis di bawah lisensi MIT. Silakan merujuk ke berkas [LICENSE](LICENSE) untuk ketentuan penggunaan dan distribusi perangkat lunak.
