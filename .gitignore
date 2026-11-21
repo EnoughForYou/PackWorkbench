@@ -53,6 +53,13 @@ assets/vanilla/
 .impeccable/
 .taste-skill/
 
+# Internal specifications & agent docs
+AGENTS.md
+DESIGN.md
+PRD.md
+PRODUCT.md
+PackWorkbench.md
+
 # IDE & OS junk files
 .vscode/
 .idea/
