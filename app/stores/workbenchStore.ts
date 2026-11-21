@@ -147,6 +147,9 @@ export const useWorkbenchStore = defineStore('workbench', () => {
   // Active workspace mode inside /studio
   const studioMode = ref<StudioMode>('font');
 
+  // Phase 1 Project Lifecycle state
+  const isProjectOpen = ref<boolean>(false);
+
   // Phase 2 Font/Rank Studio project state
   const fontProject = ref<FontProject>(createInitialFontProject());
   const selectedStudioEntryId = ref<string>(
@@ -799,6 +802,8 @@ export const useWorkbenchStore = defineStore('workbench', () => {
       };
       selectedStudioEntryId.value = id;
       inspectorTab.value = 'properties';
+      isProjectOpen.value = true;
+      saveProjectToStorage();
     })();
   }
 
@@ -1053,7 +1058,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
   function debouncedAutosave(): void {
     const storage = getLocalStorage();
     if (!storage) return;
-    if (fontProject.value.entries.length === 0) return;
+    if (!isProjectOpen.value || fontProject.value.entries.length === 0) return;
 
     if (autosaveTimer !== null) {
       clearTimeout(autosaveTimer);
@@ -1075,6 +1080,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
       if (restored && Array.isArray(restored.entries) && restored.entries.length > 0) {
         fontProject.value = restored;
         selectedStudioEntryId.value = restored.entries[0]?.id ?? '';
+        isProjectOpen.value = true;
         return true;
       }
     } catch (e) {
@@ -1089,11 +1095,14 @@ export const useWorkbenchStore = defineStore('workbench', () => {
       if (parsed && Array.isArray(parsed.entries) && parsed.entries.length > 0) {
         fontProject.value = parsed;
         selectedStudioEntryId.value = parsed.entries[0]?.id ?? '';
+        isProjectOpen.value = true;
         saveProjectToStorage();
         return;
       }
     }
-    restoreAutosave();
+    if (restoreAutosave()) {
+      isProjectOpen.value = true;
+    }
   }
 
   function closeProject(): void {
@@ -1101,6 +1110,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
       clearTimeout(autosaveTimer);
       autosaveTimer = null;
     }
+    isProjectOpen.value = false;
     fontProject.value = {
       ...fontProject.value,
       entries: [],
@@ -1131,6 +1141,33 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     };
     selectedStudioEntryId.value = rankEntry.id;
     inspectorTab.value = 'properties';
+    isProjectOpen.value = true;
+    saveProjectToStorage();
+  }
+
+  function openPresetProject(templateId: string, namespace = 'mypack'): void {
+    const initial = createInitialFontProject();
+    const tpl = RANK_PRESET_TEMPLATES.find((t) => t.id === templateId) ?? RANK_PRESET_TEMPLATES[0]!;
+    const rankEntry = createRankBitmapEntry([], {
+      id: `rank-${tpl.id}-${Date.now()}`,
+      label: tpl.label,
+      namespace,
+      slug: tpl.slug,
+      composer: tpl.composer,
+      height: tpl.height ?? 9,
+      ascent: tpl.ascent ?? 8,
+      spaceLeft: -1,
+      spaceRight: 0,
+    });
+    fontProject.value = {
+      ...initial,
+      namespace,
+      entries: [rankEntry],
+      prefixSequenceIds: [rankEntry.id],
+    };
+    selectedStudioEntryId.value = rankEntry.id;
+    inspectorTab.value = 'properties';
+    isProjectOpen.value = true;
     saveProjectToStorage();
   }
 
@@ -1138,7 +1175,13 @@ export const useWorkbenchStore = defineStore('workbench', () => {
   const initialStorage = getLocalStorage();
   if (initialStorage) {
     recentProjects.value = loadRecentProjectsFromStorage();
-    restoreAutosave();
+    const rawAutosave = initialStorage.getItem(AUTOSAVE_STORAGE_KEY);
+    if (rawAutosave) {
+      const restored = restoreAutosave();
+      isProjectOpen.value = restored;
+    } else {
+      isProjectOpen.value = false;
+    }
   }
 
   // Watch fontProject to trigger debounced autosave (30s)
@@ -1171,6 +1214,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
 
   return {
     studioMode,
+    isProjectOpen,
     fontProject,
     selectedStudioEntryId,
     selectedEntry,
@@ -1207,6 +1251,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     loadRecentProject,
     closeProject,
     createNewProject,
+    openPresetProject,
     debouncedAutosave,
     initWorkers,
     handleVersionChange,

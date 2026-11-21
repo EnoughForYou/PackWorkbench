@@ -6,6 +6,7 @@ import {
   faCircleQuestion,
   faDownload,
   faFileZipper,
+  faFolderClosed,
   faKeyboard,
   faShieldHalved,
 } from '@fortawesome/free-solid-svg-icons';
@@ -208,6 +209,20 @@ onBeforeUnmount(() => {
       <!-- Right: Active Project Metadata + Shortcuts & Export Dialog -->
       <div class="flex items-center gap-2">
         <template v-if="store.studioMode === 'font'">
+          <!-- Tombol Tutup Proyek / Layar Sambutan -->
+          <Button
+            v-if="store.isProjectOpen"
+            variant="outline"
+            size="sm"
+            class="h-7 gap-1.5 border-border bg-muted/60 px-2.5 text-xs text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground active:scale-[0.98]"
+            title="Tutup proyek aktif dan kembali ke layar sambutan"
+            aria-label="Tutup proyek aktif"
+            @click="store.closeProject()"
+          >
+            <FontAwesomeIcon :icon="faFolderClosed" class="h-3 w-3 text-muted-foreground" />
+            <span>Tutup Proyek</span>
+          </Button>
+
           <div class="flex items-center gap-1.5">
             <Label for="studio-ns-input" class="font-mono text-[11px] text-muted-foreground">
               ns:
