@@ -195,13 +195,30 @@ describe('Inspector Properties Metrics Section Default Collapse', () => {
   });
 
   it('verifies SelectContent components inherit elevated styling and do not hardcode bg-card', () => {
-    const content = fs.readFileSync(propertiesTabPath, 'utf8');
+    const inspectorFiles = [
+      propertiesTabPath,
+      path.resolve(
+        process.cwd(),
+        'app/components/studio/inspector/InspectorTextSection.vue',
+      ),
+      path.resolve(
+        process.cwd(),
+        'app/components/studio/inspector/InspectorFrameSection.vue',
+      ),
+    ];
 
-    // In InspectorPropertiesTab.vue, SelectContent should not have hardcoded bg-card
-    const selectContentMatches = content.match(/<SelectContent[^>]*class="([^"]*)"/g);
-    expect(selectContentMatches).toBeTruthy();
-    for (const match of selectContentMatches!) {
-      expect(match).not.toContain('bg-card');
+    let totalMatches = 0;
+    for (const file of inspectorFiles) {
+      if (!fs.existsSync(file)) continue;
+      const content = fs.readFileSync(file, 'utf8');
+      const selectContentMatches = content.match(/<SelectContent[^>]*class="([^"]*)"/g);
+      if (selectContentMatches) {
+        totalMatches += selectContentMatches.length;
+        for (const match of selectContentMatches) {
+          expect(match).not.toContain('bg-card');
+        }
+      }
     }
+    expect(totalMatches).toBeGreaterThan(0);
   });
 });
