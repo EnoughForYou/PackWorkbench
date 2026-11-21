@@ -16,6 +16,7 @@ export interface RankLayerStyle {
   readonly opacity: number;
   readonly offsetX: number;
   readonly offsetY: number;
+  readonly locked?: boolean;
 }
 
 export type RankLayerStyleMap = Readonly<
@@ -70,6 +71,13 @@ export interface RankLayerVisibility {
   readonly paint: boolean;
 }
 
+export type FontSourceMode = 'pixel' | 'google-font';
+
+export interface GoogleFontSelection {
+  readonly family: string;
+  readonly weight: number;
+}
+
 export interface RankComposerConfig {
   readonly text: string;
   readonly fontSize: PixelFontSize;
@@ -89,6 +97,8 @@ export interface RankComposerConfig {
   readonly splitIconBorderColor?: string;
   readonly canvasWidthMode?: CanvasWidthMode;
   readonly customWidth?: number;
+  readonly fontSource?: FontSourceMode;
+  readonly googleFont?: GoogleFontSelection;
 }
 
 export type PaintEditMap = Readonly<Record<string, string | null>>;
