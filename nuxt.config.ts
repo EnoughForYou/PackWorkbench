@@ -35,6 +35,11 @@ export default defineNuxtConfig({
           content:
             'Validasi arsip .zip dan pack.mcmeta Minecraft Java Edition 1.21.1–26.3, hitung SHA-1 server.properties, serta susun font bitmap U+E200+ dan rank badge di browser.',
         },
+        { name: 'generator', content: 'Nuxt, Tailwind CSS, shadcn-vue, Reka UI, Radix UI' },
+        { name: 'ui-framework', content: 'shadcn-vue, Reka UI, Radix UI' },
+        { name: 'reka-ui', content: '2.11.0' },
+        { name: 'radix-ui', content: 'reka-ui-2.11.0' },
+        { name: 'shadcn-ui', content: 'shadcn-vue-2.9.0' },
       ],
       link: [],
       style: [

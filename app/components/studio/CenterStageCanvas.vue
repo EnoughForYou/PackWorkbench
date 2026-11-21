@@ -112,9 +112,9 @@ function buildCheckerPattern(
   tile.height = cell * 2;
   const tctx = tile.getContext('2d');
   if (!tctx) return null;
-  tctx.fillStyle = '#1e1f29';
+  tctx.fillStyle = '#111120';
   tctx.fillRect(0, 0, cell * 2, cell * 2);
-  tctx.fillStyle = '#262736';
+  tctx.fillStyle = '#1d1d30';
   tctx.fillRect(cell, 0, cell, cell);
   tctx.fillRect(0, cell, cell, cell);
   return ctx.createPattern(tile, 'repeat');
@@ -162,12 +162,12 @@ function toHexByte(n: number): string {
   return Math.max(0, Math.min(255, n)).toString(16).toUpperCase().padStart(2, '0');
 }
 
-// 1. Rebuild base canvas (checkerboard pattern + sprite + dual-tier grid + guides) ONLY when content/zoom/grid changes
+// 1. Rebuild base canvas (checkerboard pattern + sprite + 3-tier pixel grid + guides) ONLY when content/zoom/grid changes
 watchEffect(() => {
   const raster = activeRaster.value;
   const metrics = selectedMetrics.value;
   const z = store.zoom;
-  const grid = store.showGrid;
+  const isGridActive = Boolean(store.showGrid || store.pixelGrid);
   if (!raster || typeof document === 'undefined') {
     cachedBaseCanvas = null;
     return;
@@ -193,7 +193,7 @@ watchEffect(() => {
     ctx.fillStyle = pattern;
     ctx.fillRect(0, 0, displayW, displayH);
   } else {
-    ctx.fillStyle = '#1e1f29';
+    ctx.fillStyle = '#111120';
     ctx.fillRect(0, 0, displayW, displayH);
   }
 
@@ -211,41 +211,93 @@ watchEffect(() => {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(off, 0, 0, displayW, displayH);
 
-  // Dual-tier pixel grid (minor 1px lines + major 4px alignment guides)
-  if (grid && z >= 4) {
-    ctx.strokeStyle = z >= 8 ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 1; x < raster.width; x++) {
-      if (x % 4 === 0 && z >= 6) continue;
-      const px = Math.floor(x * z) + 0.5;
-      ctx.moveTo(px, 0);
-      ctx.lineTo(px, displayH);
-    }
-    for (let y = 1; y < raster.height; y++) {
-      if (y % 4 === 0 && z >= 6) continue;
-      const py = Math.floor(y * z) + 0.5;
-      ctx.moveTo(0, py);
-      ctx.lineTo(displayW, py);
-    }
-    ctx.stroke();
+  // Overhauled 3-Level 'Kisi Piksel' (Pixel Grid) when store.pixelGrid / store.showGrid is active
+  if (isGridActive && z >= 2) {
+    ctx.save();
 
-    if (z >= 6) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+    // Auto-hide level 1 when zoom < 4 (too dense to be useful), hide level 2 also when zoom < 2
+    const showLevel1 = z >= 4;
+    const showLevel2 = z >= 2;
+
+    // Level 1 (Pixel 1x1): Crisp, adaptive 1x1 subpixel grid lines when zoom >= 4 with calibrated contrast
+    if (showLevel1) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.lineWidth = 1;
+      ctx.setLineDash([]);
       ctx.beginPath();
-      for (let x = 4; x < raster.width; x += 4) {
+      for (let x = 1; x < raster.width; x++) {
+        if (x % 8 === 0) continue; // Minecraft tile boundaries handled in Level 2
         const px = Math.floor(x * z) + 0.5;
         ctx.moveTo(px, 0);
         ctx.lineTo(px, displayH);
       }
-      for (let y = 4; y < raster.height; y += 4) {
+      for (let y = 1; y < raster.height; y++) {
+        if (y % 8 === 0) continue; // Minecraft tile boundaries handled in Level 2
         const py = Math.floor(y * z) + 0.5;
         ctx.moveTo(0, py);
         ctx.lineTo(displayW, py);
       }
       ctx.stroke();
     }
+
+    // Level 2 (Tile 8x8 & 16x16): Minecraft tile boundary lines every 8 and 16 pixels
+    if (showLevel2) {
+      // 8x8 tile boundaries: blue-grey dashed lines rgba(100,120,200,0.45) with [4,4] dash pattern
+      ctx.strokeStyle = 'rgba(100, 120, 200, 0.45)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      for (let x = 8; x < raster.width; x += 8) {
+        if (x % 16 === 0) continue; // 16x16 boundary rendered solid below
+        const px = Math.floor(x * z) + 0.5;
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, displayH);
+      }
+      for (let y = 8; y < raster.height; y += 8) {
+        if (y % 16 === 0) continue;
+        const py = Math.floor(y * z) + 0.5;
+        ctx.moveTo(0, py);
+        ctx.lineTo(displayW, py);
+      }
+      ctx.stroke();
+
+      // 16x16 tile boundaries: solid blue-grey rgba(100,120,200,0.70)
+      ctx.strokeStyle = 'rgba(100, 120, 200, 0.70)';
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      for (let x = 16; x < raster.width; x += 16) {
+        const px = Math.floor(x * z) + 0.5;
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, displayH);
+      }
+      for (let y = 16; y < raster.height; y += 16) {
+        const py = Math.floor(y * z) + 0.5;
+        ctx.moveTo(0, py);
+        ctx.lineTo(displayW, py);
+      }
+      ctx.stroke();
+    }
+
+    // Level 3 (Font Baseline Guide): Render a subtle dashed horizontal guide at the font baseline according to ascent (default y=7 or 8)
+    const entryAscent =
+      store.selectedEntry && store.selectedEntry.kind === 'bitmap'
+        ? (typeof store.selectedEntry.ascent === 'number' && !Number.isNaN(store.selectedEntry.ascent)
+            ? store.selectedEntry.ascent
+            : 7)
+        : 7;
+
+    if (entryAscent > 0 && entryAscent < raster.height) {
+      const baselineY = Math.floor(entryAscent * z) + 0.5;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.80)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, baselineY);
+      ctx.lineTo(displayW, baselineY);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 
   // Sprite sheet cell boundaries
@@ -277,7 +329,9 @@ watchEffect(() => {
   const brush = store.brushColor;
   // Subscribe to grid & metrics so display redraws immediately whenever baseCanvas updates
   void store.showGrid;
+  void store.pixelGrid;
   void selectedMetrics.value;
+  void (store.selectedEntry?.kind === 'bitmap' ? store.selectedEntry.ascent : null);
   if (!canvas || !raster || !cachedBaseCanvas || typeof document === 'undefined') return;
 
   const displayW = Math.max(1, raster.width * z);
@@ -511,6 +565,14 @@ function handleStageModeChange(val: unknown): void {
   }
 }
 
+function togglePixelGrid(): void {
+  const next = !Boolean(store.showGrid || store.pixelGrid);
+  store.showGrid = next;
+  if ('pixelGrid' in store) {
+    store.pixelGrid = next;
+  }
+}
+
 const activeToolLabel = computed(() => {
   switch (store.activeTool) {
     case 'select':
@@ -631,15 +693,15 @@ const activeToolLabel = computed(() => {
               type="button"
               variant="ghost"
               size="icon"
-              :aria-pressed="store.showGrid"
+              :aria-pressed="Boolean(store.showGrid || store.pixelGrid)"
               aria-label="Alihkan kisi piksel (G)"
               :class="[
                 'h-7 w-7 rounded-sm border transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96]',
-                store.showGrid
+                (store.showGrid || store.pixelGrid)
                   ? 'border-primary/40 bg-primary/15 text-primary'
                   : 'border-border bg-muted/80 text-muted-foreground hover:text-foreground',
               ]"
-              @click="store.showGrid = !store.showGrid"
+              @click="togglePixelGrid()"
             >
               <FontAwesomeIcon :icon="faBorderAll" class="h-3.5 w-3.5" />
             </Button>
@@ -963,72 +1025,46 @@ const activeToolLabel = computed(() => {
       </ScrollArea>
     </div>
 
-    <!-- Bottom 28px IDE Status Bar -->
+    <!-- Bottom 20px IDE Status Bar -->
     <div
       role="status"
       aria-label="Status kanvas dan kursor"
-      class="flex h-7 shrink-0 items-center justify-between gap-3 border-t border-border bg-card px-3 font-mono text-[11px] text-muted-foreground tabular-nums whitespace-nowrap select-none"
+      class="flex h-5 shrink-0 items-center justify-between gap-3 border-t border-border bg-background px-3 font-mono text-[11px] text-muted-foreground tabular-nums whitespace-nowrap select-none"
     >
-      <div class="flex min-w-0 items-center gap-2.5 overflow-hidden whitespace-nowrap">
-        <!-- Active Tool Indicator -->
-        <span class="inline-flex items-center gap-1 font-medium text-foreground">
-          <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Alat:</span>
-          <span class="text-primary">{{ activeToolLabel }}</span>
-        </span>
+      <div class="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap">
+        <!-- Hovered pixel coords: "X: 7  Y: 3" or em-dash -->
+        <span>{{ hoverPixel ? `X: ${hoverPixel.x}  Y: ${hoverPixel.y}` : '—' }}</span>
 
         <span class="text-border">|</span>
 
-        <!-- Zoom Indicator -->
+        <!-- Hovered pixel color: `#9b73be` (or empty) -->
         <span class="inline-flex items-center gap-1">
-          <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Zoom:</span>
-          <span class="text-foreground">{{ store.zoom }}×</span>
-        </span>
-
-        <span class="text-border">|</span>
-
-        <!-- Cursor Coordinates & Color -->
-        <template v-if="hoverPixel">
-          <span class="inline-flex items-center gap-1 text-foreground">
-            <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Pos:</span>
-            <span>({{ hoverPixel.x }}, {{ hoverPixel.y }})</span>
-          </span>
-
-          <span v-if="hoverPixel.hex" class="inline-flex items-center gap-1.5 text-foreground">
+          <template v-if="hoverPixel && hoverPixel.hex">
             <span
               aria-hidden="true"
-              class="inline-block h-2.5 w-2.5 rounded-[2px] border border-white/25 shadow-xs"
+              class="inline-block h-2 w-2 rounded-[2px] border border-white/20 shadow-xs"
               :style="{ backgroundColor: hoverPixel.hex }"
             />
-            <span class="text-foreground">{{ hoverPixel.hex }}</span>
-          </span>
-          <span v-else class="text-muted-foreground">(Transparan)</span>
-
-          <span class="truncate text-[10px] text-muted-foreground">{{ hoverPixel.rgbaLabel }}</span>
-        </template>
-        <template v-else-if="store.selectedEntry?.kind === 'bitmap' && selectedMetrics">
-          <span class="text-foreground">
-            {{ selectedMetrics.imageWidth }}×{{ selectedMetrics.imageHeight }}px
-          </span>
-          <span>cell {{ selectedMetrics.cellW }}×{{ selectedMetrics.cellH }}</span>
-          <span class="text-sky-300">
-            w {{ selectedMetrics.primaryActualGlyphWidth }}
-          </span>
-          <span class="text-primary">
-            adv {{ selectedMetrics.primaryAdvance }}px
-          </span>
-          <span>top {{ selectedMetrics.top }}</span>
-        </template>
-        <span v-else-if="store.selectedEntry?.kind === 'space'" class="text-foreground">
-          Spasi Negatif · adv {{ store.selectedEntry.advance }}px
+            <span>{{ hoverPixel.hex }}</span>
+          </template>
         </span>
-        <span v-else class="text-muted-foreground">Siap</span>
+
+        <span class="text-border">|</span>
+
+        <!-- Current zoom: "12×" -->
+        <span>{{ store.zoom }}×</span>
+
+        <span class="text-border">|</span>
+
+        <!-- Canvas size: "56×13px" -->
+        <span>{{ activeRaster ? `${activeRaster.width}×${activeRaster.height}px` : '—' }}</span>
       </div>
 
-      <div class="flex shrink-0 items-center gap-2.5 whitespace-nowrap">
+      <div class="flex shrink-0 items-center gap-2 whitespace-nowrap">
         <Tooltip>
           <TooltipTrigger as-child>
             <span class="inline-flex cursor-help items-center gap-1 text-amber-300">
-              <FontAwesomeIcon :icon="faTriangleExclamation" class="h-3 w-3" />
+              <FontAwesomeIcon :icon="faTriangleExclamation" class="h-2.5 w-2.5" />
               <span>[UNVERIFIED] Simulasi Float</span>
             </span>
           </TooltipTrigger>
@@ -1040,20 +1076,20 @@ const activeToolLabel = computed(() => {
         <button
           type="button"
           :class="[
-            'inline-flex cursor-pointer items-center gap-1.5 font-medium rounded px-1.5 py-0.5 focus-visible:outline-2 focus-visible:outline-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]',
+            'inline-flex cursor-pointer items-center gap-1 font-medium rounded px-1 py-0 focus-visible:outline-2 focus-visible:outline-primary transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96]',
             store.validation.errors > 0 ? 'text-destructive bg-destructive/10' : 'text-emerald-300 hover:bg-muted/70',
           ]"
           @click="store.inspectorTab = 'validate'"
         >
-          <FontAwesomeIcon v-if="store.validation.errors === 0" :icon="faCircleCheck" class="h-3 w-3" />
-          <FontAwesomeIcon v-else :icon="faTriangleExclamation" class="h-3 w-3" />
+          <FontAwesomeIcon v-if="store.validation.errors === 0" :icon="faCircleCheck" class="h-2.5 w-2.5" />
+          <FontAwesomeIcon v-else :icon="faTriangleExclamation" class="h-2.5 w-2.5" />
           <span>
             {{
               store.validation.errors > 0
                 ? `${store.validation.errors} Kesalahan`
                 : store.validation.warns > 0
-                  ? `0 Kesalahan · ${store.validation.warns} Peringatan`
-                  : '0 Kesalahan · Siap'
+                  ? `0 Err · ${store.validation.warns} Warn`
+                  : '0 Err · Siap'
             }}
           </span>
         </button>

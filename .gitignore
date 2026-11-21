@@ -55,6 +55,8 @@ assets/vanilla/
 
 # Internal specifications & agent docs
 AGENTS.md
+CLAUDE.md
+GEMINI.md
 DESIGN.md
 PRD.md
 PRODUCT.md
@@ -63,6 +65,7 @@ PackWorkbench.md
 # IDE & OS junk files
 .vscode/
 .idea/
+.obsidian/
 .DS_Store
 Thumbs.db
 ehthumbs.db

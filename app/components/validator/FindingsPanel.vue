@@ -93,23 +93,23 @@ function selectFilter(val: FilterValue): void {
     aria-labelledby="findings-heading"
     class="flex h-full min-h-[300px] flex-col items-center justify-center p-8 text-center"
   >
-    <div class="flex h-14 w-14 items-center justify-center rounded-xl border border-border bg-card/80 text-primary shadow-xs">
-      <FontAwesomeIcon :icon="faFileCircleCheck" aria-hidden="true" class="h-7 w-7 text-primary/80" />
+    <div class="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-card text-primary shadow-xs">
+      <FontAwesomeIcon :icon="faFileCircleCheck" aria-hidden="true" class="h-6 w-6 text-primary/80" />
     </div>
-    <h2 id="findings-heading" class="mt-4 text-base font-semibold tracking-tight text-foreground">
-      Unggah arsip .zip untuk memulai validasi
+    <h2 id="findings-heading" class="mt-3.5 text-sm font-semibold tracking-tight text-foreground">
+      Belum Ada Berkas yang Diperiksa
     </h2>
-    <p class="mt-2 max-w-md text-xs leading-relaxed text-muted-foreground">
-      Menjalankan aturan struktur ZIP (<code class="font-mono font-medium text-primary">Z01–Z09</code>) dan format pack.mcmeta (<code class="font-mono font-medium text-primary">M01–M10</code>) untuk Java Edition <code>1.21.1–26.3</code> secara lokal di memori browser Anda.
+    <p class="mt-1.5 max-w-md text-xs leading-relaxed text-muted-foreground">
+      Pilih atau letakkan berkas .zip resource pack di panel sebelah kiri untuk melihat laporan struktur arsip, kesesuaian deklarasi pack.mcmeta, dan hash server.
     </p>
     <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-      <span class="rounded-full border border-border/70 bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground">
-        100% Client-side
+      <span class="rounded-full border border-border/70 bg-card px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+        Pemrosesan Lokal di Browser
       </span>
-      <span class="rounded-full border border-border/70 bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground">
+      <span class="rounded-full border border-border/70 bg-card px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
         Tanpa Unggah ke Server
       </span>
-      <span class="rounded-full border border-border/70 bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground">
+      <span class="rounded-full border border-border/70 bg-card px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
         Java 1.21.1–26.3
       </span>
     </div>
@@ -154,8 +154,8 @@ function selectFilter(val: FilterValue): void {
           <span>
             {{
               report.summary.errors === 0
-                ? 'Lolos (0 Error)'
-                : `${report.summary.errors} Error ditemukan`
+                ? 'Lolos Pemeriksaan (0 Masalah)'
+                : `${report.summary.errors} Masalah Ditemukan`
             }}
           </span>
         </div>
@@ -212,7 +212,7 @@ function selectFilter(val: FilterValue): void {
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex flex-wrap items-center gap-2">
             <span class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Ekosistem Terdeteksi:
+              Format Plugin Terdeteksi:
             </span>
             <Badge
               v-for="eco in report.zipInspection.pluginBundle.ecosystems"
@@ -227,7 +227,7 @@ function selectFilter(val: FilterValue): void {
               variant="secondary"
               class="h-5 bg-muted px-2 font-mono text-[10px] text-foreground"
             >
-              {{ report.zipInspection.pluginBundle.nestedZipPaths.length }} Pek Vanilla Bersarang
+              {{ report.zipInspection.pluginBundle.nestedZipPaths.length }} Paket ZIP di Dalam Arsip
             </Badge>
           </div>
           <span class="font-mono text-[10px] text-muted-foreground">
@@ -249,7 +249,7 @@ function selectFilter(val: FilterValue): void {
             @click="emit('inspectNestedZip', nestedPath)"
           >
             <FontAwesomeIcon :icon="faFileZipper" aria-hidden="true" class="h-3.5 w-3.5 text-primary" />
-            <span>Periksa Pek Bersarang: {{ nestedPath.split('/').pop() }}</span>
+            <span>Periksa Berkas Bersarang: {{ nestedPath.split('/').pop() }}</span>
           </Button>
         </div>
       </div>
@@ -260,7 +260,7 @@ function selectFilter(val: FilterValue): void {
         class="flex flex-col items-center justify-center px-4 py-12 text-center"
       >
         <p class="font-mono text-xs text-muted-foreground">
-          Tidak ada temuan dengan tingkat keparahan <strong class="font-semibold text-foreground">{{ filter }}</strong>.
+          Tidak ada temuan dengan filter <strong class="font-semibold text-foreground">{{ filter }}</strong>.
         </p>
       </div>
 
@@ -323,7 +323,7 @@ function selectFilter(val: FilterValue): void {
           <!-- Remediation hint in clear Indonesian typography -->
           <div class="mt-3 flex items-start gap-2.5 rounded-md border border-primary/25 bg-primary/10 p-3">
             <div class="mt-0.5 shrink-0 rounded border border-primary/30 bg-primary/20 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-primary">
-              Saran Perbaikan
+              Petunjuk Perbaikan
             </div>
             <p class="text-xs leading-relaxed text-foreground font-normal">
               {{ finding.fixHint }}

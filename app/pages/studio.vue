@@ -1,12 +1,28 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faFileZipper, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBook,
+  faCircleQuestion,
+  faDownload,
+  faFileZipper,
+  faKeyboard,
+  faShieldHalved,
+} from '@fortawesome/free-solid-svg-icons';
 import { VERSION_PROFILES } from '@core/versions.ts';
 import type { TargetVersionId } from '@core/types.ts';
 import { useWorkbenchStore, type StudioMode } from '@/stores/workbenchStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -34,6 +50,21 @@ useHead({
 
 const store = useWorkbenchStore();
 const route = useRoute();
+
+const exportDialogOpen = ref(false);
+const exportPackName = ref('Pack Workbench Rank');
+const exportPackDesc = ref('Resource pack font bitmap Minecraft Java');
+
+const isExportValid = computed(() => {
+  return exportPackName.value.trim().length > 0 && store.validation.errors === 0;
+});
+
+const activeVersionProfile = computed(() => {
+  return (
+    VERSION_PROFILES.find((v) => v.id === store.fontProject.targetVersion) ??
+    VERSION_PROFILES[0]
+  );
+});
 
 watch(
   () => route.query.mode,
@@ -131,7 +162,7 @@ onBeforeUnmount(() => {
   <div class="flex h-screen min-w-[1280px] flex-col overflow-hidden bg-background text-foreground">
     <!-- Pure Desktop IDE Top Toolbar -->
     <header class="flex min-h-12 shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-3 py-1">
-      <!-- Left: Brand + quiet Home/About links + Mode ToggleGroup -->
+      <!-- Left: Brand + Mode ToggleGroup -->
       <div class="flex items-center gap-3">
         <NuxtLink
           to="/"
@@ -150,34 +181,12 @@ onBeforeUnmount(() => {
           </span>
         </NuxtLink>
 
-        <nav aria-label="Main navigation" class="flex items-center gap-2 text-xs">
-          <NuxtLink
-            to="/"
-            class="px-1.5 py-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            Home
-          </NuxtLink>
-          <NuxtLink
-            to="/studio"
-            aria-current="page"
-            class="px-1.5 py-1 font-medium text-foreground focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            Studio
-          </NuxtLink>
-          <NuxtLink
-            to="/about"
-            class="px-1.5 py-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            About
-          </NuxtLink>
-        </nav>
-
         <Separator orientation="vertical" class="h-5" />
 
         <ToggleGroup
           type="single"
           :model-value="store.studioMode"
-          aria-label="Select Studio workspace"
+          aria-label="Pilih mode workspace studio"
           class="gap-0.5 rounded-md border border-border bg-muted p-0.5"
           @update:model-value="setMode"
         >
@@ -196,7 +205,7 @@ onBeforeUnmount(() => {
         </ToggleGroup>
       </div>
 
-      <!-- Right: Active Project Metadata + Export Action -->
+      <!-- Right: Active Project Metadata + Shortcuts & Export Dialog -->
       <div class="flex items-center gap-2">
         <template v-if="store.studioMode === 'font'">
           <div class="flex items-center gap-1.5">
@@ -218,7 +227,7 @@ onBeforeUnmount(() => {
           </div>
 
           <Label for="studio-target-select" class="sr-only">
-            Target Minecraft Java version
+            Target versi Minecraft Java
           </Label>
           <Select
             :model-value="store.fontProject.targetVersion"
@@ -245,6 +254,135 @@ onBeforeUnmount(() => {
             </SelectContent>
           </Select>
 
+          <!-- Keyboard Shortcuts Dialog -->
+          <Dialog>
+            <DialogTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7 text-muted-foreground hover:text-foreground"
+                aria-label="Buka panduan pintasan keyboard"
+              >
+                <FontAwesomeIcon :icon="faKeyboard" class="h-3.5 w-3.5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent class="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle class="flex items-center gap-2">
+                  <FontAwesomeIcon :icon="faKeyboard" class="h-4 w-4 text-primary" />
+                  <span>Pintasan Keyboard Studio</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Gunakan pintasan keyboard untuk mempercepat proses menggambar piksel dan navigasi kanvas.
+                </DialogDescription>
+              </DialogHeader>
+              <div class="space-y-2 py-2">
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Pilih (Select)</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">V</kbd>
+                  </div>
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Pensil Piksel</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">B</kbd>
+                  </div>
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Penghapus</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">E</kbd>
+                  </div>
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Pipet Warna</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">I</kbd>
+                  </div>
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Kisi Piksel</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">G</kbd>
+                  </div>
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Zoom +/-</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">+ / -</kbd>
+                  </div>
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Urungkan (Undo)</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">Ctrl+Z</kbd>
+                  </div>
+                  <div class="flex items-center justify-between rounded border border-border bg-[#14151e] p-2 font-mono">
+                    <span class="text-muted-foreground">Ulangi (Redo)</span>
+                    <kbd class="rounded bg-muted px-1.5 py-0.5 text-foreground">Ctrl+Y</kbd>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <!-- Minecraft Version Guide Dialog (from docs/knowledge) -->
+          <Dialog>
+            <DialogTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7 text-muted-foreground hover:text-foreground"
+                aria-label="Buka panduan spesifikasi versi Minecraft"
+              >
+                <FontAwesomeIcon :icon="faBook" class="h-3.5 w-3.5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent class="max-w-xl">
+              <DialogHeader>
+                <DialogTitle class="flex items-center gap-2">
+                  <FontAwesomeIcon :icon="faBook" class="h-4 w-4 text-primary" />
+                  <span>Panduan Spesifikasi Versi Minecraft</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Ringkasan aturan resmi pack_format, data format, dan sintaks pack.mcmeta (1.21.1 – 26.3) berdasarkan dokumentasi teknis Mojang.
+                </DialogDescription>
+              </DialogHeader>
+              <div class="max-h-[60vh] space-y-3 overflow-y-auto pr-1 text-xs">
+                <!-- Active target info banner -->
+                <div class="rounded-md border border-primary/30 bg-primary/10 p-3">
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium text-foreground">Target Aktif Saat Ini:</span>
+                    <Badge variant="outline" class="font-mono text-primary">
+                      {{ activeVersionProfile?.label }}
+                    </Badge>
+                  </div>
+                  <p class="mt-1 text-[11px] text-muted-foreground">
+                    Format: <span class="font-mono text-foreground">{{ activeVersionProfile?.style === 'legacy' ? `pack_format: ${activeVersionProfile.format[0]}` : `min_format: [${activeVersionProfile?.format[0]}, ${activeVersionProfile?.format[1]}]` }}</span>
+                    · Skema: <span class="font-mono text-foreground">{{ activeVersionProfile?.style === 'legacy' ? 'Legacy (Integer Tunggal)' : 'Modern Range (Rentang Minor)' }}</span>
+                  </p>
+                </div>
+
+                <!-- Version Master Matrix -->
+                <div class="space-y-1.5">
+                  <span class="font-semibold text-foreground">Matriks Kronologi Versi (1.21.1 – 26.3):</span>
+                  <div class="space-y-1 rounded border border-border bg-[#14151e] p-2 font-mono text-[11px]">
+                    <div
+                      v-for="v in VERSION_PROFILES"
+                      :key="v.id"
+                      class="flex items-center justify-between border-b border-border/40 py-1 last:border-b-0"
+                      :class="{ 'text-primary font-bold': v.id === store.fontProject.targetVersion }"
+                    >
+                      <span class="truncate">{{ v.id }} ({{ v.format[0] }}{{ v.format[1] > 0 ? `.${v.format[1]}` : '' }})</span>
+                      <span class="text-[10px] text-muted-foreground">
+                        {{ v.style === 'legacy' ? 'Legacy' : 'Range min/max' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Key architectural notes -->
+                <div class="space-y-1.5 text-[11px] text-muted-foreground">
+                  <p><strong class="text-foreground">1.21.4:</strong> Transisi masif sistem item model ke <code class="text-primary">assets/&lt;ns&gt;/items/*.json</code> dan CustomModelData 4-list.</p>
+                  <p><strong class="text-foreground">1.21.8:</strong> Batas format tunggal (<code class="text-primary">lastPreMinorVersion = 64</code>). Versi di atasnya wajib menggunakan rentang.</p>
+                  <p><strong class="text-foreground">1.21.9+:</strong> Awal format minor (<code class="text-primary">min_format</code> &amp; <code class="text-primary">max_format</code>). Field <code class="text-destructive">supported_formats</code> dilarang jika format mayor &gt; 64.</p>
+                  <p><strong class="text-foreground">1.21.11:</strong> Pemisahan atlas <code class="text-primary">items.json</code> dan <code class="text-primary">celestials.json</code> dari <code class="text-primary">blocks.json</code>.</p>
+                  <p><strong class="text-foreground">26.1+:</strong> Migrasi ke runtime Java 25 dan jar un-obfuscated resmi Mojang.</p>
+                  <p><strong class="text-foreground">26.3:</strong> Format minor non-nol pertama (<code class="text-primary">[97, 1]</code>) dan relokasi armor trim ke <code class="text-primary">textures/palettes/trim/</code>.</p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Tooltip>
             <TooltipTrigger as-child>
               <Badge
@@ -252,33 +390,115 @@ onBeforeUnmount(() => {
                 class="h-7 cursor-default gap-1 border-border bg-muted font-mono text-[10px] text-muted-foreground"
               >
                 <FontAwesomeIcon :icon="faShieldHalved" class="h-3 w-3 text-emerald-400" />
-                <span>Local</span>
+                <span>Lokal</span>
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
-              All ZIP, PNG, and SHA-1 processing runs 100% locally in your browser with zero uploads.
+              Seluruh pemrosesan ZIP, PNG, dan SHA-1 berjalan 100% lokal di browser tanpa pengunggahan berkas.
             </TooltipContent>
           </Tooltip>
 
-          <Button
-            type="button"
-            variant="pill"
-            size="pill"
-            :disabled="store.validation.errors > 0 || store.isExporting"
-            class="gap-1.5"
-            @click="store.exportAndDownload()"
-          >
-            <FontAwesomeIcon :icon="faFileZipper" class="h-3.5 w-3.5" />
-            <span>
-              {{
-                store.isExporting
-                  ? 'Building...'
-                  : store.validation.errors > 0
-                    ? `${store.validation.errors} Errors`
-                    : 'Export Pack'
-              }}
-            </span>
-          </Button>
+          <!-- Export Pack Dialog -->
+          <Dialog v-model:open="exportDialogOpen">
+            <DialogTrigger as-child>
+              <Button
+                type="button"
+                variant="pill"
+                size="pill"
+                :disabled="store.validation.errors > 0 || store.isExporting"
+                class="gap-1.5 shadow-sm"
+              >
+                <FontAwesomeIcon :icon="faFileZipper" class="h-3.5 w-3.5" />
+                <span>
+                  {{
+                    store.isExporting
+                      ? 'Menyusun...'
+                      : store.validation.errors > 0
+                        ? `${store.validation.errors} Error`
+                        : 'Ekspor Pack'
+                  }}
+                </span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent class="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle class="flex items-center gap-2">
+                  <FontAwesomeIcon :icon="faDownload" class="h-4 w-4 text-primary" />
+                  <span>Ekspor Resource Pack Minecraft</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Susun seluruh font bitmap, file pack.mcmeta, dan struktur arsip .zip siap pasang di Minecraft Java.
+                </DialogDescription>
+              </DialogHeader>
+              <div class="space-y-3 py-2 text-xs">
+                <div class="space-y-1">
+                  <Label for="export-pack-name" class="font-medium">Nama Paket Resource</Label>
+                  <Input
+                    id="export-pack-name"
+                    v-model="exportPackName"
+                    class="h-8 bg-muted font-medium"
+                    placeholder="Contoh: Server Rank Pack"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <Label for="export-pack-desc" class="font-medium">Deskripsi (pack.mcmeta)</Label>
+                  <Input
+                    id="export-pack-desc"
+                    v-model="exportPackDesc"
+                    class="h-8 bg-muted"
+                    placeholder="Deskripsi berkas pack"
+                  />
+                </div>
+                <div class="rounded border border-border bg-[#14151e] p-2.5 font-mono text-[11px] space-y-1">
+                  <div class="flex justify-between">
+                    <span class="text-muted-foreground">Target Java:</span>
+                    <span class="text-foreground">{{ store.fontProject.targetVersion }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-muted-foreground">Format Mcmeta:</span>
+                    <span class="text-amber-400">
+                      {{
+                        activeVersionProfile?.style === 'legacy'
+                          ? `pack_format: ${activeVersionProfile.format[0]}`
+                          : `min_format: [${activeVersionProfile?.format[0]}, ${activeVersionProfile?.format[1]}]`
+                      }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-muted-foreground">Namespace:</span>
+                    <span class="text-primary">{{ store.fontProject.namespace }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-muted-foreground">Total Glif:</span>
+                    <span class="text-emerald-400">{{ store.fontProject.entries.length }} Entri</span>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  @click="exportDialogOpen = false"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  :disabled="!isExportValid || store.isExporting"
+                  class="gap-1.5 font-bold"
+                  @click="
+                    exportDialogOpen = false;
+                    store.exportAndDownload();
+                  "
+                >
+                  <FontAwesomeIcon :icon="faDownload" class="h-3 w-3" />
+                  <span>Unduh .ZIP</span>
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </template>
 
         <template v-else>
@@ -314,7 +534,7 @@ onBeforeUnmount(() => {
             variant="outline"
             class="h-7 border-border bg-muted font-mono text-[10px] text-muted-foreground"
           >
-            Local · SHA-1 Worker
+            Lokal · SHA-1 Worker
           </Badge>
         </template>
       </div>

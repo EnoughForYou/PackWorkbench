@@ -544,33 +544,105 @@ export function useInGamePreview() {
     ),
   );
 
+  function getActivePrefixTokens(): readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly kind: 'bitmap' | 'space';
+    readonly raster: RgbaRaster | null;
+    readonly advance: number;
+    readonly height: number;
+    readonly ascent: number;
+  }[] {
+    const proj = store.fontProject;
+    const ids =
+      proj.prefixSequenceIds.length > 0
+        ? proj.prefixSequenceIds
+        : store.selectedEntry
+          ? [store.selectedEntry.id]
+          : [];
+
+    const tokens: {
+      id: string;
+      label: string;
+      kind: 'bitmap' | 'space';
+      raster: RgbaRaster | null;
+      advance: number;
+      height: number;
+      ascent: number;
+    }[] = [];
+
+    for (const id of ids) {
+      let entry = proj.entries.find((e) => e.id === id);
+      if (!entry && store.selectedEntry?.id === id) {
+        entry = store.selectedEntry;
+      }
+      if (!entry) continue;
+
+      if (entry.kind === 'space') {
+        tokens.push({
+          id: entry.id,
+          label: entry.label,
+          kind: 'space',
+          raster: null,
+          advance: entry.advance,
+          height: 8,
+          ascent: 7,
+        });
+      } else if (entry.kind === 'bitmap') {
+        const raster = resolveBitmapEntryRaster(
+          entry,
+          store.decodedUploads.get(entry.id),
+        );
+        const metrics = store.validation.metricsByEntryId[entry.id];
+        const fallbackAdvance = raster ? raster.width + 1 : (entry.height || 9) + 1;
+        const advance = metrics?.cells[0]?.advance ?? fallbackAdvance;
+
+        tokens.push({
+          id: entry.id,
+          label: entry.label,
+          kind: 'bitmap',
+          raster,
+          advance,
+          height: entry.height,
+          ascent: entry.ascent,
+        });
+      }
+    }
+
+    if (tokens.length === 0) {
+      const fallbackRaster = synthesizeRankRgba(
+        createDefaultRankComposer({
+          text: 'VIP',
+          fontSize: '3x5',
+          textColor: '#ffffff',
+          shadowColor: '#0c0a09',
+          frameStyle: 'bevel',
+          frameColor: '#e11d48',
+          frameBorderColor: '#fda4af',
+          iconId: 'gem',
+          iconColor: '#fef08a',
+        }),
+        { frame: true, icon: true, text: true, shadow: true, paint: true },
+      );
+      tokens.push({
+        id: 'fallback-vip',
+        label: 'VIP',
+        kind: 'bitmap',
+        raster: fallbackRaster,
+        advance: fallbackRaster.width + 1,
+        height: 9,
+        ascent: 8,
+      });
+    }
+
+    return tokens;
+  }
+
   function getActiveRankRaster(): RgbaRaster {
-    const entry = store.selectedEntry;
-    if (entry && entry.kind === 'bitmap') {
-      const raster = resolveBitmapEntryRaster(
-        entry,
-        store.decodedUploads.get(entry.id),
-      );
-      if (raster) return raster;
-    }
-    const prefixId = store.fontProject.prefixSequenceIds[0];
-    const prefixEntry = prefixId
-      ? store.fontProject.entries.find((e) => e.id === prefixId)
-      : null;
-    if (prefixEntry && prefixEntry.kind === 'bitmap') {
-      const raster = resolveBitmapEntryRaster(
-        prefixEntry,
-        store.decodedUploads.get(prefixEntry.id),
-      );
-      if (raster) return raster;
-    }
-    const firstBitmap = store.fontProject.entries.find((e) => e.kind === 'bitmap');
-    if (firstBitmap && firstBitmap.kind === 'bitmap') {
-      const raster = resolveBitmapEntryRaster(
-        firstBitmap,
-        store.decodedUploads.get(firstBitmap.id),
-      );
-      if (raster) return raster;
+    const tokens = getActivePrefixTokens();
+    const firstBitmap = tokens.find((t) => t.kind === 'bitmap' && t.raster);
+    if (firstBitmap && firstBitmap.raster) {
+      return firstBitmap.raster;
     }
     return synthesizeRankRgba(
       createDefaultRankComposer({
@@ -629,6 +701,7 @@ export function useInGamePreview() {
     ctx.imageSmoothingEnabled = false;
 
     const { playerName, msgText } = parseChatText(store.fontProject.sampleChatText);
+    const activeTokens = getActivePrefixTokens();
     const activeRaster = getActiveRankRaster();
 
     // 1. Render Backdrop Layer
@@ -667,18 +740,32 @@ export function useInGamePreview() {
         barH * scaleMultiplier,
       );
 
-      // Render actual rank badge MUCH BIGGER — fills ~72% of chat bar height
+      // Render all active prefix tokens horizontally respecting glyph advance
       const badgeH = Math.round(barH * 0.72);
-      const rH = Math.max(1, activeRaster.height);
-      const badgeW = Math.max(1, Math.round(activeRaster.width * (badgeH / rH)));
-      const badgeX = 8;
-      const badgeY = barY + Math.round((barH - badgeH) / 2);
+      const fontSize = variant === 'stage' ? 10 : 9;
 
-      drawRaster(ctx, activeRaster, badgeX, badgeY, badgeW, badgeH, scaleMultiplier);
+      let currentX = 8;
+      for (const token of activeTokens) {
+        const tokenH = token.height || 9;
+        const scale = badgeH / tokenH;
+
+        if (token.kind === 'space') {
+          currentX += token.advance * scale;
+        } else if (token.kind === 'bitmap' && token.raster) {
+          const rH = Math.max(1, token.raster.height);
+          const drawH = badgeH;
+          const drawW = Math.max(1, Math.round(token.raster.width * (drawH / rH)));
+          const drawY = barY + Math.round((barH - drawH) / 2);
+
+          drawRaster(ctx, token.raster, currentX, drawY, drawW, drawH, scaleMultiplier);
+
+          const advancePx = token.advance ? Math.round(token.advance * scale) : drawW + 1;
+          currentX += Math.max(drawW, advancePx);
+        }
+      }
 
       // Player name text (P0TAT0D0G) in white Minecraft font
-      const fontSize = variant === 'stage' ? 10 : 9;
-      const nameX = badgeX + badgeW + 6;
+      const nameX = Math.round(currentX + 5);
       const nameY = barY + barH / 2;
 
       const nameW = drawMinecraftText(
@@ -751,16 +838,42 @@ export function useInGamePreview() {
         const avatarY = rowY + Math.round((rowH - avatarSize) / 2);
         drawMiniHeadAvatar(ctx, avatarX, avatarY, avatarSize, scaleMultiplier, p.avatarAccent);
 
-        // 2. Rank badge (actual pixels, small)
+        // 2. Rank badge / chain (actual pixels)
         const badgeH = Math.max(7, Math.round(rowH * 0.62));
-        const prH = Math.max(1, p.raster.height);
-        const badgeW = Math.max(1, Math.round(p.raster.width * (badgeH / prH)));
-        const badgeX = avatarX + avatarSize + 4;
-        const badgeY = rowY + Math.round((rowH - badgeH) / 2);
-        drawRaster(ctx, p.raster, badgeX, badgeY, badgeW, badgeH, scaleMultiplier);
+        let badgeEndX = avatarX + avatarSize + 4;
+
+        if (p.isActive) {
+          let curX = badgeEndX;
+          for (const token of activeTokens) {
+            const tokenH = token.height || 9;
+            const scale = badgeH / tokenH;
+
+            if (token.kind === 'space') {
+              curX += token.advance * scale;
+            } else if (token.kind === 'bitmap' && token.raster) {
+              const rH = Math.max(1, token.raster.height);
+              const drawH = badgeH;
+              const drawW = Math.max(1, Math.round(token.raster.width * (drawH / rH)));
+              const drawY = rowY + Math.round((rowH - drawH) / 2);
+
+              drawRaster(ctx, token.raster, curX, drawY, drawW, drawH, scaleMultiplier);
+
+              const advancePx = token.advance ? Math.round(token.advance * scale) : drawW + 1;
+              curX += Math.max(drawW, advancePx);
+            }
+          }
+          badgeEndX = Math.max(badgeEndX, curX);
+        } else {
+          const prH = Math.max(1, p.raster.height);
+          const badgeW = Math.max(1, Math.round(p.raster.width * (badgeH / prH)));
+          const badgeX = badgeEndX;
+          const badgeY = rowY + Math.round((rowH - badgeH) / 2);
+          drawRaster(ctx, p.raster, badgeX, badgeY, badgeW, badgeH, scaleMultiplier);
+          badgeEndX = badgeX + badgeW;
+        }
 
         // 3. Player name (truncated with .. if name is exceptionally long so ping bars never overlap)
-        const nameX = badgeX + badgeW + 4;
+        const nameX = badgeEndX + 4;
         const nameY = rowY + rowH / 2;
         const fontSize = Math.max(7, Math.round(rowH * 0.58));
         const pingRightX = boxX + boxW - 5;
@@ -796,13 +909,28 @@ export function useInGamePreview() {
     const nameW = measureMinecraftText(ctx, playerName, scaleMultiplier, fontSize);
 
     const badgeH = Math.max(8, Math.round(fontSize * 1.05));
-    const rH = Math.max(1, activeRaster.height);
-    const badgeW = Math.max(1, Math.round(activeRaster.width * (badgeH / rH)));
     const gap = 4;
     const padX = 5;
     const padY = 3;
 
-    const pillW = badgeW + gap + nameW + padX * 2;
+    // Precalculate total width of prefix chain
+    let chainW = 0;
+    for (const token of activeTokens) {
+      const tokenH = token.height || 9;
+      const scale = badgeH / tokenH;
+      if (token.kind === 'space') {
+        chainW += token.advance * scale;
+      } else if (token.kind === 'bitmap' && token.raster) {
+        const rH = Math.max(1, token.raster.height);
+        const drawH = badgeH;
+        const drawW = Math.max(1, Math.round(token.raster.width * (drawH / rH)));
+        const advancePx = token.advance ? Math.round(token.advance * scale) : drawW + 1;
+        chainW += Math.max(drawW, advancePx);
+      }
+    }
+    chainW = Math.max(0, Math.round(chainW));
+
+    const pillW = chainW + (chainW > 0 ? gap : 0) + nameW + padX * 2;
     const pillH = Math.max(badgeH, fontSize) + padY * 2;
 
     // Centered above the character's head, bounded within canvas
@@ -823,13 +951,26 @@ export function useInGamePreview() {
       pillH * scaleMultiplier,
     );
 
-    // Actual rank badge pixels
-    const badgeX = pillX + padX;
-    const badgeY = pillY + Math.round((pillH - badgeH) / 2);
-    drawRaster(ctx, activeRaster, badgeX, badgeY, badgeW, badgeH, scaleMultiplier);
+    // Draw active prefix chain
+    let curX = pillX + padX;
+    for (const token of activeTokens) {
+      const tokenH = token.height || 9;
+      const scale = badgeH / tokenH;
+      if (token.kind === 'space') {
+        curX += token.advance * scale;
+      } else if (token.kind === 'bitmap' && token.raster) {
+        const rH = Math.max(1, token.raster.height);
+        const drawH = badgeH;
+        const drawW = Math.max(1, Math.round(token.raster.width * (drawH / rH)));
+        const drawY = pillY + Math.round((pillH - drawH) / 2);
+        drawRaster(ctx, token.raster, curX, drawY, drawW, drawH, scaleMultiplier);
+        const advancePx = token.advance ? Math.round(token.advance * scale) : drawW + 1;
+        curX += Math.max(drawW, advancePx);
+      }
+    }
 
     // Player name text in white
-    const nameX = badgeX + badgeW + gap;
+    const nameX = (chainW > 0 ? Math.max(curX, pillX + padX + chainW) + gap : pillX + padX);
     const nameY = pillY + pillH / 2;
     drawMinecraftText(
       ctx,
@@ -848,5 +989,7 @@ export function useInGamePreview() {
     advanceMap,
     cursorRuns,
     renderInGameStrip,
+    getActivePrefixTokens,
+    getActiveRankRaster,
   };
 }

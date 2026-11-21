@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createPinia, setActivePinia } from 'pinia';
 import { encodeRgbaPng } from '../src/core/font/pngCodec.ts';
 import { createUploadedPngEntry } from '../src/core/font/presets.ts';
 import { useWorkbenchStore } from '../app/stores/workbenchStore.ts';
+import { setupWorkbenchTestingPinia } from './helpers/piniaTestHarness.ts';
 
 describe('Pinia Integration - useWorkbenchStore', () => {
   beforeEach(() => {
-    // Fresh Pinia instance for each test as recommended by official Pinia documentation
-    setActivePinia(createPinia());
+    // Fresh isolated Pinia instance for each test powered by @pinia/testing with Vitest spy tracking
+    setupWorkbenchTestingPinia({ stubActions: false });
   });
 
   it('initializes store with default initial state and active Pinia instance', () => {
@@ -142,5 +142,61 @@ describe('Pinia Integration - useWorkbenchStore', () => {
     const secondDecoded = store.decodedUploads.get('png-memo-test');
     // Reference equality proves pngDecodeCache returned the cached instance
     expect(secondDecoded).toBe(firstDecoded);
+  });
+
+  it('manages auto-save, recent projects and closeProject in localStorage', () => {
+    const mockStorage = new Map<string, string>();
+    const storageObj: Storage = {
+      getItem: (k: string) => mockStorage.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        mockStorage.set(k, v);
+      },
+      removeItem: (k: string) => {
+        mockStorage.delete(k);
+      },
+      clear: () => {
+        mockStorage.clear();
+      },
+      key: (i: number) => Array.from(mockStorage.keys())[i] ?? null,
+      length: 0,
+    };
+    // Mock window.localStorage
+    (globalThis as unknown as { window: { localStorage: Storage } }).window = {
+      localStorage: storageObj,
+    };
+
+    try {
+      const store = useWorkbenchStore();
+      store.fontProject.namespace = 'custompack';
+      store.fontProject.packDescription = 'Custom Pack Description';
+      store.saveProjectToStorage();
+
+      expect(mockStorage.has('pack-workbench-autosave')).toBe(true);
+      expect(mockStorage.has('pack-workbench-recent')).toBe(true);
+      expect(store.recentProjects.length).toBe(1);
+      expect(store.recentProjects[0]?.name).toBe('Custom Pack Description.zip');
+      expect(store.recentProjects[0]?.entryCount).toBe(store.fontProject.entries.length);
+
+      // Close project clears entries and autosave
+      store.closeProject();
+      expect(store.fontProject.entries.length).toBe(0);
+      expect(mockStorage.has('pack-workbench-autosave')).toBe(false);
+
+      // Restore from recent project
+      const recent = store.recentProjects[0];
+      expect(recent).toBeDefined();
+      if (recent) {
+        store.loadRecentProject(recent);
+        expect(store.fontProject.entries.length).toBeGreaterThan(0);
+        expect(store.fontProject.namespace).toBe('custompack');
+      }
+
+      // Create new blank project
+      store.createNewProject('newnamespace');
+      expect(store.fontProject.entries.length).toBe(1);
+      expect(store.fontProject.namespace).toBe('newnamespace');
+    } finally {
+      delete (globalThis as unknown as { window?: unknown }).window;
+    }
   });
 });

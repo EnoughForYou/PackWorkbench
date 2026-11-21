@@ -51,6 +51,63 @@ export interface Sha1ProgressState {
   readonly errorMessage?: string;
 }
 
+export interface RecentProjectItem {
+  readonly name: string;
+  readonly savedAt: number;
+  readonly entryCount: number;
+  readonly data?: string;
+}
+
+export const AUTOSAVE_STORAGE_KEY = 'pack-workbench-autosave';
+export const RECENT_STORAGE_KEY = 'pack-workbench-recent';
+
+function getLocalStorage(): Storage | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  try {
+    return typeof window.localStorage !== 'undefined' ? window.localStorage : null;
+  } catch {
+    return null;
+  }
+}
+
+export function serializeFontProject(project: FontProject): string {
+  return JSON.stringify(project, (_key, value) => {
+    if (value instanceof Uint8Array) {
+      return { __type: 'Uint8Array', bytes: Array.from(value) };
+    }
+    return value;
+  });
+}
+
+export function deserializeFontProject(raw: string): FontProject | null {
+  try {
+    const parsed = JSON.parse(raw, (_key, value) => {
+      if (
+        value &&
+        typeof value === 'object' &&
+        value.__type === 'Uint8Array' &&
+        Array.isArray(value.bytes)
+      ) {
+        return new Uint8Array(value.bytes);
+      }
+      return value;
+    });
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      Array.isArray(parsed.entries) &&
+      typeof parsed.targetVersion === 'string'
+    ) {
+      return parsed as FontProject;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 interface PaintUndoRecord {
   readonly entryId: string;
   readonly previousPaintEdits: PaintEditMap;
@@ -73,6 +130,19 @@ const INITIAL_VALIDATION: FontValidationResult = {
   decodeErrorsByEntryId: {},
 };
 
+export const STORAGE_KEY_INSPECTOR_COLLAPSED = 'pack-workbench-inspector-collapsed';
+
+function getStoredInspectorCollapsed(): boolean {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return false;
+  }
+  try {
+    return localStorage.getItem(STORAGE_KEY_INSPECTOR_COLLAPSED) === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export const useWorkbenchStore = defineStore('workbench', () => {
   // Active workspace mode inside /studio
   const studioMode = ref<StudioMode>('font');
@@ -85,9 +155,16 @@ export const useWorkbenchStore = defineStore('workbench', () => {
   const activeTool = ref<CanvasTool>('select');
   const brushColor = ref<string>('#9b73be');
   const showGrid = ref<boolean>(true);
+  const pixelGrid = computed({
+    get: () => showGrid.value,
+    set: (val: boolean) => {
+      showGrid.value = val;
+    },
+  });
   const stageMode = ref<CenterStageMode>('canvas');
   const zoom = ref<number>(12);
   const inspectorTab = ref<InspectorTab>('properties');
+  const inspectorCollapsed = ref<boolean>(getStoredInspectorCollapsed());
   const composerSubTab = ref<ComposerSubTab>('text');
   const previewBackdropMode = ref<PreviewBackdropMode>('world');
   const customBackdropUrl = ref<string | null>(null);
@@ -922,6 +999,176 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     })();
   }
 
+  const recentProjects = ref<readonly RecentProjectItem[]>([]);
+  let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function loadRecentProjectsFromStorage(): RecentProjectItem[] {
+    const storage = getLocalStorage();
+    if (!storage) return [];
+    try {
+      const raw = storage.getItem(RECENT_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.slice(0, 5);
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveProjectToStorage(): void {
+    const storage = getLocalStorage();
+    if (!storage) return;
+    if (fontProject.value.entries.length === 0) return;
+
+    try {
+      const serialized = serializeFontProject(fontProject.value);
+      storage.setItem(AUTOSAVE_STORAGE_KEY, serialized);
+
+      const baseName = fontProject.value.packDescription?.trim()
+        ? fontProject.value.packDescription.trim()
+        : (fontProject.value.namespace ? `${fontProject.value.namespace}.zip` : 'MyPack.zip');
+      const projectName = baseName.endsWith('.zip') ? baseName : `${baseName}.zip`;
+
+      const newRecent: RecentProjectItem = {
+        name: projectName,
+        savedAt: Date.now(),
+        entryCount: fontProject.value.entries.length,
+        data: serialized,
+      };
+
+      const currentRecent = loadRecentProjectsFromStorage();
+      const filtered = currentRecent.filter((p) => p.name !== newRecent.name);
+      const updatedRecent = [newRecent, ...filtered].slice(0, 5);
+
+      storage.setItem(RECENT_STORAGE_KEY, JSON.stringify(updatedRecent));
+      recentProjects.value = updatedRecent;
+    } catch (err) {
+      console.warn('Gagal menyimpan otomatis ke localStorage:', err);
+    }
+  }
+
+  function debouncedAutosave(): void {
+    const storage = getLocalStorage();
+    if (!storage) return;
+    if (fontProject.value.entries.length === 0) return;
+
+    if (autosaveTimer !== null) {
+      clearTimeout(autosaveTimer);
+    }
+
+    autosaveTimer = setTimeout(() => {
+      saveProjectToStorage();
+      autosaveTimer = null;
+    }, 30000);
+  }
+
+  function restoreAutosave(): boolean {
+    const storage = getLocalStorage();
+    if (!storage) return false;
+    try {
+      const raw = storage.getItem(AUTOSAVE_STORAGE_KEY);
+      if (!raw) return false;
+      const restored = deserializeFontProject(raw);
+      if (restored && Array.isArray(restored.entries) && restored.entries.length > 0) {
+        fontProject.value = restored;
+        selectedStudioEntryId.value = restored.entries[0]?.id ?? '';
+        return true;
+      }
+    } catch (e) {
+      console.warn('Gagal memulihkan proyek dari localStorage:', e);
+    }
+    return false;
+  }
+
+  function loadRecentProject(item: RecentProjectItem): void {
+    if (item.data) {
+      const parsed = deserializeFontProject(item.data);
+      if (parsed && Array.isArray(parsed.entries) && parsed.entries.length > 0) {
+        fontProject.value = parsed;
+        selectedStudioEntryId.value = parsed.entries[0]?.id ?? '';
+        saveProjectToStorage();
+        return;
+      }
+    }
+    restoreAutosave();
+  }
+
+  function closeProject(): void {
+    if (autosaveTimer !== null) {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = null;
+    }
+    fontProject.value = {
+      ...fontProject.value,
+      entries: [],
+      prefixSequenceIds: [],
+    };
+    selectedStudioEntryId.value = '';
+    const storage = getLocalStorage();
+    if (storage) {
+      storage.removeItem(AUTOSAVE_STORAGE_KEY);
+    }
+  }
+
+  function createNewProject(namespace = 'mypack'): void {
+    const initial = createInitialFontProject();
+    const firstTpl = RANK_PRESET_TEMPLATES[0]!;
+    const rankEntry = createRankBitmapEntry([], {
+      id: `rank-${firstTpl.id}-${Date.now()}`,
+      label: firstTpl.label,
+      namespace,
+      slug: firstTpl.slug,
+      composer: firstTpl.composer,
+    });
+    fontProject.value = {
+      ...initial,
+      namespace,
+      entries: [rankEntry],
+      prefixSequenceIds: [rankEntry.id],
+    };
+    selectedStudioEntryId.value = rankEntry.id;
+    inspectorTab.value = 'properties';
+    saveProjectToStorage();
+  }
+
+  // Restore autosave and load recent projects on store initialization (if in browser)
+  const initialStorage = getLocalStorage();
+  if (initialStorage) {
+    recentProjects.value = loadRecentProjectsFromStorage();
+    restoreAutosave();
+  }
+
+  // Watch fontProject to trigger debounced autosave (30s)
+  watch(
+    () => fontProject.value,
+    () => {
+      debouncedAutosave();
+    },
+    { deep: true },
+  );
+
+  // Sinkronisasi status inspectorCollapsed ke localStorage browser
+  watch(inspectorCollapsed, (val) => {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY_INSPECTOR_COLLAPSED, String(val));
+      } catch {
+        // Abaikan pembatasan kuota atau sandbox localStorage pada mode peramban privat
+      }
+    }
+  });
+
+  function toggleInspectorCollapsed(): void {
+    inspectorCollapsed.value = !inspectorCollapsed.value;
+  }
+
+  function setInspectorCollapsed(val: boolean): void {
+    inspectorCollapsed.value = val;
+  }
+
   return {
     studioMode,
     fontProject,
@@ -930,9 +1177,13 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     activeTool,
     brushColor,
     showGrid,
+    pixelGrid,
     stageMode,
     zoom,
     inspectorTab,
+    inspectorCollapsed,
+    toggleInspectorCollapsed,
+    setInspectorCollapsed,
     composerSubTab,
     previewBackdropMode,
     customBackdropUrl,
@@ -950,6 +1201,13 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     isValidating,
     report,
     sha1State,
+    recentProjects,
+    saveProjectToStorage,
+    restoreAutosave,
+    loadRecentProject,
+    closeProject,
+    createNewProject,
+    debouncedAutosave,
     initWorkers,
     handleVersionChange,
     handleFileSelected,

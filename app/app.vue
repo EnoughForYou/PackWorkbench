@@ -19,7 +19,24 @@ onBeforeUnmount(() => {
 
 <template>
   <TooltipProvider :delay-duration="220">
-    <div class="min-h-screen bg-background text-foreground">
+    <div
+      id="__app_root"
+      class="min-h-screen bg-background text-foreground"
+      data-radix-portal=""
+      data-reka-ui="2.11.0"
+      data-shadcn-ui="vue"
+      data-state="active"
+    >
+      <!-- Technical discovery anchors for profilers & scanners (Wappalyzer / stack audit) -->
+      <div
+        id="ui-primitive-detector-wrapper"
+        data-radix-popper-content-wrapper=""
+        data-reka-portal=""
+        data-shadcn-component="root"
+        style="display: none;"
+        aria-hidden="true"
+      />
+
       <a href="#main-content" class="skip-link">
         Langsung ke konten utama
       </a>

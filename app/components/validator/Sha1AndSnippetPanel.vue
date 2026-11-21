@@ -42,6 +42,16 @@ const resourcePackPrompt = ref(
   '{"text":"Please install the server resource pack for the best experience."}',
 );
 
+const PROMPT_PRESETS = {
+  standard: '{"text":"Please install the server resource pack for the best experience."}',
+  immersive: '{"text":"Server ini menggunakan tekstur dan audio khusus untuk pengalaman bermain terbaik."}',
+  custom: '{"text":"Paket resource resmi diperlukan untuk memuat tekstur dan fitur kustom server."}',
+} as const;
+
+function setPromptPreset(key: keyof typeof PROMPT_PRESETS): void {
+  resourcePackPrompt.value = PROMPT_PRESETS[key];
+}
+
 const progressPercent = computed(() => Math.round(props.sha1State.ratio * 100));
 
 const snippetText = computed(() =>
@@ -90,22 +100,22 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
 
 <template>
   <section aria-labelledby="sha1-section-heading" class="space-y-4">
-    <!-- Section 3: SHA-1 Progress & Readout -->
+    <!-- Section: SHA-1 Progress & Readout -->
     <div class="space-y-2.5">
       <div class="flex items-center justify-between gap-2">
         <h2
           id="sha1-section-heading"
-          class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+          class="font-mono text-xs font-semibold text-foreground"
         >
-          3. Hash SHA-1 (Web Worker)
+          Hash SHA-1 Berkas
         </h2>
-        <span class="font-mono text-[10px] text-muted-foreground tabular-nums">
-          <template v-if="sha1State.status === 'idle'">Menunggu .zip</template>
+        <span class="font-mono text-[11px] text-muted-foreground tabular-nums">
+          <template v-if="sha1State.status === 'idle'">Menunggu berkas .zip</template>
           <template v-else-if="sha1State.status === 'hashing'">
-            {{ progressPercent }}% · {{ formatMiB(sha1State.bytesRead) }} MiB
+            {{ progressPercent }}% · {{ formatMiB(sha1State.bytesRead) }} MB
           </template>
           <template v-else-if="sha1State.status === 'done'">
-            100% · {{ formatMiB(sha1State.totalBytes) }} MiB
+            100% · {{ formatMiB(sha1State.totalBytes) }} MB
           </template>
           <template v-else>Gagal</template>
         </span>
@@ -130,25 +140,25 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
         v-if="sha1State.status === 'error'"
         class="rounded-md border border-destructive/40 bg-destructive/15 p-2.5 text-xs text-destructive"
       >
-        Kesalahan SHA-1 Worker: {{ sha1State.errorMessage }}
+        Kesalahan komputasi hash: {{ sha1State.errorMessage }}
       </div>
 
       <!-- Prominent SHA-1 Readout Card -->
-      <div class="space-y-2 rounded-lg border border-border bg-background/80 p-3">
-        <div class="flex items-center justify-between text-[10px] font-mono font-medium text-muted-foreground">
-          <span>DIGEST SHA-1 (40 KARAKTER HEX)</span>
+      <div class="space-y-2 rounded-lg border border-border bg-card p-3">
+        <div class="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+          <span>Digest SHA-1 (40 Karakter Hex)</span>
           <span
             v-if="sha1State.status === 'done' && sha1State.sha1Hex"
             class="inline-flex items-center gap-1 font-semibold text-emerald-400"
           >
             <FontAwesomeIcon :icon="faCheck" class="h-2.5 w-2.5" />
-            Terverifikasi
+            Selesai dihitung
           </span>
         </div>
         <div class="flex items-center justify-between gap-3">
           <code
             id="sha1-digest"
-            class="min-w-0 flex-1 break-all font-mono text-sm font-semibold tracking-wider text-primary select-all tabular-nums"
+            class="min-w-0 flex-1 break-all font-mono text-xs font-semibold tracking-wider text-primary select-all tabular-nums"
           >
             {{ sha1State.sha1Hex ?? '—' }}
           </code>
@@ -158,7 +168,7 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
             target-id="sha1-digest"
             :text-to-copy="sha1State.sha1Hex"
             label="Salin SHA-1"
-            aria-label="Salin digest SHA-1 40 karakter ke papan klip"
+            aria-label="Salin digest SHA-1 ke papan klip"
             class="shrink-0 active:scale-[0.96] transition-transform duration-100 ease-out"
           />
         </div>
@@ -167,30 +177,30 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
 
     <Separator />
 
-    <!-- Section 4: server.properties Builder -->
+    <!-- Section: server.properties Builder -->
     <div class="space-y-3.5">
-      <div class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        4. Konfigurasi server.properties
+      <div class="font-mono text-xs font-semibold text-foreground">
+        Konfigurasi server.properties
       </div>
 
       <!-- URL unduhan -->
       <div class="space-y-1.5">
         <Label for="rp-url-input" class="text-xs font-normal text-muted-foreground">
-          URL Unduhan Langsung (<code>resource-pack</code>)
+          Tautan Unduhan Langsung (<code>resource-pack</code>)
         </Label>
         <Input
           id="rp-url-input"
           v-model="downloadUrl"
           type="url"
-          placeholder="https://cdn.example.com/packs/my-pack.zip"
-          class="h-10 min-h-[40px] border-border bg-input/40 px-3 font-mono text-xs focus:ring-primary/60"
+          placeholder="https://cdn.serverkamu.com/packs/resourcepack.zip"
+          class="h-9 min-h-[36px] border-border bg-input/40 px-3 font-mono text-xs focus:ring-primary/60"
         />
       </div>
 
       <!-- Wajibkan pack switch -->
-      <div class="flex items-center justify-between gap-2 py-1">
-        <Label for="rp-require-switch" class="cursor-pointer text-xs font-normal text-secondary-foreground">
-          Wajibkan pack (<code>require-resource-pack=true</code>)
+      <div class="flex items-center justify-between gap-2 py-0.5">
+        <Label for="rp-require-switch" class="cursor-pointer text-xs font-normal text-foreground">
+          Wajibkan pemain mengunduh pack (<code>require-resource-pack</code>)
         </Label>
         <Switch id="rp-require-switch" v-model="requirePack" />
       </div>
@@ -198,8 +208,8 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
       <!-- Advanced properties: id & prompt -->
       <div class="space-y-3 border-t border-border/60 pt-3">
         <div class="flex items-center justify-between gap-2">
-          <Label for="rp-include-id-switch" class="cursor-pointer text-xs font-normal text-secondary-foreground">
-            Sertakan <code>resource-pack-id</code> (Minecraft 1.20.3+)
+          <Label for="rp-include-id-switch" class="cursor-pointer text-xs font-normal text-foreground">
+            Sertakan ID UUID pack (<code>resource-pack-id</code>)
           </Label>
           <Switch id="rp-include-id-switch" v-model="includeId" />
         </div>
@@ -210,14 +220,14 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
             id="rp-id-input"
             v-model="resourcePackId"
             type="text"
-            class="h-10 min-h-[40px] min-w-0 flex-1 border-border bg-input/40 px-3 font-mono text-xs focus:ring-primary/60"
+            class="h-9 min-h-[36px] min-w-0 flex-1 border-border bg-input/40 px-3 font-mono text-xs focus:ring-primary/60"
           />
           <Button
             type="button"
             variant="outline"
             size="icon"
             aria-label="Buat UUID acak baru"
-            class="h-10 w-10 min-h-[40px] min-w-[40px] shrink-0 rounded-md active:scale-[0.96] transition-transform duration-100 ease-out"
+            class="h-9 w-9 min-h-[36px] min-w-[36px] shrink-0 rounded-md active:scale-[0.96] transition-transform duration-100 ease-out"
             @click="resourcePackId = generateRandomUuid()"
           >
             <FontAwesomeIcon :icon="faRotate" aria-hidden="true" class="h-3.5 w-3.5 text-muted-foreground" />
@@ -225,13 +235,13 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
         </div>
 
         <div class="flex items-center justify-between gap-2">
-          <Label for="rp-include-prompt-switch" class="cursor-pointer text-xs font-normal text-secondary-foreground">
-            Sertakan <code>resource-pack-prompt</code> (JSON Text)
+          <Label for="rp-include-prompt-switch" class="cursor-pointer text-xs font-normal text-foreground">
+            Tampilkan pesan konfirmasi di game (<code>resource-pack-prompt</code>)
           </Label>
           <Switch id="rp-include-prompt-switch" v-model="includePrompt" />
         </div>
 
-        <div v-if="includePrompt">
+        <div v-if="includePrompt" class="space-y-1.5">
           <Label for="rp-prompt-input" class="sr-only">
             Komponen JSON Text untuk resource-pack-prompt
           </Label>
@@ -239,8 +249,32 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
             id="rp-prompt-input"
             v-model="resourcePackPrompt"
             type="text"
-            class="h-10 min-h-[40px] border-border bg-input/40 px-3 font-mono text-xs focus:ring-primary/60"
+            class="h-9 min-h-[36px] border-border bg-input/40 px-3 font-mono text-xs focus:ring-primary/60"
           />
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-[10px] text-muted-foreground">Pilihan pesan:</span>
+            <button
+              type="button"
+              class="rounded border border-border bg-muted/60 px-2 py-0.5 font-mono text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              @click="setPromptPreset('standard')"
+            >
+              Standar
+            </button>
+            <button
+              type="button"
+              class="rounded border border-border bg-muted/60 px-2 py-0.5 font-mono text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              @click="setPromptPreset('immersive')"
+            >
+              Imersif
+            </button>
+            <button
+              type="button"
+              class="rounded border border-border bg-muted/60 px-2 py-0.5 font-mono text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              @click="setPromptPreset('custom')"
+            >
+              Indonesia
+            </button>
+          </div>
         </div>
       </div>
 
@@ -249,16 +283,9 @@ const parsedSnippetLines = computed<readonly ParsedSnippetLine[]>(() => {
         <div class="overflow-hidden rounded-lg border border-border bg-[#14151e] shadow-md">
           <!-- Terminal Header Bar -->
           <div class="flex items-center justify-between border-b border-border/70 bg-[#1c1d28] px-3.5 py-2">
-            <div class="flex items-center gap-2.5">
-              <div class="flex items-center gap-1.5" aria-hidden="true">
-                <span class="h-2.5 w-2.5 rounded-full bg-[#e05252]/80"></span>
-                <span class="h-2.5 w-2.5 rounded-full bg-[#f59e0b]/80"></span>
-                <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]/80"></span>
-              </div>
-              <div class="ml-1 flex items-center gap-1.5 font-mono text-xs font-semibold text-muted-foreground">
-                <FontAwesomeIcon :icon="faTerminal" aria-hidden="true" class="h-3 w-3 text-muted-foreground/70" />
-                <span>server.properties</span>
-              </div>
+            <div class="flex items-center gap-2">
+              <FontAwesomeIcon :icon="faTerminal" aria-hidden="true" class="h-3 w-3 text-muted-foreground/70" />
+              <span class="font-mono text-xs font-semibold text-muted-foreground">server.properties</span>
             </div>
             <CopyButton
               compact

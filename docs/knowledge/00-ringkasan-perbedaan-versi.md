@@ -1,21 +1,26 @@
 # Ringkasan Perbedaan Versi Minecraft Java (Verifikasi Sumber Primer) & Koreksi Klaim
 
-Dokumen ini disusun ulang berdasarkan **verifikasi sumber primer langsung** dari `version_manifest_v2.json` (`piston-meta.mojang.com`) serta inspeksi langsung `client.jar`, `version.json`, aset `assets/minecraft/`, dan bytecode kelas Mojang untuk versi `1.21.1`, `1.21.4` (baseline transisi), `1.21.9` (baseline format minor), `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, dan `26.3`.
+Dokumen ini disusun ulang berdasarkan **verifikasi sumber primer langsung** dari `version_manifest_v2.json` (`piston-meta.mojang.com`), inspeksi langsung `client.jar`, `version.json`, aset `assets/minecraft/`, bytecode kelas Mojang, serta dokumentasi teknis resmi Minecraft Wiki untuk seluruh spektrum versi mulai dari `1.21.1` hingga `26.3`.
 
 ---
 
-## 1. Status Rilis & `version.json` Resmi (`piston-meta.mojang.com` + `client.jar`)
+## 1. Status Rilis & Matriks `pack_format` Lengkap (1.21.1 – 26.3)
 
-| Versi Java | Nama Update | Status Rilis | Waktu Rilis (`version_manifest_v2.json`) | Resource Pack `version.json` | Data Pack `version.json` |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **1.21.1** | Hotfix *Tricky Trials* | Rilis `[VERIFIED: piston-meta.mojang.com]` | `2024-08-08T12:24:45+00:00` `[VERIFIED: piston-meta.mojang.com]` | `resource: 34` `[VERIFIED: 1.21.1/client.jar version.json]` | `data: 48` `[VERIFIED: 1.21.1/client.jar version.json]` |
-| **1.21.10** | Hotfix *The Copper Age* | Rilis `[VERIFIED: piston-meta.mojang.com]` | `2025-10-07T09:17:23+00:00` `[VERIFIED: piston-meta.mojang.com]` | `resource_major: 69`, `resource_minor: 0` `[VERIFIED: 1.21.10/client.jar version.json]` | `data_major: 88`, `data_minor: 0` `[VERIFIED: 1.21.10/client.jar version.json]` |
-| **1.21.11** | *Mounts of Mayhem* | Rilis `[VERIFIED: piston-meta.mojang.com]` | `2025-12-09T12:23:30+00:00` `[VERIFIED: piston-meta.mojang.com]` | `resource_major: 75`, `resource_minor: 0` `[VERIFIED: 1.21.11/client.jar version.json]` | `data_major: 94`, `data_minor: 1` `[VERIFIED: 1.21.11/client.jar version.json]` |
-| **26.1.2** | Hotfix *Tiny Takeover* | Rilis `[VERIFIED: piston-meta.mojang.com]` | `2026-04-09T10:12:23+00:00` `[VERIFIED: piston-meta.mojang.com]` | `resource_major: 84`, `resource_minor: 0` `[VERIFIED: 26.1.2/client.jar version.json]` | `data_major: 101`, `data_minor: 1` `[VERIFIED: 26.1.2/client.jar version.json]` |
-| **26.2** | *Chaos Cubed* | Rilis `[VERIFIED: piston-meta.mojang.com]` | `2026-06-16T12:03:33+00:00` `[VERIFIED: piston-meta.mojang.com]` | `resource_major: 88`, `resource_minor: 0` `[VERIFIED: 26.2/client.jar version.json]` | `data_major: 107`, `data_minor: 1` `[VERIFIED: 26.2/client.jar version.json]` |
-| **26.3** | *Wilderness Bound* | Rilis `[VERIFIED: piston-meta.mojang.com]` | `2026-09-15T11:23:02+00:00` `[VERIFIED: piston-meta.mojang.com]` | `resource_major: 97`, `resource_minor: 1` `[VERIFIED: 26.3/client.jar version.json]` | `data_major: 121`, `data_minor: 0` `[VERIFIED: 26.3/client.jar version.json]` |
+| Versi Java | Nama Update / Karakteristik | Status Rilis | Runtime | Resource Pack Format | Data Pack Format | Skema `pack.mcmeta` Wajib |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1.21 – 1.21.1** | Hotfix *Tricky Trials* | Rilis `[VERIFIED: piston-meta.mojang.com]` | Java 21 | `34` `[VERIFIED: 1.21.1/client.jar]` | `48` | Legacy integer (`pack_format: 34`), `supported_formats` opsional |
+| **1.21.2 – 1.21.3** | *Bundles of Bravery* | Rilis `[VERIFIED: minecraft.wiki]` | Java 21 | `42` `[VERIFIED: minecraft.wiki]` | `57` | Legacy integer (`pack_format: 42`), mulai transisi definisi `item_model` |
+| **1.21.4** | *The Garden Awakens* | Rilis `[VERIFIED: minecraft.wiki]` | Java 21 | `46` `[VERIFIED: 1.21.4/client.jar]` | `61` | Legacy integer (`pack_format: 46`), perombakan item (`items/*.json`), `overrides` deprecated, 4-list `CustomModelData` |
+| **1.21.5** | Minor Maintenance | Rilis `[VERIFIED: minecraft.wiki]` | Java 21 | `55` `[VERIFIED: minecraft.wiki]` | `71` | Legacy integer (`pack_format: 55`) |
+| **1.21.6** | Minor Feature Adjustments | Rilis `[VERIFIED: minecraft.wiki]` | Java 21 | `63` `[VERIFIED: minecraft.wiki]` | `80` | Legacy integer (`pack_format: 63`) |
+| **1.21.7 – 1.21.8** | Akhir Era Format Tunggal (*Pre-Minor*) | Rilis `[VERIFIED: minecraft.wiki]` | Java 21 | `64` `[VERIFIED: minecraft.wiki]` | `81` | Legacy integer (`pack_format: 64`). Ini adalah batas `lastPreMinorVersion` (format tertinggi tanpa minor) |
+| **1.21.9 – 1.21.10** | Hotfix *The Copper Age* (Era Minor Dimulai) | Rilis `[VERIFIED: piston-meta.mojang.com]` | Java 21 | `69.0` (`[69, 0]`) `[VERIFIED: 1.21.10/client.jar]` | `88.0` (`[88, 0]`) | Wajib `min_format` & `max_format`, dilarang `supported_formats` |
+| **1.21.11** | *Mounts of Mayhem* | Rilis `[VERIFIED: piston-meta.mojang.com]` | Java 21 | `75.0` (`[75, 0]`) `[VERIFIED: 1.21.11/client.jar]` | `94.1` (`[94, 1]`) | Wajib `min_format` & `max_format`; pemisahan atlas `items.json` & `celestials.json` |
+| **26.1 – 26.1.2** | Hotfix *Tiny Takeover* | Rilis `[VERIFIED: piston-meta.mojang.com]` | Java 25 | `84.0` (`[84, 0]`) `[VERIFIED: 26.1.2/client.jar]` | `101.1` (`[101, 1]`) | Wajib `min_format` & `max_format`; migrasi runtime Java 25, jar un-obfuscated |
+| **26.2** | *Chaos Cubed* | Rilis `[VERIFIED: piston-meta.mojang.com]` | Java 25 | `88.0` (`[88, 0]`) `[VERIFIED: 26.2/client.jar]` | `107.1` (`[107, 1]`) | Wajib `min_format` & `max_format`; konsolidasi atlas (`beds.json`, `signs.json` dilepas) |
+| **26.3** | *Wilderness Bound* | Rilis `[VERIFIED: piston-meta.mojang.com]` | Java 25 | `97.1` (`[97, 1]`) `[VERIFIED: 26.3/client.jar]` | `121.0` (`[121, 0]`) | Wajib `min_format` & `max_format` (minor non-nol pertama); relokasi armor trim ke `textures/palettes/trim/` |
 
-*(Catatan tambahan dari manifest: `1.21.1`–`1.21.11` berjalan di Java 21 dan masih memiliki `client_mappings`; mulai `26.1.2`–`26.3` berjalan di Java 25 dan sudah un-obfuscated tanpa `client_mappings` `[VERIFIED: piston-meta.mojang.com]`.)*
+*(Catatan runtime dari manifest: `1.21.1`–`1.21.11` berjalan pada Java 21 dan mendistribusikan `client_mappings`; mulai `26.1.2`–`26.3` berjalan pada Java 25 dan sepenuhnya un-obfuscated `[VERIFIED: piston-meta.mojang.com]`.)*
 
 ---
 

@@ -69,45 +69,45 @@ function handleDrop(event: DragEvent): void {
     <div class="flex items-center justify-between gap-2">
       <h2
         id="upload-section-heading"
-        class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+        class="font-mono text-xs font-semibold text-foreground"
       >
-        1. Arsip Resource Pack (.zip)
+        Berkas Resource Pack
       </h2>
-      <span class="rounded border border-border/50 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground tabular-nums">
-        Maks 250 MiB (Z08)
+      <span class="rounded border border-border/60 bg-muted/50 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
+        Maksimal 250 MB
       </span>
     </div>
 
-    <!-- Solid Industrial Workstation Receiver -->
+    <!-- Receiver Box -->
     <div
       :class="[
         'flex flex-col gap-3 rounded-lg border p-4 transition-all duration-150',
         isDragging
           ? 'border-primary bg-primary/10 shadow-[0_0_0_1px_rgba(155,115,190,0.5)]'
-          : 'border-border bg-card/80 hover:border-border hover:bg-card/95',
+          : 'border-border bg-card hover:border-border hover:bg-card/90',
       ]"
       @dragover="handleDragOver"
       @dragleave="handleDragLeave"
       @drop="handleDrop"
     >
       <div class="flex items-start gap-3">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-elevated text-primary shadow-xs">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/60 text-primary">
           <FontAwesomeIcon
             :icon="faBoxArchive"
             aria-hidden="true"
             class="h-4 w-4"
           />
         </div>
-        <div class="min-w-0 flex-1 space-y-1">
-          <p class="text-xs font-semibold tracking-tight text-foreground">
+        <div class="min-w-0 flex-1 space-y-0.5">
+          <p class="text-xs font-semibold text-foreground">
             {{
               isDragging
-                ? 'Lepaskan arsip .zip sekarang...'
-                : 'Tarik dan lepas arsip .zip resource pack ke sini'
+                ? 'Lepaskan berkas .zip sekarang'
+                : 'Tarik dan letakkan berkas .zip ke sini'
             }}
           </p>
-          <p class="text-[11px] leading-relaxed text-muted-foreground">
-            Mendukung Minecraft Java 1.21.1–26.3 hingga 250 MiB
+          <p class="text-[11px] text-muted-foreground">
+            Mendukung Minecraft Java 1.21.1 hingga 26.3
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@ function handleDrop(event: DragEvent): void {
       <!-- Active File Readout Card -->
       <div
         v-if="activeFile"
-        class="flex items-center justify-between gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 font-mono text-[11px]"
+        class="flex items-center justify-between gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 font-mono text-[11px]"
       >
         <div class="flex min-w-0 items-center gap-2">
           <FontAwesomeIcon
@@ -127,7 +127,7 @@ function handleDrop(event: DragEvent): void {
             {{ activeFile.name }}
           </span>
         </div>
-        <span class="shrink-0 text-primary tabular-nums">
+        <span class="shrink-0 font-medium text-emerald-400 tabular-nums">
           {{ formatBytesSummary(activeFile.size) }}
         </span>
       </div>
@@ -144,7 +144,7 @@ function handleDrop(event: DragEvent): void {
       <Button
         type="button"
         size="default"
-        class="h-10 min-h-[40px] w-full text-xs font-semibold rounded-md active:scale-[0.96] transition-transform duration-100 ease-out"
+        class="h-9 min-h-[36px] w-full text-xs font-semibold rounded-md active:scale-[0.96] transition-transform duration-100 ease-out"
         :disabled="isValidating"
         @click="fileInputRef?.click()"
       >
@@ -160,7 +160,7 @@ function handleDrop(event: DragEvent): void {
           aria-hidden="true"
           class="mr-2 h-3.5 w-3.5"
         />
-        {{ isValidating ? 'Memeriksa ZIP...' : 'Pilih Berkas' }}
+        {{ isValidating ? 'Memeriksa Berkas...' : activeFile ? 'Ganti Berkas (.zip)' : 'Pilih Berkas (.zip)' }}
       </Button>
     </div>
   </section>

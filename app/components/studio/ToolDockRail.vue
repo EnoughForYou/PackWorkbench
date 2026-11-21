@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
   faArrowPointer,
   faBorderAll,
-  faCheck,
   faEraser,
   faEyeDropper,
   faMagnifyingGlassPlus,
@@ -21,33 +20,10 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@/components/ui/toggle-group';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import StudioColorPicker from '@/components/shared/StudioColorPicker.vue';
 import { useWorkbenchStore, type CanvasTool } from '@/stores/workbenchStore';
 
 const store = useWorkbenchStore();
-
-const BRUSH_SWATCHES = [
-  '#ffffff',
-  '#e4e4e7',
-  '#9da0b8',
-  '#1e1f29',
-  '#9b73be',
-  '#e05252',
-  '#fb7185',
-  '#f43f5e',
-  '#fcd34d',
-  '#f59e0b',
-  '#22c55e',
-  '#10b981',
-  '#38bdf8',
-  '#3b82f6',
-  '#818cf8',
-  '#a78bfa',
-] as const;
 
 const QUICK_DOCK_SWATCHES = [
   '#ffffff',
@@ -57,6 +33,14 @@ const QUICK_DOCK_SWATCHES = [
   '#fcd34d',
   '#fb7185',
 ] as const;
+
+function togglePixelGrid(): void {
+  const next = !Boolean(store.showGrid || store.pixelGrid);
+  store.showGrid = next;
+  if ('pixelGrid' in store) {
+    store.pixelGrid = next;
+  }
+}
 
 function handleToolChange(value: unknown): void {
   if (
@@ -168,15 +152,15 @@ function selectAndCopySwatch(hex: string): void {
             type="button"
             variant="ghost"
             size="icon"
-            :aria-pressed="store.showGrid"
+            :aria-pressed="Boolean(store.showGrid || store.pixelGrid)"
             aria-label="Alihkan kisi piksel (G)"
             :class="[
               'h-10 w-10 min-h-10 min-w-10 rounded-md transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] border border-transparent',
-              store.showGrid
+              (store.showGrid || store.pixelGrid)
                 ? 'bg-primary/15 text-primary border-primary/30'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/60',
             ]"
-            @click="store.showGrid = !store.showGrid"
+            @click="togglePixelGrid()"
           >
             <FontAwesomeIcon :icon="faBorderAll" class="h-4 w-4" />
           </Button>
@@ -277,15 +261,22 @@ function selectAndCopySwatch(hex: string): void {
         class="my-0.5 h-px w-6 shrink-0 bg-border"
       />
 
-      <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <DropdownMenuTrigger as-child>
+      <StudioColorPicker
+        v-model="store.brushColor"
+        side="right"
+        :side-offset="8"
+        align="end"
+        aria-label="Buka pemilih warna kuas piksel"
+        @change="selectAndCopySwatch"
+      >
+        <template #trigger>
+          <Tooltip>
+            <TooltipTrigger as-child>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Buka palet warna dan salin hex"
+                aria-label="Buka pemilih warna kuas dan palet"
                 class="h-10 w-10 min-h-10 min-w-10 rounded-md p-0 transition-transform active:scale-[0.96] hover:bg-muted/60"
               >
                 <span
@@ -294,75 +285,13 @@ function selectAndCopySwatch(hex: string): void {
                   :style="{ backgroundColor: store.brushColor }"
                 />
               </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="right" class="text-xs">
-            Warna Kuas <span class="font-mono text-[10px] tabular-nums text-primary font-semibold">({{ store.brushColor.toUpperCase() }})</span>
-          </TooltipContent>
-        </Tooltip>
-
-        <DropdownMenuContent side="right" align="end" class="w-52 rounded-md border-border bg-card p-2.5 shadow-xl">
-          <div class="mb-2 flex items-center justify-between gap-2 border-b border-border pb-1.5">
-            <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Palet Warna
-            </p>
-            <span
-              v-if="store.copiedColorToast"
-              class="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-400 tabular-nums"
-            >
-              <FontAwesomeIcon :icon="faCheck" class="h-3 w-3" />
-              <span>Tersalin {{ store.copiedColorToast.hex }}</span>
-            </span>
-          </div>
-
-          <div class="grid grid-cols-4 gap-1.5">
-            <button
-              v-for="hex in BRUSH_SWATCHES"
-              :key="hex"
-              type="button"
-              :aria-label="`Pilih dan salin warna ${hex.toUpperCase()}`"
-              :aria-pressed="store.brushColor.toLowerCase() === hex"
-              :title="`Klik untuk menggunakan & salin ${hex.toUpperCase()}`"
-              :style="{ backgroundColor: hex }"
-              :class="[
-                'h-6 w-full cursor-pointer rounded-[3px] border transition-transform hover:scale-105 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
-                store.brushColor.toLowerCase() === hex
-                  ? 'border-2 border-primary ring-1 ring-primary/40'
-                  : 'border-white/15',
-              ]"
-              @click="selectAndCopySwatch(hex)"
-            />
-          </div>
-
-          <p class="mt-2 text-[10px] text-muted-foreground">
-            Klik swatch untuk memilih &amp; menyalin HEX.
-          </p>
-
-          <div class="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
-            <label for="dock-custom-brush" class="text-[11px] font-medium text-foreground">
-              Kustom
-            </label>
-            <div class="flex items-center gap-1.5">
-              <button
-                type="button"
-                class="cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-foreground hover:bg-accent transition-colors"
-                title="Salin HEX saat ini"
-                @click="store.copyColorHex(store.brushColor)"
-              >
-                {{ store.brushColor.toUpperCase() }}
-              </button>
-              <input
-                id="dock-custom-brush"
-                v-model="store.brushColor"
-                type="color"
-                aria-label="Pilih warna kuas kustom"
-                class="h-6 w-8 cursor-pointer rounded border border-border bg-transparent p-0"
-                @input="store.activeTool = 'pencil'"
-              />
-            </div>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </TooltipTrigger>
+            <TooltipContent side="right" class="text-xs">
+              Warna Kuas <span class="font-mono text-[10px] tabular-nums text-primary font-semibold">({{ store.brushColor.toUpperCase() }})</span>
+            </TooltipContent>
+          </Tooltip>
+        </template>
+      </StudioColorPicker>
     </div>
   </div>
 </template>

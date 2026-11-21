@@ -130,7 +130,7 @@ export function generateServerPropertiesSnippet(
   if (options.includeResourcePackPrompt) {
     const promptVal = (options.resourcePackPrompt ?? '').trim();
     lines.push(
-      `resource-pack-prompt=${promptVal.length > 0 ? promptVal : '{"text":"Silakan pasang resource pack server untuk tampilan terbaik."}'}`,
+      `resource-pack-prompt=${promptVal.length > 0 ? promptVal : '{"text":"Please install the server resource pack for the best experience."}'}`,
     );
   }
 

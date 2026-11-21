@@ -55,16 +55,16 @@ function handleChange(val: unknown): void {
     <div class="flex items-center justify-between gap-2">
       <h2
         id="target-version-heading"
-        class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+        class="font-mono text-xs font-semibold text-foreground"
       >
-        2. Target Versi Java
+        Target Versi Minecraft
       </h2>
       <Badge
         v-if="autoDetectedTarget"
         variant="secondary"
         class="h-5 border border-primary/30 bg-primary/10 px-2 font-mono text-[10px] font-semibold text-primary"
       >
-        Terdeteksi: {{ autoDetectedTarget }}
+        Cocok: {{ autoDetectedTarget }}
       </Badge>
     </div>
 
@@ -76,7 +76,7 @@ function handleChange(val: unknown): void {
       <Select :model-value="selectedVersion" @update:model-value="handleChange">
         <SelectTrigger
           id="validator-version-select"
-          class="h-10 min-h-[40px] w-full border-border bg-card font-mono text-xs hover:border-border/80 focus:ring-primary/60"
+          class="h-9 min-h-[36px] w-full border-border bg-card font-mono text-xs hover:border-border/80 focus:ring-primary/60"
         >
           <SelectValue :placeholder="selectedVersion" />
         </SelectTrigger>
@@ -85,7 +85,7 @@ function handleChange(val: unknown): void {
             v-for="profile in VERSION_PROFILES"
             :key="profile.id"
             :value="profile.id"
-            class="cursor-pointer py-2 font-mono text-xs"
+            class="cursor-pointer py-1.5 font-mono text-xs"
           >
             <div class="flex w-full items-center justify-between gap-3">
               <span class="font-semibold text-foreground">{{ profile.id }}</span>
@@ -101,9 +101,9 @@ function handleChange(val: unknown): void {
 
       <!-- Active specification readout strip -->
       <div
-        class="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-background/60 px-3 py-2 font-mono text-[11px]"
+        class="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-1.5 font-mono text-[11px]"
       >
-        <span class="text-muted-foreground">Spesifikasi Format:</span>
+        <span class="text-muted-foreground">Format Diperlukan:</span>
         <code class="font-semibold text-primary tabular-nums">
           {{ getFormatBadge(currentProfile) }}
         </code>
@@ -116,7 +116,7 @@ function handleChange(val: unknown): void {
       class="space-y-1.5 pt-0.5"
     >
       <div class="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Kompatibel dengan Arsip:
+        Versi lain yang cocok:
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
         <button
@@ -124,7 +124,7 @@ function handleChange(val: unknown): void {
           :key="profile.id"
           type="button"
           :class="[
-            'touch-target-expand min-h-[32px] cursor-pointer rounded-md border px-2.5 py-1 font-mono text-[11px] transition-transform duration-100 ease-out active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
+            'touch-target-expand min-h-[28px] cursor-pointer rounded-md border px-2 py-0.5 font-mono text-[11px] transition-transform duration-100 ease-out active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-primary',
             selectedVersion === profile.id
               ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
               : 'border-border/60 bg-muted/70 text-foreground hover:bg-elevated hover:border-border',

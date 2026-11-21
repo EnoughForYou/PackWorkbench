@@ -30,6 +30,7 @@ import type {
 } from '@core/font/types.ts';
 import { useWorkbenchStore, type ComposerSubTab } from '@/stores/workbenchStore';
 import PixelPreviewCanvas from '@/components/shared/PixelPreviewCanvas.vue';
+import StudioColorPicker from '@/components/shared/StudioColorPicker.vue';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
@@ -55,7 +56,7 @@ const store = useWorkbenchStore();
 const codepointDraft = ref<string | null>(null);
 const charsDraft = ref<string | null>(null);
 const replacePngRef = ref<HTMLInputElement | null>(null);
-const metricsOpen = ref<boolean>(true);
+const metricsOpen = ref<boolean>(false);
 const copiedFieldKey = ref<string | null>(null);
 let copiedFieldTimer: number | null = null;
 
@@ -310,20 +311,22 @@ function handleComposerSubTabChange(val: unknown): void {
             class="h-7 shrink-0 rounded-sm px-2 font-mono text-[10px] text-primary transition-transform active:scale-[0.96]"
             @click="handleAutoAllocatePua()"
           >
-            Auto
+            Otomatis
           </Button>
         </div>
       </div>
 
       <div class="space-y-2 pt-1">
         <div class="grid grid-cols-[96px_1fr] items-center gap-2">
-          <Label for="space-adv-input" class="text-[11px] font-medium text-foreground">
-            Advance (px)
+          <Label for="space-adv-input" class="inline-flex items-center gap-1 text-[11px] font-medium text-foreground">
+            <span>Lebar Maju</span>
+            <span class="font-mono text-[10px] text-muted-foreground">px</span>
           </Label>
           <Input
             id="space-adv-input"
             type="number"
             step="0.25"
+            placeholder="0"
             :model-value="Number.isFinite(store.selectedEntry.advance) ? store.selectedEntry.advance : 0"
             class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
             @update:model-value="
@@ -340,7 +343,7 @@ function handleComposerSubTabChange(val: unknown): void {
           :min="-32"
           :max="32"
           :step="1"
-          aria-label="Atur nilai advance spasi"
+          aria-label="Atur nilai lebar maju spasi"
           @update:model-value="
             (vals) => {
               const v = vals?.[0];
@@ -436,7 +439,7 @@ function handleComposerSubTabChange(val: unknown): void {
               <SelectTrigger id="rank-fontsize-select" class="h-7 rounded-sm bg-muted/80 text-xs text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent class="rounded-md border-border bg-card">
+              <SelectContent class="rounded-md border-border">
                 <SelectItem value="3x5">3×5 Ringkas</SelectItem>
                 <SelectItem value="5x5">5×5 Tebal</SelectItem>
               </SelectContent>
@@ -520,8 +523,9 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
-            <Label class="text-[11px] font-medium text-foreground">
-              Padding X
+            <Label class="inline-flex items-center gap-1 text-[11px] font-medium text-foreground">
+              <span>Padding X</span>
+              <span class="font-mono text-[10px] text-muted-foreground">px</span>
             </Label>
             <Slider
               :model-value="[store.selectedEntry.composer.paddingX]"
@@ -547,8 +551,9 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
-            <Label class="text-[11px] font-medium text-foreground">
-              Padding Y
+            <Label class="inline-flex items-center gap-1 text-[11px] font-medium text-foreground">
+              <span>Padding Y</span>
+              <span class="font-mono text-[10px] text-muted-foreground">px</span>
             </Label>
             <Slider
               :model-value="[store.selectedEntry.composer.paddingY]"
@@ -575,9 +580,9 @@ function handleComposerSubTabChange(val: unknown): void {
 
           <div class="grid grid-cols-2 gap-2 pt-0.5">
             <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
-              <Label for="rank-text-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+              <span class="text-[11px] font-medium text-foreground">
                 Teks
-              </Label>
+              </span>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
@@ -589,29 +594,29 @@ function handleComposerSubTabChange(val: unknown): void {
                   <FontAwesomeIcon v-else :icon="faCopy" class="h-2.5 w-2.5 text-muted-foreground" />
                   <span>{{ store.selectedEntry.composer.textColor.toUpperCase() }}</span>
                 </button>
-                <input
-                  id="rank-text-color"
-                  type="color"
-                  aria-label="Warna teks"
-                  :value="store.selectedEntry.composer.textColor"
-                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
-                  @input="
-                    updateBitmap((prev) => ({
-                      ...prev,
-                      composer: {
-                        ...prev.composer,
-                        textColor: ($event.target as HTMLInputElement).value,
-                      },
-                    }))
+                <StudioColorPicker
+                  :model-value="store.selectedEntry.composer.textColor"
+                  aria-label="Pilih warna teks badge"
+                  trigger-class="h-5 w-5 rounded-[3px]"
+                  side="left"
+                  @update:model-value="
+                    (color: string) =>
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          textColor: color,
+                        },
+                      }))
                   "
                 />
               </div>
             </div>
 
             <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
-              <Label for="rank-shadow-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+              <span class="text-[11px] font-medium text-foreground">
                 Bayangan
-              </Label>
+              </span>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
@@ -623,20 +628,20 @@ function handleComposerSubTabChange(val: unknown): void {
                   <FontAwesomeIcon v-else :icon="faCopy" class="h-2.5 w-2.5 text-muted-foreground" />
                   <span>{{ store.selectedEntry.composer.shadowColor.toUpperCase() }}</span>
                 </button>
-                <input
-                  id="rank-shadow-color"
-                  type="color"
-                  aria-label="Warna bayangan teks"
-                  :value="store.selectedEntry.composer.shadowColor"
-                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
-                  @input="
-                    updateBitmap((prev) => ({
-                      ...prev,
-                      composer: {
-                        ...prev.composer,
-                        shadowColor: ($event.target as HTMLInputElement).value,
-                      },
-                    }))
+                <StudioColorPicker
+                  :model-value="store.selectedEntry.composer.shadowColor"
+                  aria-label="Pilih warna bayangan teks badge"
+                  trigger-class="h-5 w-5 rounded-[3px]"
+                  side="left"
+                  @update:model-value="
+                    (color: string) =>
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          shadowColor: color,
+                        },
+                      }))
                   "
                 />
               </div>
@@ -792,8 +797,9 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr_32px] items-center gap-2">
-            <Label class="text-[11px] font-medium text-foreground">
-              Jarak Ikon
+            <Label class="inline-flex items-center gap-1 text-[11px] font-medium text-foreground">
+              <span>Jarak Ikon</span>
+              <span class="font-mono text-[10px] text-muted-foreground">px</span>
             </Label>
             <Slider
               :model-value="[store.selectedEntry.composer.iconGap]"
@@ -819,9 +825,9 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="flex items-center justify-between gap-2 rounded-sm bg-muted/80 px-2.5 py-1">
-            <Label for="rank-icon-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+            <span class="text-[11px] font-medium text-foreground">
               Warna Ikon
-            </Label>
+            </span>
             <div class="flex items-center gap-1.5">
               <button
                 type="button"
@@ -833,20 +839,20 @@ function handleComposerSubTabChange(val: unknown): void {
                 <FontAwesomeIcon v-else :icon="faCopy" class="h-2.5 w-2.5 text-muted-foreground" />
                 <span>{{ store.selectedEntry.composer.iconColor.toUpperCase() }}</span>
               </button>
-              <input
-                id="rank-icon-color"
-                type="color"
-                aria-label="Warna ikon badge"
-                :value="store.selectedEntry.composer.iconColor"
-                class="h-5 w-6 cursor-pointer border-0 bg-transparent p-0"
-                @input="
-                  updateBitmap((prev) => ({
-                    ...prev,
-                    composer: {
-                      ...prev.composer,
-                      iconColor: ($event.target as HTMLInputElement).value,
-                    },
-                  }))
+              <StudioColorPicker
+                :model-value="store.selectedEntry.composer.iconColor"
+                aria-label="Pilih warna ikon badge"
+                trigger-class="h-5 w-5 rounded-[3px]"
+                side="left"
+                @update:model-value="
+                  (color: string) =>
+                    updateBitmap((prev) => ({
+                      ...prev,
+                      composer: {
+                        ...prev.composer,
+                        iconColor: color,
+                      },
+                    }))
                 "
               />
             </div>
@@ -885,12 +891,12 @@ function handleComposerSubTabChange(val: unknown): void {
               <SelectTrigger id="rank-frame-style" class="h-7 rounded-sm bg-muted/80 text-xs text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent class="rounded-md border-border bg-card">
-                <SelectItem value="bevel">Bevel (3D Tag)</SelectItem>
-                <SelectItem value="outline">Garis Tepi (1 px)</SelectItem>
-                <SelectItem value="pill">Sudut Bulat (Pill)</SelectItem>
-                <SelectItem value="solid">Blok Padat (Solid)</SelectItem>
-                <SelectItem value="ribbon">Pita Bertakik (Ribbon)</SelectItem>
+              <SelectContent class="rounded-md border-border">
+                <SelectItem value="bevel">Bevel 3D</SelectItem>
+                <SelectItem value="outline">Garis Tepi 1px</SelectItem>
+                <SelectItem value="pill">Sudut Bulat Pill</SelectItem>
+                <SelectItem value="solid">Blok Padat Solid</SelectItem>
+                <SelectItem value="ribbon">Pita Bertakik Ribbon</SelectItem>
                 <SelectItem value="none">Tanpa Bingkai</SelectItem>
               </SelectContent>
             </Select>
@@ -898,9 +904,9 @@ function handleComposerSubTabChange(val: unknown): void {
 
           <div class="grid grid-cols-2 gap-2">
             <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
-              <Label for="rank-frame-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+              <span class="text-[11px] font-medium text-foreground">
                 Isi
-              </Label>
+              </span>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
@@ -912,29 +918,29 @@ function handleComposerSubTabChange(val: unknown): void {
                   <FontAwesomeIcon v-else :icon="faCopy" class="h-2.5 w-2.5 text-muted-foreground" />
                   <span>{{ store.selectedEntry.composer.frameColor.toUpperCase() }}</span>
                 </button>
-                <input
-                  id="rank-frame-color"
-                  type="color"
-                  aria-label="Warna isi bingkai"
-                  :value="store.selectedEntry.composer.frameColor"
-                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
-                  @input="
-                    updateBitmap((prev) => ({
-                      ...prev,
-                      composer: {
-                        ...prev.composer,
-                        frameColor: ($event.target as HTMLInputElement).value,
-                      },
-                    }))
+                <StudioColorPicker
+                  :model-value="store.selectedEntry.composer.frameColor"
+                  aria-label="Pilih warna isi bingkai"
+                  trigger-class="h-5 w-5 rounded-[3px]"
+                  side="left"
+                  @update:model-value="
+                    (color: string) =>
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          frameColor: color,
+                        },
+                      }))
                   "
                 />
               </div>
             </div>
 
             <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
-              <Label for="rank-frame-border-color" class="cursor-pointer text-[11px] font-medium text-foreground">
+              <span class="text-[11px] font-medium text-foreground">
                 Tepi
-              </Label>
+              </span>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
@@ -946,20 +952,20 @@ function handleComposerSubTabChange(val: unknown): void {
                   <FontAwesomeIcon v-else :icon="faCopy" class="h-2.5 w-2.5 text-muted-foreground" />
                   <span>{{ store.selectedEntry.composer.frameBorderColor.toUpperCase() }}</span>
                 </button>
-                <input
-                  id="rank-frame-border-color"
-                  type="color"
-                  aria-label="Warna garis tepi bingkai"
-                  :value="store.selectedEntry.composer.frameBorderColor"
-                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
-                  @input="
-                    updateBitmap((prev) => ({
-                      ...prev,
-                      composer: {
-                        ...prev.composer,
-                        frameBorderColor: ($event.target as HTMLInputElement).value,
-                      },
-                    }))
+                <StudioColorPicker
+                  :model-value="store.selectedEntry.composer.frameBorderColor"
+                  aria-label="Pilih warna garis tepi bingkai"
+                  trigger-class="h-5 w-5 rounded-[3px]"
+                  side="left"
+                  @update:model-value="
+                    (color: string) =>
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          frameBorderColor: color,
+                        },
+                      }))
                   "
                 />
               </div>
@@ -974,9 +980,9 @@ function handleComposerSubTabChange(val: unknown): void {
             class="grid grid-cols-2 gap-2 border-t border-border/50 pt-2"
           >
             <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
-              <Label for="split-icon-frame-color" class="cursor-pointer text-[10px] font-medium text-foreground">
+              <span class="text-[10px] font-medium text-foreground">
                 Isi Ikon
-              </Label>
+              </span>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
@@ -1001,29 +1007,32 @@ function handleComposerSubTabChange(val: unknown): void {
                     }}
                   </span>
                 </button>
-                <input
-                  id="split-icon-frame-color"
-                  type="color"
-                  aria-label="Warna isi kotak ikon kiri"
-                  :value="store.selectedEntry.composer.splitIconFrameColor ?? store.selectedEntry.composer.frameColor"
-                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
-                  @input="
-                    updateBitmap((prev) => ({
-                      ...prev,
-                      composer: {
-                        ...prev.composer,
-                        splitIconFrameColor: ($event.target as HTMLInputElement).value,
-                      },
-                    }))
+                <StudioColorPicker
+                  :model-value="
+                    store.selectedEntry.composer.splitIconFrameColor ??
+                    store.selectedEntry.composer.frameColor
+                  "
+                  aria-label="Pilih warna isi kotak ikon kiri"
+                  trigger-class="h-5 w-5 rounded-[3px]"
+                  side="left"
+                  @update:model-value="
+                    (color: string) =>
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          splitIconFrameColor: color,
+                        },
+                      }))
                   "
                 />
               </div>
             </div>
 
             <div class="flex items-center justify-between gap-1.5 rounded-sm bg-muted/80 px-2 py-1">
-              <Label for="split-icon-border-color" class="cursor-pointer text-[10px] font-medium text-foreground">
+              <span class="text-[10px] font-medium text-foreground">
                 Tepi Ikon
-              </Label>
+              </span>
               <div class="flex items-center gap-1">
                 <button
                   type="button"
@@ -1048,20 +1057,23 @@ function handleComposerSubTabChange(val: unknown): void {
                     }}
                   </span>
                 </button>
-                <input
-                  id="split-icon-border-color"
-                  type="color"
-                  aria-label="Warna garis tepi kotak ikon kiri"
-                  :value="store.selectedEntry.composer.splitIconBorderColor ?? store.selectedEntry.composer.frameBorderColor"
-                  class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
-                  @input="
-                    updateBitmap((prev) => ({
-                      ...prev,
-                      composer: {
-                        ...prev.composer,
-                        splitIconBorderColor: ($event.target as HTMLInputElement).value,
-                      },
-                    }))
+                <StudioColorPicker
+                  :model-value="
+                    store.selectedEntry.composer.splitIconBorderColor ??
+                    store.selectedEntry.composer.frameBorderColor
+                  "
+                  aria-label="Pilih warna garis tepi kotak ikon kiri"
+                  trigger-class="h-5 w-5 rounded-[3px]"
+                  side="left"
+                  @update:model-value="
+                    (color: string) =>
+                      updateBitmap((prev) => ({
+                        ...prev,
+                        composer: {
+                          ...prev.composer,
+                          splitIconBorderColor: color,
+                        },
+                      }))
                   "
                 />
               </div>
@@ -1073,7 +1085,7 @@ function handleComposerSubTabChange(val: unknown): void {
       <!-- Uploaded PNG Info & Replace -->
       <div v-else class="flex items-center justify-between gap-2 py-1">
         <span class="truncate font-mono text-[11px] text-foreground">
-          {{ store.selectedEntry.uploadedPngFileName ?? 'Custom PNG' }}
+          {{ store.selectedEntry.uploadedPngFileName ?? 'PNG Kustom' }}
         </span>
         <Button
           type="button"
@@ -1114,9 +1126,6 @@ function handleComposerSubTabChange(val: unknown): void {
               />
               <span>Metrik BitmapProvider</span>
             </span>
-            <span class="font-mono text-[10px] text-muted-foreground tabular-nums">
-              {{ displayedCodepoint || '—' }} · {{ store.selectedEntry.height }}/{{ store.selectedEntry.ascent }}
-            </span>
           </button>
         </CollapsibleTrigger>
 
@@ -1141,7 +1150,7 @@ function handleComposerSubTabChange(val: unknown): void {
                 class="h-7 shrink-0 rounded-sm px-2 font-mono text-[10px] text-primary transition-transform active:scale-[0.96]"
                 @click="handleAutoAllocatePua()"
               >
-                Auto
+                Otomatis
               </Button>
             </div>
           </div>
@@ -1165,13 +1174,17 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <div class="grid grid-cols-[88px_1fr] items-center gap-2">
-            <span class="text-[11px] font-medium text-foreground">Tinggi / Ascent</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-foreground">
+              <span>Tinggi / Ascent</span>
+              <span class="font-mono text-[10px] text-muted-foreground">px</span>
+            </span>
             <div class="grid grid-cols-2 gap-1.5">
               <div>
-                <Label for="bitmap-height-input" class="sr-only">Tinggi (piksel logis)</Label>
+                <Label for="bitmap-height-input" class="sr-only">Tinggi</Label>
                 <Input
                   id="bitmap-height-input"
                   type="number"
+                  placeholder="Tinggi"
                   :model-value="store.selectedEntry.height"
                   :aria-invalid="ascentError"
                   :class="[
@@ -1187,10 +1200,11 @@ function handleComposerSubTabChange(val: unknown): void {
                 />
               </div>
               <div>
-                <Label for="bitmap-ascent-input" class="sr-only">Ascent (tinggi maksimum)</Label>
+                <Label for="bitmap-ascent-input" class="sr-only">Ascent</Label>
                 <Input
                   id="bitmap-ascent-input"
                   type="number"
+                  placeholder="Ascent"
                   :model-value="store.selectedEntry.ascent"
                   :aria-invalid="ascentError"
                   :class="[
@@ -1209,21 +1223,25 @@ function handleComposerSubTabChange(val: unknown): void {
           </div>
 
           <p v-if="ascentError" class="font-mono text-[10px] text-red-300">
-            F01: Ascent ({{ store.selectedEntry.ascent }}) melebihi tinggi ({{ store.selectedEntry.height }}).
+            F01: Nilai ascent ({{ store.selectedEntry.ascent }}) melebihi tinggi glif ({{ store.selectedEntry.height }}).
           </p>
 
           <div
             v-if="store.selectedEntry.sourceMode === 'composer'"
             class="grid grid-cols-[88px_1fr] items-center gap-2"
           >
-            <span class="text-[11px] font-medium text-foreground">Spasi Kiri / Kanan</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-foreground">
+              <span>Spasi Kiri / Kanan</span>
+              <span class="font-mono text-[10px] text-muted-foreground">px</span>
+            </span>
             <div class="grid grid-cols-2 gap-1.5">
               <div>
-                <Label for="bitmap-space-left" class="sr-only">Spasi Kiri (px)</Label>
+                <Label for="bitmap-space-left" class="sr-only">Spasi Kiri</Label>
                 <Input
                   id="bitmap-space-left"
                   type="number"
                   step="0.5"
+                  placeholder="Kiri"
                   :model-value="store.selectedEntry.spaceLeft"
                   class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
                   @update:model-value="
@@ -1235,11 +1253,12 @@ function handleComposerSubTabChange(val: unknown): void {
                 />
               </div>
               <div>
-                <Label for="bitmap-space-right" class="sr-only">Spasi Kanan (px)</Label>
+                <Label for="bitmap-space-right" class="sr-only">Spasi Kanan</Label>
                 <Input
                   id="bitmap-space-right"
                   type="number"
                   step="0.5"
+                  placeholder="Kanan"
                   :model-value="store.selectedEntry.spaceRight"
                   class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs tabular-nums text-foreground"
                   @update:model-value="
@@ -1273,8 +1292,11 @@ function handleComposerSubTabChange(val: unknown): void {
 
           <div class="space-y-1">
             <Label for="bitmap-chars-textarea" class="text-[11px] font-medium text-foreground">
-              Grid &quot;chars&quot; (Baris baru per baris sprite)
+              Matriks Karakter Glif
             </Label>
+            <p class="text-[10px] text-muted-foreground">
+              Baris baru untuk setiap baris glif pada berkas sprite sheet (chars).
+            </p>
             <Textarea
               id="bitmap-chars-textarea"
               :rows="Math.min(4, Math.max(2, store.selectedEntry.chars.length))"

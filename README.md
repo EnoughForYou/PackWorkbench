@@ -41,7 +41,7 @@ Aplikasi web ini dibangun dengan stack modern yang dirancang untuk performa ting
 | **Tipografi** | Google Fonts API | Variable fonts `Onest` untuk teks UI dan `JetBrains Mono` tabular untuk metrik |
 | **Logika Inti (Core Engine)** | TypeScript Murni | Mesin aturan di `src/core/` yang berjalan independen tanpa dependensi DOM |
 | **Pemrosesan Biner & Hash** | `@noble/hashes` & `JSZip` | Streaming SHA-1 di Web Worker dan manipulasi arsip ZIP lokal di memori |
-| **Pengujian Unit** | [Vitest](https://vitest.dev/) | Menjalankan 85 unit test otomatis untuk menjamin keandalan seluruh aturan |
+| **Pengujian Unit** | [Vitest](https://vitest.dev/) & `@pinia/testing` | Menjalankan 106 unit test otomatis untuk menjamin keandalan seluruh aturan |
 
 ---
 

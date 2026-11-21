@@ -20,6 +20,11 @@ import PixelPreviewCanvas from '@/components/shared/PixelPreviewCanvas.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -56,10 +61,10 @@ function getEntryCodepointBadge(entry: FontProjectEntry): string {
   }
   const firstChar = Array.from(entry.chars[0] ?? '')[0];
   const cp = firstChar?.codePointAt(0);
-  if (cp === undefined || cp === 0) return 'Empty';
+  if (cp === undefined || cp === 0) return 'Kosong';
   const totalCells = entry.chars.reduce((sum, r) => sum + Array.from(r).length, 0);
   return totalCells > 1
-    ? `${formatCodepointHex(cp)} (${totalCells})`
+    ? `${formatCodepointHex(cp)} ×${totalCells}`
     : formatCodepointHex(cp);
 }
 
@@ -92,13 +97,13 @@ function handlePngChange(event: Event): void {
 
 <template>
   <aside
-    aria-label="Glyph and space explorer"
+    aria-label="Penjelajah rank dan glif"
     class="flex h-full min-h-0 flex-col bg-card"
   >
     <!-- Flat Rail Header -->
     <div class="flex items-center justify-between gap-2 border-b border-border bg-card px-3 py-2">
       <h2 class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Glyph &amp; Space
+        Rank &amp; Glif
       </h2>
       <Badge variant="secondary" class="h-5 px-1.5 font-mono text-[10px] tabular-nums text-foreground bg-muted border-border">
         {{ store.fontProject.entries.length }}
@@ -231,58 +236,100 @@ function handlePngChange(event: Event): void {
                 : 'border-l-transparent hover:bg-muted/40',
             ]"
           >
-            <button
-              type="button"
-              :aria-current="entry.id === store.selectedEntry?.id ? 'true' : undefined"
-              class="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.98] transition-transform duration-100 ease-out"
-              @click="store.selectedStudioEntryId = entry.id"
-            >
-              <div class="pixel-checkerboard sprite-preview-outline flex h-7 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-white/10 p-0.5">
-                <span
-                  v-if="entry.kind === 'space'"
-                  class="font-mono text-[10px] font-semibold text-foreground tabular-nums"
+            <HoverCard :open-delay="300">
+              <HoverCardTrigger as-child>
+                <button
+                  type="button"
+                  :aria-current="entry.id === store.selectedEntry?.id ? 'true' : undefined"
+                  class="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.98] transition-transform duration-100 ease-out"
+                  @click="store.selectedStudioEntryId = entry.id"
                 >
-                  {{ entry.advance > 0 ? `+${entry.advance}` : entry.advance }}
-                </span>
-                <PixelPreviewCanvas
-                  v-else-if="getThumbRaster(entry)"
-                  :raster="getThumbRaster(entry)"
-                  :zoom="1"
-                  :aria-label="`Thumbnail ${entry.label}`"
-                  class-name="max-h-full max-w-full object-contain"
-                />
-                <span v-else class="font-mono text-[10px] text-destructive">PNG!</span>
-              </div>
+                  <div class="pixel-checkerboard sprite-preview-outline flex h-7 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-white/10 p-0.5">
+                    <span
+                      v-if="entry.kind === 'space'"
+                      class="font-mono text-[10px] font-semibold text-foreground tabular-nums"
+                    >
+                      {{ entry.advance > 0 ? `+${entry.advance}` : entry.advance }}
+                    </span>
+                    <PixelPreviewCanvas
+                      v-else-if="getThumbRaster(entry)"
+                      :raster="getThumbRaster(entry)"
+                      :zoom="1"
+                      :aria-label="`Thumbnail ${entry.label}`"
+                      class-name="max-h-full max-w-full object-contain"
+                    />
+                    <span v-else class="font-mono text-[10px] text-destructive">PNG!</span>
+                  </div>
 
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center justify-between gap-1.5">
-                  <span class="truncate font-mono text-xs font-medium text-foreground">
-                    {{ entry.label }}
-                  </span>
-                  <span
-                    v-if="entryHasError(entry.id)"
-                    title="Memiliki kesalahan validasi (ERROR)"
-                    class="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
-                  />
-                  <span
-                    v-else-if="entryHasWarn(entry.id)"
-                    title="Memiliki peringatan validasi (WARN)"
-                    class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
-                  />
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <span class="truncate font-mono text-[10px] text-muted-foreground tabular-nums">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between gap-1.5">
+                      <span class="truncate font-mono text-xs font-medium text-foreground">
+                        {{ entry.label }}
+                      </span>
+                      <span
+                        v-if="entryHasError(entry.id)"
+                        title="Memiliki kesalahan validasi (ERROR)"
+                        class="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
+                      />
+                      <span
+                        v-else-if="entryHasWarn(entry.id)"
+                        title="Memiliki peringatan validasi (WARN)"
+                        class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
+                      />
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="truncate font-mono text-[10px] text-muted-foreground tabular-nums">
+                        {{ getEntryCodepointBadge(entry) }}
+                      </span>
+                      <span
+                        v-if="entry.kind === 'bitmap' && entry.composer.badgeLayout === 'split-left'"
+                        class="rounded bg-primary/10 border border-primary/20 px-1 font-mono text-[9px] text-primary"
+                      >
+                        Pisah
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent side="right" class="w-60 space-y-2 border-[#3a3d54] bg-[#1a1b26]/98 p-3 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-border/60 pb-1.5">
+                  <span class="font-mono text-xs font-bold text-foreground">{{ entry.label }}</span>
+                  <Badge variant="outline" class="font-mono text-[10px] text-primary border-primary/30">
                     {{ getEntryCodepointBadge(entry) }}
-                  </span>
-                  <span
-                    v-if="entry.kind === 'bitmap' && entry.composer.badgeLayout === 'split-left'"
-                    class="rounded bg-primary/10 border border-primary/20 px-1 font-mono text-[9px] text-primary"
-                  >
-                    Split
-                  </span>
+                  </Badge>
                 </div>
-              </div>
-            </button>
+                <div v-if="getThumbRaster(entry)" class="pixel-checkerboard flex h-20 items-center justify-center rounded border border-border/50 p-2">
+                  <PixelPreviewCanvas
+                    :raster="getThumbRaster(entry)"
+                    :zoom="3"
+                    :aria-label="`Pratinjau ${entry.label}`"
+                    class-name="max-h-full max-w-full object-contain"
+                  />
+                </div>
+                <div class="space-y-1 font-mono text-[10px] text-muted-foreground tabular-nums">
+                  <div class="flex justify-between">
+                    <span>Dimensi:</span>
+                    <span class="text-foreground">
+                      {{
+                        entry.kind === 'bitmap'
+                          ? (getThumbRaster(entry) ? `${getThumbRaster(entry)!.width}×${getThumbRaster(entry)!.height} px` : `${entry.height} px`)
+                          : 'Penyedia Spasi'
+                      }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Lebar Maju:</span>
+                    <span class="text-sky-400">
+                      {{ entry.kind === 'space' ? `${entry.advance} px` : `${(getThumbRaster(entry)?.width ?? 0) + 1} px` }}
+                    </span>
+                  </div>
+                  <div v-if="entry.kind === 'bitmap'" class="flex justify-between">
+                    <span>Ascent:</span>
+                    <span class="text-emerald-400">{{ entry.ascent }} px</span>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
 
             <Tooltip v-if="store.fontProject.entries.length > 1">
               <TooltipTrigger as-child>
