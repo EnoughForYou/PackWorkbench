@@ -969,6 +969,71 @@ export function applyPaintEditsToRaster(
 export interface SynthesizeRankOptions {
   readonly layerOrder?: readonly RankLayerId[];
   readonly layerStyles?: RankLayerStyleMap;
+  readonly cachedCustomRaster?: { width: number; height: number; rgba: Uint8ClampedArray };
+}
+
+function drawCustomRaster(
+  rgba: Uint8ClampedArray,
+  canvasW: number,
+  canvasH: number,
+  raster: { width: number; height: number; rgba: Uint8ClampedArray },
+  startX: number,
+  startY: number,
+  textColor: readonly [number, number, number, number],
+  opacityPct = 100,
+): void {
+  for (let ry = 0; ry < raster.height; ry++) {
+    for (let rx = 0; rx < raster.width; rx++) {
+      const srcIdx = (ry * raster.width + rx) * 4;
+      const sa = raster.rgba[srcIdx + 3] ?? 0;
+      if (sa === 0) continue;
+      const sr = raster.rgba[srcIdx] ?? 255;
+      const sg = raster.rgba[srcIdx + 1] ?? 255;
+      const sb = raster.rgba[srcIdx + 2] ?? 255;
+      const r = Math.round((sr * textColor[0]) / 255);
+      const g = Math.round((sg * textColor[1]) / 255);
+      const b = Math.round((sb * textColor[2]) / 255);
+      const a = Math.round((sa * textColor[3]) / 255);
+      blendPixel(
+        rgba,
+        canvasW,
+        canvasH,
+        startX + rx,
+        startY + ry,
+        [r, g, b, a],
+        opacityPct,
+      );
+    }
+  }
+}
+
+function drawCustomRasterSilhouette(
+  rgba: Uint8ClampedArray,
+  canvasW: number,
+  canvasH: number,
+  raster: { width: number; height: number; rgba: Uint8ClampedArray },
+  startX: number,
+  startY: number,
+  shadowColor: readonly [number, number, number, number],
+  opacityPct = 100,
+): void {
+  for (let ry = 0; ry < raster.height; ry++) {
+    for (let rx = 0; rx < raster.width; rx++) {
+      const srcIdx = (ry * raster.width + rx) * 4;
+      const sa = raster.rgba[srcIdx + 3] ?? 0;
+      if (sa === 0) continue;
+      const a = Math.round((sa * shadowColor[3]) / 255);
+      blendPixel(
+        rgba,
+        canvasW,
+        canvasH,
+        startX + rx,
+        startY + ry,
+        [shadowColor[0], shadowColor[1], shadowColor[2], a],
+        opacityPct,
+      );
+    }
+  }
 }
 
 function getLayerStyle(
@@ -1034,13 +1099,22 @@ export function synthesizeRankRgba(
   const ribbonExtra =
     visibility.frame && composer.frameStyle === 'ribbon' ? 2 : 0;
 
+  const customRaster =
+    composer.fontSource === 'google-font' && options?.cachedCustomRaster
+      ? options.cachedCustomRaster
+      : undefined;
+
   const iconDef = getPixelIconDefinition(composer.iconId);
   const showIcon = visibility.icon && iconDef.width > 0 && iconDef.height > 0;
-  const glyphs = visibility.text
+  const glyphs = !customRaster && visibility.text
     ? resolveTextGlyphs(composer.text, composer.fontSize)
     : [];
-  const textW = measureTextWidth(glyphs, 1);
-  const textH = glyphs.length > 0 ? 5 : 0;
+  const textW = customRaster
+    ? (visibility.text ? customRaster.width : 0)
+    : measureTextWidth(glyphs, 1);
+  const textH = customRaster
+    ? (visibility.text ? customRaster.height : 0)
+    : (glyphs.length > 0 ? 5 : 0);
 
   const hasGlyphContent = showIcon || textH > 0;
   const shadowExtraX = visibility.shadow ? 1 : 0;
@@ -1213,21 +1287,34 @@ export function synthesizeRankRgba(
           true,
         );
       }
-      if (visibility.text && glyphs.length > 0) {
-        let tx = textOriginX;
-        for (const glyph of glyphs) {
-          drawPatternBlended(
+      if (visibility.text) {
+        if (customRaster) {
+          drawCustomRasterSilhouette(
             rgba,
             width,
             height,
-            glyph,
-            tx + 1 + textStyleCfg.offsetX + shadowStyleCfg.offsetX,
+            customRaster,
+            textOriginX + 1 + textStyleCfg.offsetX + shadowStyleCfg.offsetX,
             textY + 1 + textStyleCfg.offsetY + shadowStyleCfg.offsetY,
             shadowColor,
             shadowStyleCfg.opacity,
-            true,
           );
-          tx += (glyph[0]?.length ?? 0) + 1;
+        } else if (glyphs.length > 0) {
+          let tx = textOriginX;
+          for (const glyph of glyphs) {
+            drawPatternBlended(
+              rgba,
+              width,
+              height,
+              glyph,
+              tx + 1 + textStyleCfg.offsetX + shadowStyleCfg.offsetX,
+              textY + 1 + textStyleCfg.offsetY + shadowStyleCfg.offsetY,
+              shadowColor,
+              shadowStyleCfg.opacity,
+              true,
+            );
+            tx += (glyph[0]?.length ?? 0) + 1;
+          }
         }
       }
     } else if (layerId === 'icon') {
@@ -1243,20 +1330,34 @@ export function synthesizeRankRgba(
         iconStyleCfg.opacity,
       );
     } else if (layerId === 'text') {
-      if (!visibility.text || glyphs.length === 0) continue;
-      let tx = textOriginX;
-      for (const glyph of glyphs) {
-        drawPatternBlended(
-          rgba,
-          width,
-          height,
-          glyph,
-          tx + textStyleCfg.offsetX,
-          textY + textStyleCfg.offsetY,
-          textColor,
-          textStyleCfg.opacity,
-        );
-        tx += (glyph[0]?.length ?? 0) + 1;
+      if (visibility.text) {
+        if (customRaster) {
+          drawCustomRaster(
+            rgba,
+            width,
+            height,
+            customRaster,
+            textOriginX + textStyleCfg.offsetX,
+            textY + textStyleCfg.offsetY,
+            textColor,
+            textStyleCfg.opacity,
+          );
+        } else if (glyphs.length > 0) {
+          let tx = textOriginX;
+          for (const glyph of glyphs) {
+            drawPatternBlended(
+              rgba,
+              width,
+              height,
+              glyph,
+              tx + textStyleCfg.offsetX,
+              textY + textStyleCfg.offsetY,
+              textColor,
+              textStyleCfg.opacity,
+            );
+            tx += (glyph[0]?.length ?? 0) + 1;
+          }
+        }
       }
     } else if (layerId === 'paint') {
       const painted = applyPaintEditsToRaster(
@@ -1304,6 +1405,10 @@ export function resolveBitmapEntryRaster(
     {
       layerOrder: entry.layerOrder,
       layerStyles: entry.layerStyles,
+      cachedCustomRaster:
+        entry.composer.fontSource === 'google-font'
+          ? entry.cachedCustomRaster
+          : undefined,
     },
   );
 }

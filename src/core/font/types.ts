@@ -63,19 +63,25 @@ export type PixelIconId =
 
 export type PixelFontSize = '3x5' | '5x5';
 
+export type FontSourceType = 'pixel-builtin' | 'pixel' | 'google-font';
+export type FontSourceMode = FontSourceType;
+
+export interface GoogleFontConfig {
+  readonly family: string;
+  readonly category?: 'sans-serif' | 'serif' | 'display' | 'monospace' | 'handwriting';
+  readonly weight: number;
+  readonly fontSizePx?: number;
+  readonly style?: 'normal' | 'italic';
+}
+
+export type GoogleFontSelection = GoogleFontConfig;
+
 export interface RankLayerVisibility {
   readonly frame: boolean;
   readonly icon: boolean;
   readonly text: boolean;
   readonly shadow: boolean;
   readonly paint: boolean;
-}
-
-export type FontSourceMode = 'pixel' | 'google-font';
-
-export interface GoogleFontSelection {
-  readonly family: string;
-  readonly weight: number;
 }
 
 export interface RankComposerConfig {
@@ -97,8 +103,8 @@ export interface RankComposerConfig {
   readonly splitIconBorderColor?: string;
   readonly canvasWidthMode?: CanvasWidthMode;
   readonly customWidth?: number;
-  readonly fontSource?: FontSourceMode;
-  readonly googleFont?: GoogleFontSelection;
+  readonly fontSource?: FontSourceType;
+  readonly googleFont?: GoogleFontConfig;
 }
 
 export type PaintEditMap = Readonly<Record<string, string | null>>;
@@ -121,6 +127,7 @@ export interface BitmapFontEntry {
   readonly paintEdits: PaintEditMap;
   readonly uploadedPngBytes?: Uint8Array;
   readonly uploadedPngFileName?: string;
+  readonly cachedCustomRaster?: { width: number; height: number; rgba: Uint8ClampedArray };
 }
 
 export interface SpaceFontEntry {
