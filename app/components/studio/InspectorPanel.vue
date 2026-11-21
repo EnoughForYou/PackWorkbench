@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue';
+import { computed } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
   faChevronLeft,
@@ -12,10 +12,7 @@ import { useWorkbenchStore, type InspectorTab } from '@/stores/workbenchStore';
 import InspectorPreviewViewport from './InspectorPreviewViewport.vue';
 import InspectorPropertiesTab from './InspectorPropertiesTab.vue';
 import InspectorLayersTab from './InspectorLayersTab.vue';
-
-const InspectorValidationTab = defineAsyncComponent(
-  () => import('./InspectorValidationTab.vue'),
-);
+import InspectorValidationTab from './InspectorValidationTab.vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';

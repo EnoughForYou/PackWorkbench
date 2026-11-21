@@ -741,6 +741,7 @@ const activeToolLabel = computed(() => {
       <!-- Mode 1 & 2: Pure Canvas OR Side-by-side Split JSON -->
       <ResizablePanelGroup
         v-if="store.stageMode === 'canvas' || store.stageMode === 'split'"
+        :key="store.stageMode === 'split' ? 'stage-split' : 'stage-canvas'"
         direction="horizontal"
         class="h-full w-full"
       >
