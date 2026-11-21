@@ -160,27 +160,36 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex h-screen min-w-[1280px] flex-col overflow-hidden bg-background text-foreground">
+  <div class="flex h-screen w-full flex-col overflow-hidden bg-background text-foreground">
     <!-- Pure Desktop IDE Top Toolbar -->
     <header class="flex min-h-12 shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-3 py-1">
       <!-- Left: Brand + Mode ToggleGroup -->
       <div class="flex items-center gap-3">
-        <NuxtLink
-          to="/"
-          class="flex shrink-0 items-center gap-2 rounded py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          <span
-            aria-hidden="true"
-            class="flex h-6 w-6 items-center justify-center rounded border border-primary/40 bg-muted"
-          >
-            <svg viewBox="0 0 16 16" fill="currentColor" class="h-3.5 w-3.5 text-primary">
-              <path d="M2 2h4v4H2V2Zm8 0h4v4h-4V2ZM6 6h4v4H6V6Zm-4 4h4v4H2v-4Zm8 0h4v4h-4v-4Z" />
-            </svg>
-          </span>
-          <span class="text-sm font-semibold tracking-tight text-foreground">
-            Pack Workbench
-          </span>
-        </NuxtLink>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <NuxtLink
+              to="/"
+              title="Kembali ke Beranda"
+              aria-label="Kembali ke Beranda"
+              class="flex shrink-0 items-center gap-2 rounded px-1.5 py-1 transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <span
+                aria-hidden="true"
+                class="flex h-6 w-6 items-center justify-center rounded border border-primary/40 bg-muted"
+              >
+                <svg viewBox="0 0 16 16" fill="currentColor" class="h-3.5 w-3.5 text-primary">
+                  <path d="M2 2h4v4H2V2Zm8 0h4v4h-4V2ZM6 6h4v4H6V6Zm-4 4h4v4H2v-4Zm8 0h4v4h-4v-4Z" />
+                </svg>
+              </span>
+              <span class="text-sm font-semibold tracking-tight text-foreground">
+                Pack Workbench
+              </span>
+            </NuxtLink>
+          </TooltipTrigger>
+          <TooltipContent>
+            Kembali ke Beranda
+          </TooltipContent>
+        </Tooltip>
 
         <Separator orientation="vertical" class="h-5" />
 
@@ -188,7 +197,7 @@ onBeforeUnmount(() => {
           type="single"
           :model-value="store.studioMode"
           aria-label="Pilih mode workspace studio"
-          class="gap-0.5 rounded-md border border-border bg-muted p-0.5"
+          class="h-8 gap-0.5 rounded-md border border-border/70 bg-muted/60 p-0.5"
           @update:model-value="setMode"
         >
           <ToggleGroupItem
@@ -224,14 +233,16 @@ onBeforeUnmount(() => {
           </Button>
 
           <div class="flex items-center gap-1.5">
-            <Label for="studio-ns-input" class="font-mono text-[11px] text-muted-foreground">
+            <Label for="studio-ns-input" class="font-mono text-xs font-medium text-muted-foreground">
               ns:
             </Label>
             <Input
               id="studio-ns-input"
               type="text"
               :model-value="store.fontProject.namespace"
-              class="h-7 w-24 bg-muted px-2 font-mono text-xs"
+              class="h-8 w-28 rounded-md border border-border/70 bg-muted/60 px-2.5 font-mono text-xs tabular-nums text-foreground transition-colors hover:border-border focus:border-primary/80 focus:bg-background"
+              placeholder="namespace"
+              aria-label="Namespace resource pack"
               @update:model-value="
                 store.updateProject((prev) => ({
                   ...prev,
@@ -250,7 +261,8 @@ onBeforeUnmount(() => {
           >
             <SelectTrigger
               id="studio-target-select"
-              class="h-7 w-36 bg-muted font-mono text-xs"
+              class="h-8 w-40 rounded-md border border-border/70 bg-muted/60 font-mono text-xs tabular-nums text-foreground transition-colors hover:border-border hover:bg-muted/80"
+              aria-label="Pilih target versi Minecraft Java"
             >
               <SelectValue />
             </SelectTrigger>
@@ -259,6 +271,7 @@ onBeforeUnmount(() => {
                 v-for="v in VERSION_PROFILES"
                 :key="v.id"
                 :value="v.id"
+                class="font-mono text-xs tabular-nums"
               >
                 {{
                   v.style === 'legacy'
@@ -273,9 +286,9 @@ onBeforeUnmount(() => {
           <Dialog>
             <DialogTrigger as-child>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                class="h-7 w-7 text-muted-foreground hover:text-foreground"
+                class="h-8 w-8 rounded-md border-border/70 bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
                 aria-label="Buka panduan pintasan keyboard"
               >
                 <FontAwesomeIcon :icon="faKeyboard" class="h-3.5 w-3.5" />
@@ -334,9 +347,9 @@ onBeforeUnmount(() => {
           <Dialog>
             <DialogTrigger as-child>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                class="h-7 w-7 text-muted-foreground hover:text-foreground"
+                class="h-8 w-8 rounded-md border-border/70 bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
                 aria-label="Buka panduan spesifikasi versi Minecraft"
               >
                 <FontAwesomeIcon :icon="faBook" class="h-3.5 w-3.5" />
@@ -402,7 +415,7 @@ onBeforeUnmount(() => {
             <TooltipTrigger as-child>
               <Badge
                 variant="outline"
-                class="h-7 cursor-default gap-1 border-border bg-muted font-mono text-[10px] text-muted-foreground"
+                class="h-8 cursor-default gap-1.5 rounded-md border-border/70 bg-muted/40 px-2.5 font-mono text-xs tabular-nums text-muted-foreground"
               >
                 <FontAwesomeIcon :icon="faShieldHalved" class="h-3 w-3 text-emerald-400" />
                 <span>Lokal</span>
@@ -418,13 +431,11 @@ onBeforeUnmount(() => {
             <DialogTrigger as-child>
               <Button
                 type="button"
-                variant="pill"
-                size="pill"
                 :disabled="store.validation.errors > 0 || store.isExporting"
-                class="gap-1.5 shadow-sm"
+                class="h-8 min-h-8 gap-1.5 rounded-md border border-primary/40 bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition-all duration-150 ease-out hover:bg-[#a882cb] active:scale-[0.98] disabled:opacity-50"
               >
                 <FontAwesomeIcon :icon="faFileZipper" class="h-3.5 w-3.5" />
-                <span>
+                <span class="font-mono tabular-nums">
                   {{
                     store.isExporting
                       ? 'Menyusun...'
@@ -526,7 +537,8 @@ onBeforeUnmount(() => {
           >
             <SelectTrigger
               id="validator-top-version-select"
-              class="h-7 w-36 bg-muted font-mono text-xs"
+              class="h-8 w-40 rounded-md border border-border/70 bg-muted/60 font-mono text-xs tabular-nums text-foreground transition-colors hover:border-border hover:bg-muted/80"
+              aria-label="Pilih versi target validator"
             >
               <SelectValue />
             </SelectTrigger>
@@ -535,6 +547,7 @@ onBeforeUnmount(() => {
                 v-for="v in VERSION_PROFILES"
                 :key="v.id"
                 :value="v.id"
+                class="font-mono text-xs tabular-nums"
               >
                 {{
                   v.style === 'legacy'
@@ -547,7 +560,7 @@ onBeforeUnmount(() => {
 
           <Badge
             variant="outline"
-            class="h-7 border-border bg-muted font-mono text-[10px] text-muted-foreground"
+            class="h-8 rounded-md border-border/70 bg-muted/40 px-2.5 font-mono text-xs tabular-nums text-muted-foreground"
           >
             Lokal · SHA-1 Worker
           </Badge>

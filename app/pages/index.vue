@@ -283,7 +283,10 @@ function openStudio(mode: 'font' | 'validator', version?: TargetVersionId): void
     store.updateProject((prev) => ({ ...prev, targetVersion: version }));
   }
   store.studioMode = mode;
-  void navigateTo({ path: '/studio', query: { mode } });
+  void navigateTo({
+    path: '/studio',
+    query: mode === 'validator' ? { mode: 'validator' } : undefined,
+  });
 }
 
 function handleDragOver(e: DragEvent): void {
@@ -309,7 +312,7 @@ function handleDropFile(e: DragEvent): void {
   } else if (file.name.endsWith('.png')) {
     void store.uploadPngFile(file);
     store.studioMode = 'font';
-    void navigateTo({ path: '/studio', query: { mode: 'font' } });
+    void navigateTo({ path: '/studio' });
   }
 }
 </script>
@@ -344,7 +347,7 @@ function handleDropFile(e: DragEvent): void {
               class="h-10 min-h-10 gap-2 rounded-md bg-primary px-6 text-sm font-bold text-primary-foreground shadow-sm transition-all duration-150 ease-out hover:bg-[#a882cb] active:scale-[0.97]"
               @click="openStudio('font')"
             >
-              <span>Buka Studio Rank</span>
+              <span>Buka Studio</span>
               <FontAwesomeIcon :icon="faArrowRight" class="h-4 w-4" />
             </Button>
 
@@ -637,26 +640,26 @@ function handleDropFile(e: DragEvent): void {
           <Card
             v-for="profile in VERSION_PROFILES"
             :key="profile.id"
-            class="flex flex-col justify-between border-border bg-[#222330] hover:border-primary/40 transition-all hover:shadow-md"
+            class="flex flex-col justify-between border border-border/80 bg-[#222330] transition-all duration-150 hover:border-primary/50 hover:bg-[#252636] hover:shadow-lg"
           >
             <CardHeader class="pb-3">
               <div class="flex items-center justify-between gap-2">
-                <Badge variant="outline" class="font-mono text-xs font-semibold text-primary border-primary/40">
+                <Badge variant="outline" class="border-primary/40 bg-primary/10 font-mono text-xs font-semibold text-primary">
                   Java {{ profile.id }}
                 </Badge>
-                <span class="font-mono text-xs font-bold text-emerald-400 tabular-nums">
+                <span class="rounded border border-emerald-900/60 bg-[#14151e] px-2 py-0.5 font-mono text-xs font-bold text-emerald-400 tabular-nums">
                   {{ VERSION_MATRIX_META[profile.id].formatDisplay }}
                 </span>
               </div>
-              <CardTitle class="text-base pt-1">
+              <CardTitle class="pt-1.5 text-base font-bold text-foreground">
                 {{ VERSION_MATRIX_META[profile.id].updateName }}
               </CardTitle>
-              <CardDescription class="text-xs">
+              <CardDescription class="font-mono text-[11px] text-muted-foreground">
                 {{ VERSION_MATRIX_META[profile.id].styleLabel }}
               </CardDescription>
             </CardHeader>
 
-            <CardContent class="py-0 text-xs text-foreground/80">
+            <CardContent class="py-0 text-xs leading-relaxed text-foreground/90">
               <p>{{ VERSION_MATRIX_META[profile.id].note }}</p>
             </CardContent>
 
@@ -664,7 +667,7 @@ function handleDropFile(e: DragEvent): void {
               <Button
                 type="button"
                 variant="ghost"
-                class="w-full justify-between h-8 px-2.5 font-mono text-xs font-semibold text-primary hover:bg-muted"
+                class="h-8 w-full justify-between px-2.5 font-mono text-xs font-semibold text-primary hover:bg-primary/10 hover:text-primary active:scale-[0.98]"
                 @click="openStudio('validator', profile.id)"
               >
                 <span>Pilih Profil</span>
@@ -714,22 +717,25 @@ function handleDropFile(e: DragEvent): void {
               <Card
                 v-for="rule in filteredRules"
                 :key="rule.id"
-                class="border-border bg-[#222332] p-4 space-y-2 shadow-xs"
+                class="border border-border/80 bg-[#222332] p-4 space-y-2.5 shadow-sm transition-colors hover:border-primary/50"
               >
                 <div class="flex items-center justify-between gap-2">
-                  <Badge variant="outline" class="font-mono text-xs font-bold text-foreground">
+                  <Badge variant="outline" class="border-border/80 bg-[#14151e] font-mono text-xs font-bold text-foreground">
                     {{ rule.id }}
                   </Badge>
                   <Badge
                     :variant="rule.severity === 'ERROR' ? 'destructive' : 'secondary'"
-                    class="font-mono text-[10px]"
+                    :class="[
+                      'font-mono text-[10px] font-semibold uppercase',
+                      rule.severity === 'WARN' ? 'border-amber-800/80 bg-amber-950/60 text-amber-300' : '',
+                    ]"
                   >
                     {{ rule.severity }}
                   </Badge>
                 </div>
-                <h4 class="text-sm font-semibold text-foreground">{{ rule.title }}</h4>
-                <p class="text-xs text-muted-foreground leading-relaxed">{{ rule.description }}</p>
-                <p class="font-mono text-[10px] text-primary/70 pt-1">{{ rule.docRef }}</p>
+                <h4 class="text-sm font-semibold tracking-tight text-foreground">{{ rule.title }}</h4>
+                <p class="text-xs leading-relaxed text-foreground/85">{{ rule.description }}</p>
+                <p class="font-mono text-[11px] text-primary/80 pt-1">{{ rule.docRef }}</p>
               </Card>
             </div>
           </TabsContent>
@@ -739,22 +745,25 @@ function handleDropFile(e: DragEvent): void {
               <Card
                 v-for="rule in filteredRules"
                 :key="rule.id"
-                class="border-border bg-[#222332] p-4 space-y-2 shadow-xs"
+                class="border border-border/80 bg-[#222332] p-4 space-y-2.5 shadow-sm transition-colors hover:border-primary/50"
               >
                 <div class="flex items-center justify-between gap-2">
-                  <Badge variant="outline" class="font-mono text-xs font-bold text-foreground">
+                  <Badge variant="outline" class="border-border/80 bg-[#14151e] font-mono text-xs font-bold text-foreground">
                     {{ rule.id }}
                   </Badge>
                   <Badge
                     :variant="rule.severity === 'ERROR' ? 'destructive' : 'secondary'"
-                    class="font-mono text-[10px]"
+                    :class="[
+                      'font-mono text-[10px] font-semibold uppercase',
+                      rule.severity === 'WARN' ? 'border-amber-800/80 bg-amber-950/60 text-amber-300' : '',
+                    ]"
                   >
                     {{ rule.severity }}
                   </Badge>
                 </div>
-                <h4 class="text-sm font-semibold text-foreground">{{ rule.title }}</h4>
-                <p class="text-xs text-muted-foreground leading-relaxed">{{ rule.description }}</p>
-                <p class="font-mono text-[10px] text-primary/70 pt-1">{{ rule.docRef }}</p>
+                <h4 class="text-sm font-semibold tracking-tight text-foreground">{{ rule.title }}</h4>
+                <p class="text-xs leading-relaxed text-foreground/85">{{ rule.description }}</p>
+                <p class="font-mono text-[11px] text-primary/80 pt-1">{{ rule.docRef }}</p>
               </Card>
             </div>
           </TabsContent>
@@ -764,22 +773,25 @@ function handleDropFile(e: DragEvent): void {
               <Card
                 v-for="rule in filteredRules"
                 :key="rule.id"
-                class="border-border bg-[#222332] p-4 space-y-2 shadow-xs"
+                class="border border-border/80 bg-[#222332] p-4 space-y-2.5 shadow-sm transition-colors hover:border-primary/50"
               >
                 <div class="flex items-center justify-between gap-2">
-                  <Badge variant="outline" class="font-mono text-xs font-bold text-foreground">
+                  <Badge variant="outline" class="border-border/80 bg-[#14151e] font-mono text-xs font-bold text-foreground">
                     {{ rule.id }}
                   </Badge>
                   <Badge
                     :variant="rule.severity === 'ERROR' ? 'destructive' : 'secondary'"
-                    class="font-mono text-[10px]"
+                    :class="[
+                      'font-mono text-[10px] font-semibold uppercase',
+                      rule.severity === 'WARN' ? 'border-amber-800/80 bg-amber-950/60 text-amber-300' : '',
+                    ]"
                   >
                     {{ rule.severity }}
                   </Badge>
                 </div>
-                <h4 class="text-sm font-semibold text-foreground">{{ rule.title }}</h4>
-                <p class="text-xs text-muted-foreground leading-relaxed">{{ rule.description }}</p>
-                <p class="font-mono text-[10px] text-primary/70 pt-1">{{ rule.docRef }}</p>
+                <h4 class="text-sm font-semibold tracking-tight text-foreground">{{ rule.title }}</h4>
+                <p class="text-xs leading-relaxed text-foreground/85">{{ rule.description }}</p>
+                <p class="font-mono text-[11px] text-primary/80 pt-1">{{ rule.docRef }}</p>
               </Card>
             </div>
           </TabsContent>
@@ -789,22 +801,25 @@ function handleDropFile(e: DragEvent): void {
               <Card
                 v-for="rule in filteredRules"
                 :key="rule.id"
-                class="border-border bg-[#222332] p-4 space-y-2 shadow-xs"
+                class="border border-border/80 bg-[#222332] p-4 space-y-2.5 shadow-sm transition-colors hover:border-primary/50"
               >
                 <div class="flex items-center justify-between gap-2">
-                  <Badge variant="outline" class="font-mono text-xs font-bold text-foreground">
+                  <Badge variant="outline" class="border-border/80 bg-[#14151e] font-mono text-xs font-bold text-foreground">
                     {{ rule.id }}
                   </Badge>
                   <Badge
                     :variant="rule.severity === 'ERROR' ? 'destructive' : 'secondary'"
-                    class="font-mono text-[10px]"
+                    :class="[
+                      'font-mono text-[10px] font-semibold uppercase',
+                      rule.severity === 'WARN' ? 'border-amber-800/80 bg-amber-950/60 text-amber-300' : '',
+                    ]"
                   >
                     {{ rule.severity }}
                   </Badge>
                 </div>
-                <h4 class="text-sm font-semibold text-foreground">{{ rule.title }}</h4>
-                <p class="text-xs text-muted-foreground leading-relaxed">{{ rule.description }}</p>
-                <p class="font-mono text-[10px] text-primary/70 pt-1">{{ rule.docRef }}</p>
+                <h4 class="text-sm font-semibold tracking-tight text-foreground">{{ rule.title }}</h4>
+                <p class="text-xs leading-relaxed text-foreground/85">{{ rule.description }}</p>
+                <p class="font-mono text-[11px] text-primary/80 pt-1">{{ rule.docRef }}</p>
               </Card>
             </div>
           </TabsContent>
@@ -814,22 +829,25 @@ function handleDropFile(e: DragEvent): void {
               <Card
                 v-for="rule in filteredRules"
                 :key="rule.id"
-                class="border-border bg-[#222332] p-4 space-y-2 shadow-xs"
+                class="border border-border/80 bg-[#222332] p-4 space-y-2.5 shadow-sm transition-colors hover:border-primary/50"
               >
                 <div class="flex items-center justify-between gap-2">
-                  <Badge variant="outline" class="font-mono text-xs font-bold text-foreground">
+                  <Badge variant="outline" class="border-border/80 bg-[#14151e] font-mono text-xs font-bold text-foreground">
                     {{ rule.id }}
                   </Badge>
                   <Badge
                     :variant="rule.severity === 'ERROR' ? 'destructive' : 'secondary'"
-                    class="font-mono text-[10px]"
+                    :class="[
+                      'font-mono text-[10px] font-semibold uppercase',
+                      rule.severity === 'WARN' ? 'border-amber-800/80 bg-amber-950/60 text-amber-300' : '',
+                    ]"
                   >
                     {{ rule.severity }}
                   </Badge>
                 </div>
-                <h4 class="text-sm font-semibold text-foreground">{{ rule.title }}</h4>
-                <p class="text-xs text-muted-foreground leading-relaxed">{{ rule.description }}</p>
-                <p class="font-mono text-[10px] text-primary/70 pt-1">{{ rule.docRef }}</p>
+                <h4 class="text-sm font-semibold tracking-tight text-foreground">{{ rule.title }}</h4>
+                <p class="text-xs leading-relaxed text-foreground/85">{{ rule.description }}</p>
+                <p class="font-mono text-[11px] text-primary/80 pt-1">{{ rule.docRef }}</p>
               </Card>
             </div>
           </TabsContent>
@@ -857,7 +875,7 @@ function handleDropFile(e: DragEvent): void {
             class="h-9 min-h-10 rounded-md bg-primary px-4 text-xs font-bold text-primary-foreground shadow-none transition-all duration-150 hover:bg-[#a882cb] active:scale-[0.96]"
             @click="openStudio('font')"
           >
-            Mulai di Studio
+            Buka Studio
           </Button>
         </div>
 
