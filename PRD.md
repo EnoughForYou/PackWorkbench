@@ -1,4 +1,4 @@
-# PRD — Pack Workbench: Desktop-Only Creative Suite for Minecraft Java Resource Pack
+# PRD: Pack Workbench Desktop-Only Creative Suite for Minecraft Java Resource Pack
 
 Status: **DISETUJUI / MASTER PRD**. Menggantikan seluruh dokumen PRD Fase 1 dan Fase 2 sebelumnya.  
 Sumber kebenaran teknis mutlak: `docs/knowledge/` (`00-ringkasan-perbedaan-versi.md`, `font-dan-glyph.md`, `gui-menu.md`, `item-model.md`, `bedrock-geyser.md`, `plugin-itemsadder-oraxen-nexo.md`, `99-pertanyaan-terbuka.md`, serta `java-*.md`). Jika timbul kontradiksi teknis, `docs/knowledge/` selalu menjadi acuan tertinggi.
@@ -335,7 +335,7 @@ Semua aturan di bawah ini berasal dari verifikasi bytecode `client.jar` dan spes
 | **Interaksi & Utilitas** | `@vueuse/core` | Terpasang | Utilitas interaksi kanvas, roving focus, event listener window. |
 | **Notifikasi Toast** | `vue-sonner` | **Ditetapkan** | Toast minimalis high-contrast untuk konfirmasi ekspor dan autosave. |
 | **Validasi Skema** | `zod` | **Ditetapkan** | Validasi skema runtime untuk import/export proyek dan pemulihan IndexedDB. |
-| **Pengujian Unit** | `vitest` | Terpasang | Pengujian cepat modul murni `src/core/` dan store logic (67+ tes lulus). |
+| **Pengujian Unit** | `vitest` | Terpasang | Pengujian cepat modul murni `src/core/` dan store logic (77 tes lulus). |
 | **Pengujian E2E Desktop** | `@playwright/test` | **Ditetapkan** | Pengujian interaksi browser desktop (drag-and-drop layer, kanvas zoom/pan). |
 
 ---
