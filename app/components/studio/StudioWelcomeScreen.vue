@@ -43,7 +43,7 @@ const docsModalOpen = ref(false);
 const QUICK_PRESETS = RANK_PRESET_TEMPLATES.slice(0, 5);
 
 function handleCreateRank(): void {
-  store.addRank();
+  store.createNewProject();
 }
 
 function triggerPngUpload(): void {
@@ -55,6 +55,7 @@ function handlePngFileSelected(event: Event): void {
   const file = input.files?.[0];
   if (file) {
     store.uploadPngFile(file);
+    store.isProjectOpen = true;
   }
   input.value = '';
 }
@@ -69,7 +70,7 @@ function handleOpenDocs(): void {
 }
 
 function handleSelectPreset(templateId: string): void {
-  store.addRankFromTemplate(templateId);
+  store.openPresetProject(templateId);
 }
 
 function handleOpenRecent(item: RecentProjectItem): void {

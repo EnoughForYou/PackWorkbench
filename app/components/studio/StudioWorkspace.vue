@@ -13,7 +13,7 @@ import {
 import { useWorkbenchStore } from '@/stores/workbenchStore';
 
 const store = useWorkbenchStore();
-const showWelcomeScreen = computed(() => store.fontProject.entries.length === 0);
+const showWelcomeScreen = computed(() => !store.isProjectOpen || store.fontProject.entries.length === 0);
 
 interface SplitterPanelHandle {
   collapse: () => void;
