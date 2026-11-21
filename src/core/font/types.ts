@@ -62,6 +62,16 @@ export type PixelIconId =
 
 export type PixelFontSize = '3x5' | '5x5';
 
+export type FontSourceType = 'pixel-builtin' | 'google-font';
+
+export interface GoogleFontConfig {
+  readonly family: string;
+  readonly category?: 'sans-serif' | 'serif' | 'display' | 'monospace' | 'handwriting';
+  readonly weight: number;
+  readonly fontSizePx: number;
+  readonly style?: 'normal' | 'italic';
+}
+
 export interface RankLayerVisibility {
   readonly frame: boolean;
   readonly icon: boolean;
@@ -89,6 +99,8 @@ export interface RankComposerConfig {
   readonly splitIconBorderColor?: string;
   readonly canvasWidthMode?: CanvasWidthMode;
   readonly customWidth?: number;
+  readonly fontSource?: FontSourceType;
+  readonly googleFont?: GoogleFontConfig;
 }
 
 export type PaintEditMap = Readonly<Record<string, string | null>>;
@@ -111,6 +123,7 @@ export interface BitmapFontEntry {
   readonly paintEdits: PaintEditMap;
   readonly uploadedPngBytes?: Uint8Array;
   readonly uploadedPngFileName?: string;
+  readonly cachedCustomRaster?: { width: number; height: number; rgba: Uint8ClampedArray };
 }
 
 export interface SpaceFontEntry {
