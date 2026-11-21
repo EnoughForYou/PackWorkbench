@@ -74,6 +74,9 @@ function getLocalStorage(): Storage | null {
 
 export function serializeFontProject(project: FontProject): string {
   return JSON.stringify(project, (_key, value) => {
+    if (value instanceof Uint8ClampedArray) {
+      return { __type: 'Uint8ClampedArray', bytes: Array.from(value) };
+    }
     if (value instanceof Uint8Array) {
       return { __type: 'Uint8Array', bytes: Array.from(value) };
     }
@@ -87,10 +90,14 @@ export function deserializeFontProject(raw: string): FontProject | null {
       if (
         value &&
         typeof value === 'object' &&
-        value.__type === 'Uint8Array' &&
         Array.isArray(value.bytes)
       ) {
-        return new Uint8Array(value.bytes);
+        if (value.__type === 'Uint8ClampedArray') {
+          return new Uint8ClampedArray(value.bytes);
+        }
+        if (value.__type === 'Uint8Array') {
+          return new Uint8Array(value.bytes);
+        }
       }
       return value;
     });
@@ -108,10 +115,13 @@ export function deserializeFontProject(raw: string): FontProject | null {
   }
 }
 
-interface PaintUndoRecord {
+export interface HistoryRecord {
   readonly entryId: string;
-  readonly previousPaintEdits: PaintEditMap;
+  readonly before: FontProjectEntry;
+  readonly after: FontProjectEntry;
 }
+
+export type PaintUndoRecord = HistoryRecord;
 
 const INITIAL_SHA1_STATE: Sha1ProgressState = {
   status: 'idle',
@@ -485,14 +495,38 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     fontProject.value = updater(fontProject.value);
   }
 
+  let isApplyingHistory = false;
+
+  const canUndo = computed(() => undoStack.value.length > 0);
+  const canRedo = computed(() => redoStack.value.length > 0);
+
   function updateEntry(
     entryId: string,
-    updater: (prev: FontProjectEntry) => FontProjectEntry,
+    updater:
+      | ((prev: FontProjectEntry) => FontProjectEntry)
+      | Partial<FontProjectEntry>,
+    pushHistory = true,
   ): void {
+    const current = fontProject.value.entries.find((item) => item.id === entryId);
+    if (!current) return;
+    const next =
+      typeof updater === 'function'
+        ? updater(current)
+        : ({ ...current, ...updater } as FontProjectEntry);
+    if (next === current) return;
+
+    if (pushHistory && !isApplyingHistory) {
+      undoStack.value = [
+        ...undoStack.value.slice(-29),
+        { entryId, before: current, after: next },
+      ];
+      redoStack.value = [];
+    }
+
     fontProject.value = {
       ...fontProject.value,
       entries: fontProject.value.entries.map((item) =>
-        item.id === entryId ? updater(item) : item,
+        item.id === entryId ? next : item,
       ),
     };
   }
@@ -500,69 +534,76 @@ export const useWorkbenchStore = defineStore('workbench', () => {
   function paintPixels(
     entryId: string,
     updates: Readonly<Record<string, string | null>>,
-    pushHistory: boolean,
+    pushHistory = true,
   ): void {
-    if (pushHistory) {
-      const target = fontProject.value.entries.find((e) => e.id === entryId);
-      if (target && target.kind === 'bitmap') {
-        undoStack.value = [
-          ...undoStack.value.slice(-29),
-          { entryId, previousPaintEdits: target.paintEdits },
-        ];
-        redoStack.value = [];
-      }
-    }
-    fontProject.value = {
-      ...fontProject.value,
-      entries: fontProject.value.entries.map((item) =>
-        item.id === entryId && item.kind === 'bitmap'
+    updateEntry(
+      entryId,
+      (item) =>
+        item.kind === 'bitmap'
           ? { ...item, paintEdits: { ...item.paintEdits, ...updates } }
           : item,
-      ),
-    };
+      pushHistory,
+    );
   }
 
-  function undoPaint(): void {
-    if (undoStack.value.length === 0) return;
-    const last = undoStack.value[undoStack.value.length - 1]!;
+  function undo(): boolean {
+    if (undoStack.value.length === 0) return false;
+    const record = undoStack.value[undoStack.value.length - 1]!;
     undoStack.value = undoStack.value.slice(0, -1);
-    const currentTarget = fontProject.value.entries.find((e) => e.id === last.entryId);
-    if (currentTarget && currentTarget.kind === 'bitmap') {
-      redoStack.value = [
-        ...redoStack.value.slice(-29),
-        { entryId: last.entryId, previousPaintEdits: currentTarget.paintEdits },
-      ];
+
+    isApplyingHistory = true;
+    try {
+      const current = fontProject.value.entries.find((e) => e.id === record.entryId);
+      if (current) {
+        redoStack.value = [
+          ...redoStack.value.slice(-29),
+          record,
+        ];
+        fontProject.value = {
+          ...fontProject.value,
+          entries: fontProject.value.entries.map((item) =>
+            item.id === record.entryId ? record.before : item,
+          ),
+        };
+        selectedStudioEntryId.value = record.entryId;
+        return true;
+      }
+      return false;
+    } finally {
+      isApplyingHistory = false;
     }
-    fontProject.value = {
-      ...fontProject.value,
-      entries: fontProject.value.entries.map((item) =>
-        item.id === last.entryId && item.kind === 'bitmap'
-          ? { ...item, paintEdits: last.previousPaintEdits }
-          : item,
-      ),
-    };
   }
 
-  function redoPaint(): void {
-    if (redoStack.value.length === 0) return;
-    const next = redoStack.value[redoStack.value.length - 1]!;
+  function redo(): boolean {
+    if (redoStack.value.length === 0) return false;
+    const record = redoStack.value[redoStack.value.length - 1]!;
     redoStack.value = redoStack.value.slice(0, -1);
-    const currentTarget = fontProject.value.entries.find((e) => e.id === next.entryId);
-    if (currentTarget && currentTarget.kind === 'bitmap') {
-      undoStack.value = [
-        ...undoStack.value.slice(-29),
-        { entryId: next.entryId, previousPaintEdits: currentTarget.paintEdits },
-      ];
+
+    isApplyingHistory = true;
+    try {
+      const current = fontProject.value.entries.find((e) => e.id === record.entryId);
+      if (current) {
+        undoStack.value = [
+          ...undoStack.value.slice(-29),
+          record,
+        ];
+        fontProject.value = {
+          ...fontProject.value,
+          entries: fontProject.value.entries.map((item) =>
+            item.id === record.entryId ? record.after : item,
+          ),
+        };
+        selectedStudioEntryId.value = record.entryId;
+        return true;
+      }
+      return false;
+    } finally {
+      isApplyingHistory = false;
     }
-    fontProject.value = {
-      ...fontProject.value,
-      entries: fontProject.value.entries.map((item) =>
-        item.id === next.entryId && item.kind === 'bitmap'
-          ? { ...item, paintEdits: next.previousPaintEdits }
-          : item,
-      ),
-    };
   }
+
+  const undoPaint = undo;
+  const redoPaint = redo;
 
   function copyColorHex(rawHex: string): void {
     const clean = rawHex.trim().startsWith('#')
@@ -1081,6 +1122,8 @@ export const useWorkbenchStore = defineStore('workbench', () => {
         fontProject.value = restored;
         selectedStudioEntryId.value = restored.entries[0]?.id ?? '';
         isProjectOpen.value = true;
+        undoStack.value = [];
+        redoStack.value = [];
         return true;
       }
     } catch (e) {
@@ -1096,12 +1139,16 @@ export const useWorkbenchStore = defineStore('workbench', () => {
         fontProject.value = parsed;
         selectedStudioEntryId.value = parsed.entries[0]?.id ?? '';
         isProjectOpen.value = true;
+        undoStack.value = [];
+        redoStack.value = [];
         saveProjectToStorage();
         return;
       }
     }
     if (restoreAutosave()) {
       isProjectOpen.value = true;
+      undoStack.value = [];
+      redoStack.value = [];
     }
   }
 
@@ -1117,6 +1164,8 @@ export const useWorkbenchStore = defineStore('workbench', () => {
       prefixSequenceIds: [],
     };
     selectedStudioEntryId.value = '';
+    undoStack.value = [];
+    redoStack.value = [];
     const storage = getLocalStorage();
     if (storage) {
       storage.removeItem(AUTOSAVE_STORAGE_KEY);
@@ -1142,6 +1191,8 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     selectedStudioEntryId.value = rankEntry.id;
     inspectorTab.value = 'properties';
     isProjectOpen.value = true;
+    undoStack.value = [];
+    redoStack.value = [];
     saveProjectToStorage();
   }
 
@@ -1168,6 +1219,8 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     selectedStudioEntryId.value = rankEntry.id;
     inspectorTab.value = 'properties';
     isProjectOpen.value = true;
+    undoStack.value = [];
+    redoStack.value = [];
     saveProjectToStorage();
   }
 
@@ -1260,6 +1313,10 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     updateProject,
     updateEntry,
     paintPixels,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
     undoPaint,
     redoPaint,
     copyColorHex,

@@ -46,7 +46,7 @@ export default defineNuxtConfig({
         {
           id: 'critical-theme-tokens',
           innerHTML:
-            ':root{--background:#1e1f29;--foreground:#f0f1f5;--panel:#262736;--card:#262736;--elevated:#303244;--border:#3c3f54;--primary:#9b73be}html,body{background-color:#1e1f29!important;color:#f0f1f5!important;margin:0}',
+            ':root{--background:#1e1f29;--foreground:#f0f1f5;--panel:#262736;--card:#262736;--elevated:#303244;--border:#3c3f54;--primary:#9b73be;--destructive:#e05252;--destructive-foreground:#ffffff;--radix-accordion-content-height:auto}html,body{background-color:#1e1f29!important;color:#f0f1f5!important;margin:0}',
         },
       ],
     },

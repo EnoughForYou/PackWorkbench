@@ -178,15 +178,15 @@ function selectAndCopySwatch(hex: string): void {
             variant="ghost"
             size="icon"
             :disabled="store.undoStack.length === 0"
-            aria-label="Urungkan coretan terakhir (Ctrl+Z)"
+            aria-label="Urungkan perubahan (Ctrl+Z)"
             class="h-10 w-10 min-h-10 min-w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] disabled:opacity-40 disabled:pointer-events-none"
-            @click="store.undoPaint()"
+            @click="store.undo()"
           >
             <FontAwesomeIcon :icon="faRotateLeft" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
-          <span>Urungkan Coretan</span>
+          <span>Urungkan</span>
           <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">Ctrl+Z</kbd>
         </TooltipContent>
       </Tooltip>
@@ -198,15 +198,15 @@ function selectAndCopySwatch(hex: string): void {
             variant="ghost"
             size="icon"
             :disabled="store.redoStack.length === 0"
-            aria-label="Ulangi coretan (Ctrl+Y)"
+            aria-label="Ulangi perubahan (Ctrl+Y)"
             class="h-10 w-10 min-h-10 min-w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.96] disabled:opacity-40 disabled:pointer-events-none"
-            @click="store.redoPaint()"
+            @click="store.redo()"
           >
             <FontAwesomeIcon :icon="faRotateRight" class="h-4 w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right" class="flex items-center gap-1.5 text-xs">
-          <span>Ulangi Coretan</span>
+          <span>Ulangi</span>
           <kbd class="font-mono text-[10px] bg-background/60 px-1 py-0.5 rounded border border-border">Ctrl+Y</kbd>
         </TooltipContent>
       </Tooltip>

@@ -118,12 +118,12 @@ function handleStudioKeyDown(event: KeyboardEvent): void {
 
   if ((event.ctrlKey || event.metaKey) && (key === 'y' || (key === 'z' && event.shiftKey))) {
     event.preventDefault();
-    store.redoPaint();
+    store.redo();
     return;
   }
   if ((event.ctrlKey || event.metaKey) && key === 'z') {
     event.preventDefault();
-    store.undoPaint();
+    store.undo();
     return;
   }
   if ((event.ctrlKey || event.metaKey) && (key === '0' || key === '1')) {

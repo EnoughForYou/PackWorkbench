@@ -248,6 +248,12 @@ describe('Phase 2: Layer Locking & Protection Engine', () => {
     it('disables paintEdits deletion button when paint layer is locked', () => {
       expect(content).toMatch(/:disabled="getStyleFor\(store\.selectedEntry,\s*'paint'\)\.locked"/);
     });
+
+    it('disables checkbox, move buttons, and reset order button when layers are locked', () => {
+      expect(content).toContain(':disabled="getStyleFor(store.selectedEntry, layerId).locked"');
+      expect(content).toContain(':draggable="!getStyleFor(store.selectedEntry, layerId).locked"');
+      expect(content).toContain(':disabled="displayLayers.some((id) => getStyleFor(store.selectedEntry, id).locked)"');
+    });
   });
 
   describe('Inspector Subcomponents Structure & TDZ Audit', () => {

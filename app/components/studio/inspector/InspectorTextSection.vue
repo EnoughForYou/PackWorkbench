@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faCheck, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCopy, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import type {
   BitmapFontEntry,
   FontSourceMode,
+  GoogleFontConfig,
   PixelFontSize,
 } from '@core/font/types.ts';
 import { useWorkbenchStore } from '@/stores/workbenchStore';
 import StudioColorPicker from '@/components/shared/StudioColorPicker.vue';
+import GoogleFontPicker from '@/components/studio/GoogleFontPicker.vue';
+import { useFontRasterizer } from '@/composables/useFontRasterizer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -22,6 +25,15 @@ import { Slider } from '@/components/ui/slider';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 const store = useWorkbenchStore();
+const { rasterizeText, isFontLoading, lastRasterError } = useFontRasterizer();
+
+const DEFAULT_GOOGLE_FONT: GoogleFontConfig = {
+  family: 'Press Start 2P',
+  category: 'display',
+  weight: 400,
+  fontSizePx: 8,
+  style: 'normal',
+};
 
 const copiedFieldKey = ref<string | null>(null);
 let copiedFieldTimer: number | null = null;
@@ -38,6 +50,78 @@ function updateBitmap(updater: (prev: BitmapFontEntry) => BitmapFontEntry): void
     prev.kind === 'bitmap' ? updater(prev) : prev,
   );
 }
+
+async function triggerGoogleFontRaster(text: string, fontConfig: GoogleFontConfig): Promise<void> {
+  const targetEntry = entry.value;
+  if (!targetEntry) return;
+  const raster = await rasterizeText(text, fontConfig);
+  if (raster) {
+    updateBitmap((prev) => ({
+      ...prev,
+      cachedCustomRaster: raster,
+    }));
+  }
+}
+
+function handleTextChange(val: string): void {
+  updateBitmap((prev) => ({
+    ...prev,
+    label: val.trim() || prev.label,
+    composer: { ...prev.composer, text: val },
+  }));
+
+  if (entry.value?.composer.fontSource === 'google-font') {
+    void triggerGoogleFontRaster(
+      val,
+      entry.value.composer.googleFont ?? DEFAULT_GOOGLE_FONT,
+    );
+  }
+}
+
+function handleFontSourceChange(val: unknown): void {
+  const str = typeof val === 'string' ? val : null;
+  if (str === 'pixel' || str === 'google-font') {
+    const nextFontConfig = entry.value?.composer.googleFont ?? DEFAULT_GOOGLE_FONT;
+    updateBitmap((prev) => ({
+      ...prev,
+      composer: {
+        ...prev.composer,
+        fontSource: str as FontSourceMode,
+        googleFont: str === 'google-font' ? nextFontConfig : prev.composer.googleFont,
+      },
+    }));
+
+    if (str === 'google-font' && entry.value) {
+      void triggerGoogleFontRaster(entry.value.composer.text, nextFontConfig);
+    }
+  }
+}
+
+function handleGoogleFontConfigChange(nextConfig: GoogleFontConfig): void {
+  updateBitmap((prev) => ({
+    ...prev,
+    composer: {
+      ...prev.composer,
+      googleFont: nextConfig,
+    },
+  }));
+  if (entry.value) {
+    void triggerGoogleFontRaster(entry.value.composer.text, nextConfig);
+  }
+}
+
+watch(
+  () => [entry.value?.id, entry.value?.composer.fontSource, entry.value?.composer.text],
+  ([id, source, text]) => {
+    if (id && source === 'google-font' && !entry.value?.cachedCustomRaster) {
+      void triggerGoogleFontRaster(
+        String(text || ''),
+        entry.value?.composer.googleFont ?? DEFAULT_GOOGLE_FONT,
+      );
+    }
+  },
+  { immediate: true },
+);
 
 function copyFieldColor(fieldKey: string, hex: string): void {
   store.copyColorHex(hex);
@@ -65,16 +149,7 @@ function copyFieldColor(fieldKey: string, hex: string): void {
         type="text"
         :model-value="entry.composer.text"
         class="h-7 rounded-sm bg-muted/80 px-2 font-mono text-xs text-foreground"
-        @update:model-value="
-          updateBitmap((prev) => {
-            const val = String($event ?? '');
-            return {
-              ...prev,
-              label: val.trim() || prev.label,
-              composer: { ...prev.composer, text: val },
-            };
-          })
-        "
+        @update:model-value="handleTextChange(String($event ?? ''))"
       />
     </div>
 
@@ -88,19 +163,7 @@ function copyFieldColor(fieldKey: string, hex: string): void {
         :model-value="entry.composer.fontSource ?? 'pixel'"
         aria-label="Pilih sumber font"
         class="gap-0.5 rounded-sm border border-border bg-muted/80 p-0.5"
-        @update:model-value="
-          (val) => {
-            if (val === 'pixel' || val === 'google-font') {
-              updateBitmap((prev) => ({
-                ...prev,
-                composer: {
-                  ...prev.composer,
-                  fontSource: val as FontSourceMode,
-                },
-              }));
-            }
-          }
-        "
+        @update:model-value="handleFontSourceChange"
       >
         <ToggleGroupItem
           value="pixel"
@@ -148,22 +211,36 @@ function copyFieldColor(fieldKey: string, hex: string): void {
       </Select>
     </div>
 
-    <!-- Google Font Options (if google-font fontSource) -->
-    <div
-      v-else
-      class="grid grid-cols-[88px_1fr] items-center gap-2 rounded-sm border border-border/60 bg-muted/40 p-2"
-    >
-      <Label class="text-[11px] font-medium text-foreground">
-        Google Font
-      </Label>
-      <div class="space-y-1 text-xs">
-        <span class="font-mono text-[11px] text-foreground">
-          {{ entry.composer.googleFont?.family ?? 'Press Start 2P' }}
-          ({{ entry.composer.googleFont?.weight ?? 400 }})
+    <!-- Google Font Picker (if google-font fontSource) -->
+    <div v-else class="space-y-2 rounded-sm border border-border/70 bg-card/60 p-2.5">
+      <div class="flex items-center justify-between">
+        <Label class="text-[11px] font-semibold text-foreground">
+          Pilih Google Font
+        </Label>
+        <span
+          v-if="isFontLoading"
+          class="inline-flex items-center gap-1.5 font-mono text-[10px] text-primary"
+        >
+          <span class="h-1.5 w-1.5 animate-ping rounded-full bg-primary" />
+          <span>Merasterisasi...</span>
         </span>
-        <p class="text-[10px] text-muted-foreground">
-          Tipografi Google Font otomatis dirender pixel-perfect.
-        </p>
+      </div>
+
+      <!-- Mounted GoogleFontPicker Component -->
+      <GoogleFontPicker
+        :model-value="entry.composer.googleFont ?? DEFAULT_GOOGLE_FONT"
+        :preview-text="entry.composer.text || 'RANK'"
+        @update:model-value="handleGoogleFontConfigChange"
+      />
+
+      <!-- Error State -->
+      <div
+        v-if="lastRasterError"
+        class="flex items-center gap-1.5 rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-[11px] text-destructive"
+        role="alert"
+      >
+        <FontAwesomeIcon :icon="faTriangleExclamation" class="h-3 w-3 shrink-0" />
+        <span class="truncate">Gagal memuat font: {{ lastRasterError }}</span>
       </div>
     </div>
 

@@ -18,6 +18,7 @@ import {
 import { DEFAULT_RANK_LAYER_ORDER } from '@core/font/pixelSynth.ts';
 import type {
   BitmapFontEntry,
+  FontProjectEntry,
   RankLayerId,
   RankLayerStyle,
   RankLayerVisibility,
@@ -116,7 +117,13 @@ function getLayerMeta(
   };
 }
 
-function getStyleFor(entry: BitmapFontEntry, id: RankLayerId): RankLayerStyle {
+function getStyleFor(
+  entry: BitmapFontEntry | FontProjectEntry | undefined,
+  id: RankLayerId,
+): RankLayerStyle {
+  if (!entry || entry.kind !== 'bitmap') {
+    return { opacity: 100, offsetX: 0, offsetY: 0, locked: false };
+  }
   const raw = entry.layerStyles?.[id];
   return {
     opacity: raw?.opacity ?? 100,
@@ -134,26 +141,33 @@ function toggleLayerLock(id: RankLayerId): void {
 }
 
 function toggleLayerVisibility(key: keyof RankLayerVisibility): void {
-  updateBitmap((prev) => ({
-    ...prev,
-    layerVisibility: {
-      ...prev.layerVisibility,
-      [key]: !prev.layerVisibility[key],
-    },
-  }));
+  updateBitmap((prev) => {
+    if (getStyleFor(prev, key as RankLayerId).locked) {
+      return prev;
+    }
+    return {
+      ...prev,
+      layerVisibility: {
+        ...prev.layerVisibility,
+        [key]: !prev.layerVisibility[key],
+      },
+    };
+  });
 }
 
 function moveLayer(id: RankLayerId, direction: 'up' | 'down'): void {
   updateBitmap((prev) => {
+    if (getStyleFor(prev, id).locked) return prev;
     const uiOrder = [...getEffectiveDrawOrder(prev)].reverse();
     const idx = uiOrder.indexOf(id);
     if (idx < 0) return prev;
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= uiOrder.length) return prev;
+    const swapTargetId = uiOrder[swapIdx]!;
+    if (getStyleFor(prev, swapTargetId).locked) return prev;
     const nextUi = [...uiOrder];
-    const tmp = nextUi[idx]!;
-    nextUi[idx] = nextUi[swapIdx]!;
-    nextUi[swapIdx] = tmp;
+    nextUi[idx] = swapTargetId;
+    nextUi[swapIdx] = id;
     return {
       ...prev,
       layerOrder: nextUi.reverse(),
@@ -162,10 +176,16 @@ function moveLayer(id: RankLayerId, direction: 'up' | 'down'): void {
 }
 
 function resetLayerOrder(): void {
-  updateBitmap((prev) => ({
-    ...prev,
-    layerOrder: [...DEFAULT_RANK_LAYER_ORDER],
-  }));
+  updateBitmap((prev) => {
+    const hasAnyLocked = DEFAULT_RANK_LAYER_ORDER.some(
+      (id) => getStyleFor(prev, id).locked,
+    );
+    if (hasAnyLocked) return prev;
+    return {
+      ...prev,
+      layerOrder: [...DEFAULT_RANK_LAYER_ORDER],
+    };
+  });
 }
 
 function updateLayerStyle(
@@ -233,6 +253,9 @@ const dragOverPosition = ref<'above' | 'below'>('below');
 function reorderLayer(sourceId: RankLayerId, targetId: RankLayerId, position: 'above' | 'below'): void {
   if (sourceId === targetId) return;
   updateBitmap((prev) => {
+    if (getStyleFor(prev, sourceId).locked || getStyleFor(prev, targetId).locked) {
+      return prev;
+    }
     const uiOrder = [...getEffectiveDrawOrder(prev)].reverse(); // top→bottom display
     const withoutSource = uiOrder.filter((id) => id !== sourceId);
     const targetIdx = withoutSource.indexOf(targetId);
@@ -244,6 +267,11 @@ function reorderLayer(sourceId: RankLayerId, targetId: RankLayerId, position: 'a
 }
 
 function onDragStart(layerId: RankLayerId, event: DragEvent): void {
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap' || getStyleFor(entry, layerId).locked) {
+    event.preventDefault();
+    return;
+  }
   draggingLayerId.value = layerId;
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move';
@@ -280,8 +308,16 @@ function onDragLeave(layerId: RankLayerId, event?: DragEvent): void {
 function onDrop(targetId: RankLayerId, event: DragEvent): void {
   event.preventDefault();
   const sourceId = (event.dataTransfer?.getData('text/plain') ?? '') as RankLayerId;
+  const entry = store.selectedEntry;
+  if (!entry || entry.kind !== 'bitmap') {
+    dragOverLayerId.value = null;
+    draggingLayerId.value = null;
+    return;
+  }
   if (sourceId && sourceId !== targetId) {
-    reorderLayer(sourceId, targetId, dragOverPosition.value);
+    if (!getStyleFor(entry, sourceId).locked && !getStyleFor(entry, targetId).locked) {
+      reorderLayer(sourceId, targetId, dragOverPosition.value);
+    }
   }
   dragOverLayerId.value = null;
   draggingLayerId.value = null;
@@ -317,7 +353,8 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
           variant="ghost"
           size="sm"
           title="Atur ulang urutan lapisan ke default"
-          class="h-6 shrink-0 gap-1 rounded-sm px-1.5 font-mono text-[10px] text-primary transition-transform active:scale-[0.96]"
+          :disabled="displayLayers.some((id) => getStyleFor(store.selectedEntry, id).locked)"
+          class="h-6 shrink-0 gap-1 rounded-sm px-1.5 font-mono text-[10px] text-primary transition-transform active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
           @click="resetLayerOrder()"
         >
           <FontAwesomeIcon :icon="faRotateLeft" class="h-3 w-3" />
@@ -334,7 +371,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
           class="relative select-none bg-card"
         >
           <div
-            :draggable="true"
+            :draggable="!getStyleFor(store.selectedEntry, layerId).locked"
             @dragstart="onDragStart(layerId, $event)"
             @dragover="onDragOver(layerId, $event)"
             @dragleave="onDragLeave(layerId, $event)"
@@ -351,13 +388,15 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
               <span
                 aria-hidden="true"
                 title="Seret untuk mengubah urutan"
-                class="flex h-5 w-4 shrink-0 cursor-grab items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
+                class="flex h-5 w-4 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+                :class="getStyleFor(store.selectedEntry, layerId).locked ? 'cursor-not-allowed opacity-40' : 'cursor-grab active:cursor-grabbing'"
               >
                 <FontAwesomeIcon :icon="faGripVertical" class="h-3.5 w-3.5" />
               </span>
               <Checkbox
                 :id="`layer-vis-${layerId}`"
                 :model-value="store.selectedEntry.layerVisibility[layerId]"
+                :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                 aria-label="Alihkan visibilitas lapisan"
                 @update:model-value="toggleLayerVisibility(layerId)"
               />
@@ -398,9 +437,9 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 type="button"
                 variant="ghost"
                 size="icon"
-                :disabled="idx === 0"
+                :disabled="idx === 0 || getStyleFor(store.selectedEntry, layerId).locked || getStyleFor(store.selectedEntry, displayLayers[idx - 1]!).locked"
                 :aria-label="`Pindahkan lapisan ${layerId} ke atas`"
-                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed"
                 @click="moveLayer(layerId, 'up')"
               >
                 <FontAwesomeIcon :icon="faArrowUp" class="h-3 w-3" />
@@ -409,9 +448,9 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 type="button"
                 variant="ghost"
                 size="icon"
-                :disabled="idx === displayLayers.length - 1"
+                :disabled="idx === displayLayers.length - 1 || getStyleFor(store.selectedEntry, layerId).locked || getStyleFor(store.selectedEntry, displayLayers[idx + 1]!).locked"
                 :aria-label="`Pindahkan lapisan ${layerId} ke bawah`"
-                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed"
                 @click="moveLayer(layerId, 'down')"
               >
                 <FontAwesomeIcon :icon="faArrowDown" class="h-3 w-3" />
@@ -438,8 +477,9 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                 type="button"
                 variant="ghost"
                 size="icon"
+                :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                 :aria-label="`Alihkan visibilitas lapisan ${layerId}`"
-                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96]"
+                class="h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground transition-[color,transform] duration-100 ease-out active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed"
                 @click="toggleLayerVisibility(layerId)"
               >
                 <FontAwesomeIcon
@@ -578,6 +618,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                   </button>
                   <input
                     type="color"
+                    :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                     :aria-label="`Ubah warna lapisan ${layerId}`"
                     :value="
                       layerId === 'text'
@@ -586,7 +627,7 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                           ? store.selectedEntry.composer.shadowColor
                           : store.selectedEntry.composer.iconColor
                     "
-                    class="h-5 w-6 cursor-pointer border-0 bg-transparent p-0"
+                    class="h-5 w-6 cursor-pointer border-0 bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-40"
                     @input="
                       updateBitmap((prev) => ({
                         ...prev,
@@ -623,9 +664,10 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     </button>
                     <input
                       type="color"
+                      :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                       aria-label="Warna isi bingkai"
                       :value="store.selectedEntry.composer.frameColor"
-                      class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                      class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-40"
                       @input="
                         updateBitmap((prev) => ({
                           ...prev,
@@ -653,9 +695,10 @@ function handleLayerHeaderClick(layerId: RankLayerId): void {
                     </button>
                     <input
                       type="color"
+                      :disabled="getStyleFor(store.selectedEntry, layerId).locked"
                       aria-label="Warna garis tepi bingkai"
                       :value="store.selectedEntry.composer.frameBorderColor"
-                      class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                      class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-40"
                       @input="
                         updateBitmap((prev) => ({
                           ...prev,
